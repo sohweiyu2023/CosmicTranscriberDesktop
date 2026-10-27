@@ -1,0 +1,29 @@
+Cosmic Transcriber 1.0.27 - UI/Dropdown Full Audit Results
+Audit date: 2026-08-04
+
+STATUS
+SOURCE-LEVEL PASS; NATIVE WINDOWS BUILD AND RUNTIME ACCEPTANCE REQUIRED.
+
+USER-REPORTED REPAIRS
+- Closed model/retry fields render an explicit themed surface and foreground.
+- Popup keeps the required PART_Popup, is opaque and non-animated, and contains bounded scrolling.
+- All four visible completed-file models are enabled and selectable.
+- The misleading disabled realtime-only model row is absent.
+- Closed selectors cannot change silently from mouse-wheel input.
+- The same wheel gesture is forwarded so the surrounding settings page still scrolls.
+
+FRESH VERIFICATION
+- Static verifier: PASS.
+- C# files: 28.
+- XAML files: 7.
+- XAML handlers: 39 unique / 44 bindings.
+- Resource references: 52.
+- Adversarial mutations: 52/52 detected.
+- Deterministic media: 6/6 CBR/VBR chunks decoded; first-chunk PCM prefixes matched their sources.
+- Comprehensive manual: 16 pages rendered and visually inspected.
+- DOCX accessibility audit: 0 high / 0 medium / 0 low findings.
+- Secret and runtime-artifact scan: PASS.
+- Deterministic inventory/checksum validation: PASS.
+
+BOUNDARY
+This environment does not contain the Windows .NET/WPF SDK. BUILD.cmd, native dropdown interaction, DPI/theme checks, and live OpenAI requests remain mandatory on Windows before distributing binaries.

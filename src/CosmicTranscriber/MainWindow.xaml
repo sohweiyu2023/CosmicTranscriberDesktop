@@ -1,0 +1,628 @@
+<Window x:Class="CosmicTranscriber.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Cosmic Transcriber"
+        Width="1060"
+        Height="700"
+        MinWidth="960"
+        MinHeight="620"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource AppBackgroundBrush}"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing"
+        AllowDrop="True"
+        PreviewKeyDown="Window_PreviewKeyDown">
+    <Grid x:Name="RootDropSurface" Background="{DynamicResource WindowGradientBrush}" AllowDrop="True">
+        <Ellipse Width="640" Height="640" HorizontalAlignment="Left" VerticalAlignment="Top"
+                 Margin="-250,-300,0,0" IsHitTestVisible="False" Opacity="0.36">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="#7A7954FF" Offset="0" />
+                    <GradientStop Color="#007954FF" Offset="1" />
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+            <Ellipse.Effect>
+                <BlurEffect Radius="70" />
+            </Ellipse.Effect>
+        </Ellipse>
+        <Ellipse Width="520" Height="520" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                 Margin="0,0,-180,-230" IsHitTestVisible="False" Opacity="0.30">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="#7067D9FF" Offset="0" />
+                    <GradientStop Color="#0067D9FF" Offset="1" />
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+            <Ellipse.Effect>
+                <BlurEffect Radius="70" />
+            </Ellipse.Effect>
+        </Ellipse>
+
+        <ScrollViewer x:Name="WorkspaceViewport" HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto" CanContentScroll="False"
+                      AutomationProperties.Name="Workspace; scroll to reach controls in a small window">
+        <Grid x:Name="WorkspaceCanvas" MinWidth="960" MinHeight="620"
+              Width="{Binding ViewportWidth, ElementName=WorkspaceViewport}"
+              Height="{Binding ViewportHeight, ElementName=WorkspaceViewport}">
+        <Grid Margin="24,18,24,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="18" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="52" Height="52" CornerRadius="16" Background="{DynamicResource AccentSoftBrush}"
+                            BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
+                        <Grid>
+                            <TextBlock Text="✦" FontSize="28" Foreground="{DynamicResource AccentBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="COSMIC TRANSCRIBER" FontFamily="{StaticResource DisplayFont}"
+                                       FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <Border Background="{DynamicResource AccentSoftBrush}" CornerRadius="9"
+                                    Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="HeaderVersionText" Text="v1.0.27"
+                                           Foreground="{DynamicResource AccentTextBrush}"
+                                           FontWeight="SemiBold" FontSize="11.5"
+                                           AutomationProperties.Name="Application version" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="Long-form OpenAI speech-to-text studio" Style="{StaticResource MutedTextStyle}"
+                                   FontSize="13" Margin="1,2,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="14" Padding="12,7" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="{DynamicResource AccentBrush}" Margin="0,0,8,0" />
+                            <TextBlock x:Name="HeaderStatusText" Text="Ready for audio" FontSize="12" AutomationProperties.LiveSetting="Polite"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                    <Button x:Name="ApiKeyShortcutButton" Content="API key" Click="ApiKeyShortcut_Click"
+                            Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0"
+                            AutomationProperties.Name="Open API key settings"
+                            ToolTip="Show, replace, securely save, forget, or test the API key used by this app" />
+                    <Button x:Name="ThemeToggleButton" Content="☾  Cosmic Night" Click="ThemeToggle_Click"
+                            Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0"
+                            ToolTip="Switch between Cosmic Night and Cosmic Paper" />
+                    <Button x:Name="AboutButton" Content="About" Click="About_Click"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            AutomationProperties.Name="Open About Cosmic Transcriber" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Main workspace -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.15*" MinWidth="410" />
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="0.85*" MinWidth="340" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Queue -->
+                <Border Grid.Column="0" x:Name="QueueCard" Style="{StaticResource CardStyle}" Padding="0" AllowDrop="True">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Margin="20,18,20,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Audio queue" Style="{StaticResource SectionTitleStyle}" />
+                                <TextBlock x:Name="QueueSummaryText" Text="No MP3 files selected"
+                                           Style="{StaticResource MutedTextStyle}" Margin="0,3,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" x:Name="QueueActionPanel" Orientation="Horizontal">
+                                <Button Content="＋ Files" Click="AddFiles_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                                <Button Content="▣ Folder" Click="AddFolder_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                                <Button Content="Paste" Click="PastePaths_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"
+                                        AutomationProperties.Name="Paste copied files or folders" ToolTip="In File Explorer, copy MP3 files or folders, then paste them here (Ctrl+V)" />
+                                <Button Content="↑" Click="MoveItemUp_Click" Style="{StaticResource QuietButtonStyle}"
+                                        AutomationProperties.Name="Move selected file up"
+                                        ToolTip="Move the selected file earlier in merge order" />
+                                <Button Content="↓" Click="MoveItemDown_Click" Style="{StaticResource QuietButtonStyle}"
+                                        AutomationProperties.Name="Move selected file down"
+                                        ToolTip="Move the selected file later in merge order" Margin="0,0,4,0" />
+                                <Button Content="Clear" Click="ClearQueue_Click" Style="{StaticResource QuietButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Grid.Row="1">
+                            <Grid x:Name="DropZoneGrid" Margin="20,0,20,14" Height="92" AllowDrop="True">
+                                <Rectangle x:Name="DropZoneRectangle" Stroke="{DynamicResource BorderBrush}" StrokeThickness="1.4"
+                                           StrokeDashArray="5,5" RadiusX="15" RadiusY="15"
+                                           Fill="{DynamicResource AccentSoftBrush}" />
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                                    <TextBlock x:Name="DropZoneIconText" Text="⇩" FontSize="28" Foreground="{DynamicResource AccentBrush}" Margin="0,0,12,0" />
+                                    <StackPanel>
+                                        <TextBlock x:Name="DropZoneTitleText" Text="Drop MP3 files or folders anywhere in this window" FontWeight="SemiBold" FontSize="14" />
+                                        <TextBlock x:Name="DropZoneHelpText" Text="Or copy them in File Explorer and choose Paste"
+                                                   Style="{StaticResource MutedTextStyle}" Margin="0,3,0,0" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+
+                            <Border x:Name="DragDropWarningBanner" Visibility="Collapsed" Margin="20,-4,20,14"
+                                    Background="{DynamicResource WarningSoftBrush}" BorderBrush="{DynamicResource WarningBrush}"
+                                    BorderThickness="1" CornerRadius="12" Padding="12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Margin="0,0,12,0">
+                                        <TextBlock x:Name="DragDropWarningTitleText" Text="Windows may block drag-and-drop" FontWeight="SemiBold" />
+                                        <TextBlock x:Name="DragDropWarningDetailText"
+                                                   Text="Launch the app normally, not as administrator. You can still copy files or folders in File Explorer and paste them here."
+                                                   TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}" Margin="0,3,0,0" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button x:Name="RestartNormallyButton" Content="Restart normally" Click="RestartNormally_Click"
+                                                Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,0"
+                                                AutomationProperties.Name="Restart Cosmic Transcriber without administrator privileges" />
+                                        <Button Content="Paste" Click="PastePaths_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"
+                                                AutomationProperties.Name="Paste copied files or folders" />
+                                        <Button Content="Help" Click="DragDropHelp_Click" Style="{StaticResource QuietButtonStyle}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <ListView Grid.Row="2" x:Name="FilesListView" ItemsSource="{Binding Files}" AllowDrop="True"
+                                  Margin="12,0,12,0" SelectionMode="Single">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border x:Name="ItemCard" Background="{DynamicResource SurfaceElevatedBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                            CornerRadius="15" Padding="13">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="48" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Width="40" Height="40" CornerRadius="12"
+                                                    Background="{DynamicResource AccentSoftBrush}" VerticalAlignment="Top">
+                                                <TextBlock Text="♫" FontSize="20" Foreground="{DynamicResource AccentBrush}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+
+                                            <Grid Grid.Column="1" Margin="10,0,14,0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" FontSize="14"
+                                                           TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                                                <TextBlock Grid.Row="1" Text="{Binding SourcePath}" Style="{StaticResource MutedTextStyle}"
+                                                           TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Margin="0,2,0,0" />
+                                                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,7">
+                                                    <TextBlock Text="{Binding MetadataText}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" />
+                                                    <TextBlock Text="  •  " Foreground="{DynamicResource TextMutedBrush}" FontSize="11" />
+                                                    <TextBlock Text="{Binding Detail}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" />
+                                                </StackPanel>
+                                                <ProgressBar Grid.Row="3" Value="{Binding Progress}" Maximum="100" />
+                                            </Grid>
+
+                                            <StackPanel Grid.Column="2" HorizontalAlignment="Right">
+                                                <Border CornerRadius="10" BorderThickness="1"
+                                                        Background="Transparent" Padding="8,4"
+                                                        Style="{StaticResource StatusBadgeBorderStyle}">
+                                                    <TextBlock Text="{Binding StatusText}"
+                                                               Style="{StaticResource StatusBadgeTextStyle}" />
+                                                </Border>
+                                                <Button Content="×" Tag="{Binding}" Click="RemoveItem_Click"
+                                                        Style="{StaticResource QuietButtonStyle}" FontSize="18"
+                                                        AutomationProperties.Name="Remove file from queue"
+                                                        HorizontalAlignment="Right" Margin="0,9,0,0" ToolTip="Remove from queue" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}" Value="True">
+                                            <Setter TargetName="ItemCard" Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+                                            <Setter TargetName="ItemCard" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                            <Setter TargetName="ItemCard" Property="BorderThickness" Value="2" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <Grid Grid.Row="3" Margin="20,12,20,18">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Tip: add numbered MP3 parts in order, then enable Merge all files."
+                                       Style="{StaticResource MutedTextStyle}" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Content="Open output folder" Click="OpenOutput_Click"
+                                    Style="{StaticResource QuietButtonStyle}" />
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Settings -->
+                <ScrollViewer x:Name="SettingsViewport" Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              CanContentScroll="False">
+                    <StackPanel>
+                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14" Padding="14,11">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="●" Foreground="{DynamicResource SuccessBrush}" FontSize="11"
+                                           VerticalAlignment="Center" AutomationProperties.Name="Settings autosave enabled" />
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Settings autosave" FontWeight="SemiBold" FontSize="12.5" />
+                                    <TextBlock x:Name="SettingsAutoSaveStatusText"
+                                               Text="Settings loaded · autosave on"
+                                               Foreground="{DynamicResource SuccessBrush}"
+                                               TextWrapping="Wrap" FontSize="11.5" Margin="0,2,0,0"
+                                               AutomationProperties.LiveSetting="Polite" />
+                                    <TextBlock Text="Valid options save after a short pause. The queue, session-only API key, progress, and logs are not settings."
+                                               Style="{StaticResource MutedTextStyle}" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="OutputSettingsCard" Style="{StaticResource CardStyle}" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="Output" Style="{StaticResource SectionTitleStyle}" />
+                                <TextBlock Text="Defaults to the executable's output folder; choose any writable folder."
+                                           Style="{StaticResource MutedTextStyle}" Margin="0,3,0,14" />
+                                <TextBlock Text="Output folder" Style="{StaticResource LabelStyle}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="OutputPathTextBox" MaxLength="2048" VerticalContentAlignment="Center"
+                                             AutomationProperties.Name="Output folder" />
+                                    <Button Grid.Column="2" Content="Browse…" Click="BrowseOutput_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}" />
+                                </Grid>
+                                <WrapPanel Margin="0,12,0,0">
+                                    <CheckBox x:Name="ExportTextCheckBox" Content="TXT" IsChecked="True" Margin="0,0,18,0" />
+                                    <CheckBox x:Name="ExportMarkdownCheckBox" Content="Markdown" IsChecked="True" Margin="0,0,18,0" />
+                                    <CheckBox x:Name="IncludeTimestampsCheckBox" Content="Chunk / speaker timestamps" IsChecked="True" />
+                                </WrapPanel>
+                                <CheckBox x:Name="MergeFilesCheckBox" Content="Merge all queued files into one transcript" Margin="0,8,0,0" />
+                                <TextBlock Text="Combined transcript title" Style="{StaticResource LabelStyle}" Margin="0,10,0,0" />
+                                <TextBox x:Name="CombinedTitleTextBox" Text="Combined Transcript" MaxLength="300"
+                                         AutomationProperties.Name="Combined transcript title" />
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Checkpoint cache enables safe resume after interruption."
+                                               Style="{StaticResource MutedTextStyle}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Content="Clear checkpoints" Click="ClearCheckpoints_Click"
+                                            Style="{StaticResource QuietButtonStyle}" ToolTip="Delete partial transcript checkpoints under the selected output folder" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="ApiKeySettingsCard" Style="{StaticResource CardStyle}" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="API key" Style="{StaticResource SectionTitleStyle}" />
+                                <TextBlock Text="Paste or replace the key used by this app. It is loaded from the secure local vault first, then OPENAI_API_KEY, and is never written to logs."
+                                           Style="{StaticResource MutedTextStyle}" Margin="0,3,0,5" />
+                                <TextBlock Text="Show reveals only the key currently loaded on this PC; OpenAI does not re-display a lost full secret after creation."
+                                           Style="{StaticResource MutedTextStyle}" Margin="0,0,0,12" />
+                                <TextBlock Text="OpenAI API key" Style="{StaticResource LabelStyle}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid>
+                                        <PasswordBox x:Name="ApiPasswordBox" MaxLength="512" PasswordChanged="ApiPasswordBox_PasswordChanged"
+                                                     AutomationProperties.Name="OpenAI API key" />
+                                        <TextBox x:Name="ApiKeyRevealTextBox" MaxLength="512" Visibility="Collapsed" TextChanged="ApiKeyRevealTextBox_TextChanged"
+                                                 AutomationProperties.Name="Visible OpenAI API key" />
+                                    </Grid>
+                                    <Button Grid.Column="2" x:Name="RevealKeyButton" Content="Show" Click="RevealKey_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}" MinWidth="70" />
+                                </Grid>
+                                <Grid Margin="0,9,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="Source: " Style="{StaticResource MutedTextStyle}" />
+                                        <TextBlock x:Name="ApiKeySourceText" Text="Not configured" Foreground="{DynamicResource AccentTextBrush}" FontSize="12" />
+                                    </StackPanel>
+                                    <WrapPanel Grid.Row="1" Margin="0,4,0,0">
+                                        <Button Content="Use OPENAI_API_KEY" Click="UseEnvironmentKey_Click" Style="{StaticResource QuietButtonStyle}" />
+                                        <Button Content="Delete saved copy" Click="ForgetSavedKey_Click" Style="{StaticResource QuietButtonStyle}" />
+                                    </WrapPanel>
+                                </Grid>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox x:Name="RememberKeyCheckBox" Content="Remember securely for this Windows user" />
+                                    <Button Grid.Column="1" x:Name="TestKeyButton" Content="Test connection" Click="TestKey_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="TranscriptionSettingsCard" Style="{StaticResource CardStyle}" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="OpenAI transcription" Style="{StaticResource SectionTitleStyle}" />
+                                <TextBlock Text="Choose quality, language guidance, terminology, and safe upload size."
+                                           Style="{StaticResource MutedTextStyle}" Margin="0,3,0,14" />
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="150" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Model" Style="{StaticResource LabelStyle}" />
+                                        <ComboBox x:Name="ModelComboBox" SelectionChanged="ModelComboBox_SelectionChanged"
+                                                  PreviewMouseWheel="ComboBox_PreviewMouseWheel"
+                                                  AutomationProperties.Name="OpenAI transcription model"
+                                                  ToolTip="Use gpt-transcribe for best general file transcription, or gpt-4o-transcribe-diarize when you need speaker labels. Realtime-only models are not shown in this completed-file workflow.">
+                                            <ComboBoxItem Content="gpt-transcribe" IsSelected="True"
+                                                          ToolTip="Recommended high-accuracy model for completed audio files." />
+                                            <ComboBoxItem Content="gpt-4o-transcribe-diarize"
+                                                          ToolTip="Speaker-labelled transcription. Returns Speaker A/B turns with segment timestamps; prompt and keyword hints are unavailable." />
+                                            <ComboBoxItem Content="gpt-4o-transcribe"
+                                                          ToolTip="Alternative accuracy-oriented file transcription model." />
+                                            <ComboBoxItem Content="gpt-4o-mini-transcribe"
+                                                          ToolTip="Alternative lower-cost file transcription model." />
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Language hint(s) (optional)" Style="{StaticResource LabelStyle}" />
+                                        <TextBox x:Name="LanguageTextBox" MaxLength="128"
+                                                 AutomationProperties.Name="Expected transcription languages"
+                                                 ToolTip="gpt-transcribe accepts comma-separated ISO 639-1 hints (en, zh), selected ISO 639-3 hints (eng, cmn, yue), and zh-cn/zh-tw/zh-hk. Other file models, including speaker-labelled mode, accept one two-letter ISO 639-1 hint. Leave blank for automatic detection." />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock x:Name="ModelCapabilityText"
+                                           Text="Default: gpt-transcribe for accurate file transcription. Choose gpt-4o-transcribe-diarize for Speaker A/B labels and speaker-turn timestamps."
+                                           TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}" Margin="0,6,0,0" />
+
+                                <StackPanel Margin="0,12,0,0">
+                                    <TextBlock Text="Keyword hints (optional, one literal term per line)" Style="{StaticResource LabelStyle}" />
+                                    <TextBox x:Name="KeywordsTextBox" Height="76" MaxLength="8000" AcceptsReturn="True"
+                                             VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"
+                                             AutomationProperties.Name="Expected literal transcription keywords"
+                                             ToolTip="For gpt-transcribe only. Enter literal names or technical terms, one per line. Do not use angle brackets. Relevant hints can improve spelling but too many may cause unspoken terms to appear." />
+                                    <TextBlock x:Name="KeywordSupportText"
+                                               Text="Structured keyword hints are sent only with gpt-transcribe."
+                                               TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}" Margin="0,5,0,0" />
+                                </StackPanel>
+
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="135" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Prompt / recording context" Style="{StaticResource LabelStyle}" />
+                                            <Button Grid.Column="1" x:Name="PromptResetButton" Content="Reset" Click="PromptReset_Click"
+                                                    Style="{StaticResource QuietButtonStyle}" Margin="0,-8,0,0" />
+                                        </Grid>
+                                        <TextBox x:Name="PromptTextBox" Height="96" MaxLength="12000" AcceptsReturn="True"
+                                                 VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"
+                                                 AutomationProperties.Name="General transcription context"
+                                                 ToolTip="Describe the topic, setting, style, or transcription instructions. Put literal names and specialist terms in Keyword hints above." />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Estimated price / min (USD)" Style="{StaticResource LabelStyle}" />
+                                        <TextBox x:Name="PricePerMinuteTextBox" Text="0.0045" MaxLength="64" TextChanged="PricePerMinuteTextBox_TextChanged"
+                                                 AutomationProperties.Name="Estimated price per minute in US dollars" />
+                                        <TextBlock Text="Editable estimate; pricing can change." TextWrapping="Wrap"
+                                                   Style="{StaticResource MutedTextStyle}" Margin="0,5,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="Cost figures are estimates only. Verify the current OpenAI pricing page before a large run."
+                                           TextWrapping="Wrap" Style="{StaticResource MutedTextStyle}" Margin="0,8,0,0" />
+
+                                <Grid Margin="0,13,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="18" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Maximum upload size" Style="{StaticResource LabelStyle}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" x:Name="ChunkSizeText" Text="20 MB"
+                                                       Foreground="{DynamicResource AccentTextBrush}" FontWeight="SemiBold" />
+                                        </Grid>
+                                        <Slider x:Name="ChunkSizeSlider" Minimum="5" Maximum="24" Value="20"
+                                                TickFrequency="1" IsSnapToTickEnabled="True"
+                                                AutomationProperties.Name="Maximum upload chunk size in megabytes"
+                                                ValueChanged="ChunkSizeSlider_ValueChanged" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Maximum chunk duration" Style="{StaticResource LabelStyle}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" x:Name="ChunkDurationText" Text="5 min"
+                                                       Foreground="{DynamicResource AccentTextBrush}" FontWeight="SemiBold" />
+                                        </Grid>
+                                        <Slider x:Name="ChunkDurationSlider" Minimum="3" Maximum="5" Value="5"
+                                                TickFrequency="1" IsSnapToTickEnabled="True"
+                                                AutomationProperties.Name="Maximum audio chunk duration in minutes"
+                                                ToolTip="Also split low-bitrate files by duration to reduce transcript truncation risk."
+                                                ValueChanged="ChunkDurationSlider_ValueChanged" />
+                                    </StackPanel>
+                                </Grid>
+                                <WrapPanel Margin="0,7,0,0">
+                                    <CheckBox x:Name="PreviousContextCheckBox" Content="Carry previous chunk context" IsChecked="True" Margin="0,0,18,0" />
+                                    <CheckBox x:Name="ContinueOnErrorCheckBox" Content="Continue after a failed file" IsChecked="True" />
+                                </WrapPanel>
+                                <Grid Margin="0,9,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Automatic retries (cost risk)" Style="{StaticResource LabelStyle}" VerticalAlignment="Center" Margin="0"
+                                               ToolTip="A lost response can make a retry repeat a billable transcription request. Zero is the safest default." />
+                                    <ComboBox Grid.Column="2" x:Name="RetryComboBox" SelectedIndex="0"
+                                              PreviewMouseWheel="ComboBox_PreviewMouseWheel"
+                                              AutomationProperties.Name="Automatic retry count; retries can repeat billable work after an ambiguous network failure"
+                                              ToolTip="A lost response can make a retry repeat a billable transcription request. Zero is the safest default.">
+                                        <ComboBoxItem Content="0" />
+                                        <ComboBoxItem Content="1" />
+                                        <ComboBoxItem Content="2" />
+                                        <ComboBoxItem Content="3" />
+                                        <ComboBoxItem Content="4" />
+                                        <ComboBoxItem Content="5" />
+                                    </ComboBox>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Run overview" Style="{StaticResource SectionTitleStyle}" />
+                                        <TextBlock x:Name="EstimateText" Text="Add MP3s to calculate duration and cost"
+                                                   Style="{StaticResource MutedTextStyle}" Margin="0,3,0,0" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" CornerRadius="12" Background="{DynamicResource AccentSoftBrush}" Padding="10,6">
+                                        <TextBlock x:Name="CostBadgeText" Text="US$0.00 est." Foreground="{DynamicResource AccentTextBrush}"
+                                                   FontWeight="Bold" FontSize="12" />
+                                    </Border>
+                                </Grid>
+                                <ProgressBar x:Name="OverallProgressBar" Margin="0,14,0,0" Value="0" Maximum="100" Height="10" AutomationProperties.Name="Overall transcription progress" />
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="CurrentActionText" Text="Waiting" AutomationProperties.LiveSetting="Polite" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
+                                    <TextBlock Grid.Column="1" x:Name="ProgressPercentText" Text="0%" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" />
+                                </Grid>
+                                <Expander Header="Activity log" Margin="0,11,0,0">
+                                    <StackPanel>
+                                        <TextBox x:Name="LogTextBox" Height="150" IsReadOnly="True" AcceptsReturn="True"
+                                                 TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontFamily="Cascadia Mono, Consolas"
+                                                 FontSize="11" />
+                                        <Button x:Name="OpenDiagnosticLogsButton" Content="Open diagnostic logs" Click="OpenDiagnosticLogs_Click"
+                                                Style="{StaticResource QuietButtonStyle}" HorizontalAlignment="Left"
+                                                AutomationProperties.Name="Open diagnostic logs folder" Margin="0,8,0,0" />
+                                    </StackPanel>
+                                </Expander>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Action bar -->
+            <Border Grid.Row="4" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="18" Padding="15,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid VerticalAlignment="Center" Margin="0,0,18,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Name="FooterTitleText" Text="Ready to transcribe" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="1" x:Name="FooterDetailText" Text="Select one or more MP3 files. Completed chunks are checkpointed automatically." AutomationProperties.LiveSetting="Polite"
+                                   Style="{StaticResource MutedTextStyle}" Margin="0,2,0,0" />
+                        <ProgressBar Grid.Row="2" x:Name="FooterProgressBar" Height="9" Margin="0,9,0,0"
+                                     Minimum="0" Maximum="100"
+                                     Value="{Binding ElementName=OverallProgressBar, Path=Value}"
+                                     IsIndeterminate="{Binding ElementName=OverallProgressBar, Path=IsIndeterminate}"
+                                     AutomationProperties.Name="Always-visible transcription progress" />
+                        <Grid Grid.Row="3" Margin="0,5,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding ElementName=CurrentActionText, Path=Text}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11.5" />
+                            <TextBlock Grid.Column="1" Text="{Binding ElementName=ProgressPercentText, Path=Text}"
+                                       Foreground="{DynamicResource AccentTextBrush}" FontWeight="SemiBold" FontSize="11.5" />
+                        </Grid>
+                    </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button x:Name="CancelButton" Content="Cancel" Click="Cancel_Click"
+                                Style="{StaticResource DangerButtonStyle}" IsEnabled="False" Margin="0,0,10,0" MinWidth="90" />
+                        <Button x:Name="StartButton" Content="✦  Start transcription" Click="Start_Click"
+                                Style="{StaticResource PrimaryButtonStyle}" MinWidth="205" FontSize="15"
+                                AutomationProperties.Name="Start transcription" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+        </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>
+
+

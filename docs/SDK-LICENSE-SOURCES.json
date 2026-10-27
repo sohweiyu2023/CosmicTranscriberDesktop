@@ -1,0 +1,21 @@
+{
+  "documents": [
+    {
+      "file": "licenses/Microsoft-Windows-SDK.txt",
+      "url": "https://raw.githubusercontent.com/microsoft/win32metadata/bd964b20fd0996865afd827ba0d6e712f69712a6/licenses/sdk_license.txt",
+      "bytes": 28549,
+      "sha256": "2789763155a8ab04143396c7d1af037d73782378c256bed308aad7a25d6850a2",
+      "agreementAccepted": false
+    },
+    {
+      "file": "licenses/Microsoft-Windows-SDK-original.rtf",
+      "url": "https://download.microsoft.com/download/0/F/F/0FF2B061-47DD-4F55-89B6-FD1D8C44F14D/sdk_license.rtf",
+      "bytes": 246945,
+      "sha256": "dd07eb178e00c6bba4148457fc00ff77cd4887eb521d504186fe59c9ec8bbe62",
+      "agreementAccepted": false
+    }
+  ],
+  "redist": "https://learn.microsoft.com/en-us/legal/windows-sdk/redist#microsoftwindowssdknetref",
+  "status": "SOURCE_ONLY_DRAFT_DISTRIBUTION_HELD",
+  "agreementAccepted": false
+}

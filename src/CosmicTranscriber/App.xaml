@@ -1,0 +1,11 @@
+<Application x:Class="CosmicTranscriber.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Startup="App_Startup"
+             Exit="App_Exit"
+             ShutdownMode="OnMainWindowClose"
+             ThemeMode="Dark">
+    <Application.Resources>
+        <ResourceDictionary />
+    </Application.Resources>
+</Application>

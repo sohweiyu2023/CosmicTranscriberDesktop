@@ -1,0 +1,29 @@
+PASS 01/28: remove diarization model
+PASS 02/28: remove file-upload eligibility
+PASS 03/28: replace diarized response format
+PASS 04/28: remove VAD chunking
+PASS 05/28: allow unsupported prompt
+PASS 06/28: send keywords to diarization
+PASS 07/28: remove speaker property parser
+PASS 08/28: remove timestamp validation
+PASS 09/28: disable duration ceiling
+PASS 10/28: restore diarization preroll
+PASS 11/28: remove speaker checkpoint hash
+PASS 12/28: remove checkpoint size guard
+PASS 13/28: remove Part label scoping
+PASS 14/28: remove diarized text export
+PASS 15/28: remove diarization UI option
+PASS 16/28: enable unsupported keyword box
+PASS 17/28: disable duration safety control
+PASS 18/28: replace default model
+PASS 19/28: remove autosave delay
+PASS 20/28: register autosave before startup complete
+PASS 21/28: remove output path autosave
+PASS 22/28: remove autosave timer restart
+PASS 23/28: make invalid language block all saves
+PASS 24/28: remove invalid price isolation
+PASS 25/28: remove autosave status control
+PASS 26/28: put API key in ordinary settings
+PASS 27/28: remove durable settings publication
+PASS 28/28: stale version
+ALL 28 RELEASE MUTATIONS DETECTED

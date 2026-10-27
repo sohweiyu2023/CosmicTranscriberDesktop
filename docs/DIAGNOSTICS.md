@@ -1,0 +1,19 @@
+# Local diagnostic behavior
+
+Build with BUILD.cmd, then use RUN-DIAGNOSTIC.cmd to diagnose those exact existing bytes. The compiled launcher does not rebuild. It remains alive until the child exits; ordinary interactive use has no automatic timeout. Keep its terminal open while using the app. A missing exit event means the result is unknown, not a proven application crash.
+
+The launcher records executable path, assembly SHA-256, requested framework versions, child PID, native-window observation, exit code and a shared session ID. It drains and discards output; only fixed failure classifications and character counts are retained. These classifications identify observed output, not a proven root cause. The app records actual runtime, version/MVID/hash, lifecycle, window/DPI state, Tab direction and focused control identifier/type. It never records printable keystrokes or control contents. Exceptions contain bounded type/HResult, native/socket/status codes and method names; exception messages/data/paths are omitted. Untrusted HTTP request IDs are hashed. Activity prose remains in the current UI and is omitted from diagnostic files.
+
+App JSONL files use CosmicDiag-v1 and have a 2 MiB cap, with retention of 20 closed owned files. Launcher files use CosmicLaunch-v1 and have a 64 KiB cap, retaining 20 separately. Locked active files are preserved and may temporarily exceed retention. Legacy logs and unknown-prefix files are never deleted. App logs prefer the executable's logs directory, with local-app-data/temp fallbacks; launcher logs are alongside the executable. The launcher's executable-path field can contain a local Windows account name; review records before sharing. New content minimization does not rewrite or clear historical logs.
+
+For automated isolated QA only, DiagnosticLauncher accepts --qa-timeout-seconds 1..3600. Timeout cleanup targets only the process it started and confirms termination for at most two seconds; uncertainty is recorded explicitly. This option is absent from the normal command. Never treat planned cleanup as an app crash. Logging write failures degrade diagnostics without terminating a running child.
+
+No tool changes antivirus settings or restores quarantined files. A security warning requires stopping that test and preserving the exact evidence. Successful startup on one runtime/build does not clear historical binaries or authorize distribution.
+
+Settings focus correction also records UI_VISIBILITY fixed stages and bounded numeric rectangles/offsets for both settings/workspace viewports. This confirms handler delivery and queued scrolling when the app can run; local per-viewport fractions alone do not prove visibility through every ancestor. No control content is recorded. See FOCUS-VISIBILITY-REPAIR.md for test limits and current native status.
+## Correlated Theme transitions
+
+THEME events now record requested, applied or failed with a per-operation GUID, normalized night/paper values, prior palette, bounded merged-dictionary count/owned-palette index and elapsed milliseconds. A failed transition records exception type/HRESULT without its message or any file/user content, then the app preserves its existing exception handling. Unknown names/stages and invalid/nonfinite metadata are omitted or mapped to other. This makes a saved label versus stale live-palette diagnosis possible without adding verbose control text or profile data.
+
+Existing session/sequence/process/build/runtime/lifecycle/window metadata and bounded log retention remain unchanged. No key, document, audio, transcript, arbitrary exception message or path is added. Tests separately verify real App call correlation in an offscreen logical Window, actual logger redaction/formatting, and the existing palette behavior; no synthetic test invokes a real provider or user profile.
+

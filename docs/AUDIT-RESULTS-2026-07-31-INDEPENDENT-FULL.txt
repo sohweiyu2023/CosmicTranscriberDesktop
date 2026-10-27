@@ -1,0 +1,31 @@
+Cosmic Transcriber 1.0.26 — Independent Audit Results
+Audit date: 2026-07-31
+
+STATIC RELEASE VERIFIER: PASS
+Version: 1.0.26
+C# files: 28
+XAML files: 7
+Unique XAML handlers: 39
+XAML event bindings: 44
+Resolved resource references: 52
+
+ADVERSARIAL MUTATION SUITE: PASS
+Detected: 44 / 44
+Concurrency: isolated temporary copies, bounded at 4 workers for this run
+
+MEDIA SMOKE TEST: PASS
+Profiles: deterministic CBR and VBR
+Frame-copied chunks decoded successfully: 6 / 6
+
+DOCUMENT REVIEW: PASS
+Comprehensive manual pages rendered and visually inspected: 18 / 18
+Accessibility findings: high 0; medium 0; low 0
+
+PACKAGE HYGIENE: PASS
+No bin, obj, publish, cache, runtime log, protected key, audio, transcript,
+executable, DLL, PDB, or private-key artifact is included.
+
+VERIFICATION BOUNDARY
+This Linux audit environment does not contain the Windows .NET 10 WPF compiler.
+BUILD.cmd and the Windows runtime acceptance checklist remain mandatory before
+binary distribution. No live paid OpenAI transcription request was performed.

@@ -1,0 +1,53 @@
+PASS 01/52: remove diarization model
+PASS 04/52: remove VAD chunking
+PASS 03/52: replace diarized response format
+PASS 02/52: remove file-upload eligibility
+PASS 05/52: allow unsupported prompt
+PASS 06/52: send keywords to diarization
+PASS 07/52: remove speaker property parser
+PASS 08/52: remove timestamp validation
+PASS 09/52: disable duration ceiling
+PASS 12/52: remove checkpoint size guard
+PASS 10/52: restore diarization preroll
+PASS 11/52: remove speaker checkpoint hash
+PASS 13/52: remove Part label scoping
+PASS 16/52: enable unsupported keyword box
+PASS 15/52: remove diarization UI option
+PASS 14/52: remove diarized text export
+PASS 17/52: disable duration safety control
+PASS 20/52: register autosave before startup complete
+PASS 19/52: remove autosave delay
+PASS 18/52: replace default model
+PASS 21/52: remove output path autosave
+PASS 22/52: remove autosave timer restart
+PASS 23/52: make invalid language block all saves
+PASS 24/52: remove invalid price isolation
+PASS 25/52: remove autosave status control
+PASS 26/52: put API key in ordinary settings
+PASS 27/52: remove durable settings publication
+PASS 28/52: stale version
+PASS 29/52: remove Start_Click diarization local
+PASS 30/52: launch portable app during publish
+PASS 31/52: remove runtime-log ignore
+PASS 32/52: omit gitignore from generated inventory
+PASS 33/52: restore transparent ComboBox popup
+PASS 34/52: remove model wheel guard
+PASS 35/52: disable closed ComboBox wheel suppression
+PASS 36/52: remove client request identifier
+PASS 37/52: remove server request identifier logging
+PASS 38/52: remove authenticated system proxy support
+PASS 39/52: remove regional Chinese language support
+PASS 40/52: remove singular ISO-639-1 enforcement
+PASS 41/52: remove request elapsed diagnostics
+PASS 42/52: discard server request ID after response headers
+PASS 44/52: remove connection-test timeout classification
+PASS 43/52: remove inner network exception chain
+PASS 45/52: restore animated ComboBox popup
+PASS 46/52: remove selected-value foreground binding
+PASS 47/52: remove dropdown-item foreground binding
+PASS 48/52: remove required ComboBox popup part
+PASS 49/52: restore misleading disabled realtime option
+PASS 50/52: remove stale model-setting sanitization
+PASS 51/52: weaken Cosmic Paper control-accent contrast
+PASS 52/52: trap wheel scrolling on a closed selector
+ALL 52 RELEASE MUTATIONS DETECTED

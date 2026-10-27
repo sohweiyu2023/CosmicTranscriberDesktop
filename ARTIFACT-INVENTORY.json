@@ -1,0 +1,702 @@
+[
+  {
+    "path": ".gitattributes",
+    "sha256": "dd8ef03c7fdb90af39b578aa10a729e6bc3a48c8ddd17906e5f23916126acca8",
+    "bytes": 87
+  },
+  {
+    "path": ".gitignore",
+    "sha256": "da0f05cbb0db9e7b8b307b60c89ffab32193fad91c3daf8e502368c40cece0bc",
+    "bytes": 442
+  },
+  {
+    "path": "AUDIT-REPORT-1.0.22.md",
+    "sha256": "57cfb174c0892e8efd9859e5610913692062127c922e7eecf65cd2995fc62892",
+    "bytes": 3445
+  },
+  {
+    "path": "AUDIT-REPORT.md",
+    "sha256": "093864470caf1afcb671cd25edbf00b451db4e6409c89168a2bce8a0d665d57e",
+    "bytes": 5002
+  },
+  {
+    "path": "BUILD.cmd",
+    "sha256": "0da81f3cc830069df70be4030ca268568a7debf76becee2f7460f701843f1b12",
+    "bytes": 1998
+  },
+  {
+    "path": "CHANGELOG.md",
+    "sha256": "80b184a678aeea3bcf71305e3b7a9f6031970f508877d2279b4f363480d68eb2",
+    "bytes": 11671
+  },
+  {
+    "path": "CODE-AUDIT-2026-07-29-ROUND2.md",
+    "sha256": "efdc422e9a34b91d7b95db1a8878d2f81ead579a132e9d8ea8d7bc8a64447096",
+    "bytes": 2981
+  },
+  {
+    "path": "CODE-AUDIT-2026-07-29-ROUND3.md",
+    "sha256": "ad27a44ef3299076ad082c498ec71112248cfebe4feb9322321e8cbb4de0a919",
+    "bytes": 3827
+  },
+  {
+    "path": "CODE-AUDIT-2026-07-29-UI-DND-COMPLETION.md",
+    "sha256": "d241e9e550d521dde44478ebca9a163d399ffe4beab455c207bb99508c5437a5",
+    "bytes": 4809
+  },
+  {
+    "path": "CODE-AUDIT-2026-07-30-AUTOSAVE-FULL.md",
+    "sha256": "9e9f49c67c98345d6a103eb792319650961243769a04f66b54391c225278d42b",
+    "bytes": 4120
+  },
+  {
+    "path": "CODE-AUDIT-2026-07-30-COMPILE-RELEASE-FULL.md",
+    "sha256": "7b73dc63853dcce6f550b7ceffb2155ba497b8604e0cac504f454b5195a09b5f",
+    "bytes": 2678
+  },
+  {
+    "path": "CODE-AUDIT-2026-07-30-DIARIZATION.md",
+    "sha256": "35e8896b876d6f2aa8821c914ecc9c89bfae9dd85510c08e27e27e7f8bac1268",
+    "bytes": 6206
+  },
+  {
+    "path": "CODE-AUDIT-2026-07-30-DROPDOWN-NETWORK-FULL.md",
+    "sha256": "87df1f2bfa9f908961fe54c12d451e0e06c4a63c5aaeebb45f67a5e5e17b1909",
+    "bytes": 6366
+  },
+  {
+    "path": "CODE-AUDIT-2026-07-31-INDEPENDENT-FULL.md",
+    "sha256": "8f46cd5fbae5a730b6fce4b62490caf4bb6b689081a233b2546d813ef8102c43",
+    "bytes": 6586
+  },
+  {
+    "path": "CODE-AUDIT-2026-08-04-UI-DROPDOWN-FULL.md",
+    "sha256": "093864470caf1afcb671cd25edbf00b451db4e6409c89168a2bce8a0d665d57e",
+    "bytes": 5002
+  },
+  {
+    "path": "CODE-REVIEW-2026-07-28.md",
+    "sha256": "4c0f38f60f3d274df78799de57a55a8f3d6fa7df001269074eb7d568ef2f15be",
+    "bytes": 5343
+  },
+  {
+    "path": "CosmicTranscriber.sln",
+    "sha256": "3e920164dd74914b665ffd3ea1e037075e25f548b53b0ec6f9aab2b6bf262b19",
+    "bytes": 1445
+  },
+  {
+    "path": "DESIGN-NOTES.md",
+    "sha256": "7b216c4f7e7e4f8452056320e2e99a06e80fd72c6e92885fd3244c32e02225b5",
+    "bytes": 4699
+  },
+  {
+    "path": "Directory.Build.props",
+    "sha256": "ceb98ca878fc123220d1b10daa57c575336f73a576ee54cea837dfa21fac81b8",
+    "bytes": 486
+  },
+  {
+    "path": "LICENSE",
+    "sha256": "a58a65454f49c01d25bed44828fe5e678592bbdfe20353c1f7dc7cc90c6cf1d3",
+    "bytes": 1067
+  },
+  {
+    "path": "MODEL-UPDATE-2026-07-29.md",
+    "sha256": "821b277e5a6f56955398017602f1a1d8a1afb59d825d98a91624c4aaf5be7ebf",
+    "bytes": 2584
+  },
+  {
+    "path": "NuGet.Config",
+    "sha256": "aec93b5637ab6d62470979a008990a4a336a287ab83a3f2541849ae735674055",
+    "bytes": 197
+  },
+  {
+    "path": "PUBLISH-WIN-X64.cmd",
+    "sha256": "e1966a57cafb5ae9c97f6aa96499b5ce14c9eec41036688cde70f36518e19142",
+    "bytes": 1947
+  },
+  {
+    "path": "QA-REPORT-1.0.22.md",
+    "sha256": "a14eb350613d095fd2e740f889d5b4533d187943a7591cb9fbb80d4269ebb2df",
+    "bytes": 1670
+  },
+  {
+    "path": "QA-REPORT.md",
+    "sha256": "9cab45a9cc714f7b92a3c97fa6913874be980f68e9db50b8542d9edacae82d5d",
+    "bytes": 1618
+  },
+  {
+    "path": "README.md",
+    "sha256": "02dae9d68832700312d8a85b9372327abc02f77b1028806607cc980dfc1d9970",
+    "bytes": 9888
+  },
+  {
+    "path": "RUN-DIAGNOSTIC.cmd",
+    "sha256": "6dcfabcb24c0b3ad501b70c529df1352fe2addc0007663b3660ad89e374332bd",
+    "bytes": 572
+  },
+  {
+    "path": "RUN.cmd",
+    "sha256": "2bc3c3fcd04a0c91206dbdaac902ccf002c705c0e5b28b030960656f5069efc3",
+    "bytes": 498
+  },
+  {
+    "path": "THIRD-PARTY-NOTICES.md",
+    "sha256": "97619e24b238456c4740ce53b483bd3a6d8f4174aafc7f00545abfe88cc162f2",
+    "bytes": 4671
+  },
+  {
+    "path": "WITHHELD-ASSETS.json",
+    "sha256": "82d9982279a51f32077ab564b2ecf363e9b211d8ff9263f3784031a4e93f0dda",
+    "bytes": 1744
+  },
+  {
+    "path": "docs/AUDIT-RESULTS-2026-07-31-INDEPENDENT-FULL.txt",
+    "sha256": "1f74af7f0e71eaa7f6ff5946609b92576247c85b5c7250e6bb107f35452ef96b",
+    "bytes": 1026
+  },
+  {
+    "path": "docs/AUDIT-RESULTS-2026-08-04-UI-DROPDOWN-FULL.txt",
+    "sha256": "4b659132dce66e89352a7cf75a01d4aad7e93f122076cb983a123bfacb88972f",
+    "bytes": 1368
+  },
+  {
+    "path": "docs/CosmicTranscriber-1.0.27-Comprehensive-Manual-a11y.json",
+    "sha256": "5e98ad51f95db7fc7714fcd595e02fdb3e10c9b51aa8986e0eea5cda22a4c4d6",
+    "bytes": 203
+  },
+  {
+    "path": "docs/DEPENDENCY-REVIEW-2026-10-25.md",
+    "sha256": "dac0a7e32e8429c4b4a797ec4425551032434396ff140cee580dc838fbe1c029",
+    "bytes": 3890
+  },
+  {
+    "path": "docs/DEVELOPER-GUIDE.md",
+    "sha256": "4d7e189358b6d77cb2cd7d876da5e4900ca4fb2c0873de5e24d85e0faeb4982d",
+    "bytes": 16014
+  },
+  {
+    "path": "docs/DIAGNOSTICS.md",
+    "sha256": "7a419baa4c9c5394dad2cb57bb2ea9930e80c37061379fa83efc499238f3d72f",
+    "bytes": 3836
+  },
+  {
+    "path": "docs/FOCUS-VISIBILITY-REPAIR.md",
+    "sha256": "a30d1dd7fa9fd10cf9522a547ac19fb46c68b9957b30184b5a5dc7962ee41a86",
+    "bytes": 2147
+  },
+  {
+    "path": "docs/LICENSING_AUDIT_2026-10-21.md",
+    "sha256": "3b5d5bb6296ffd70eedd243e8930727f616152a4ea32348fc3584de6874b5394",
+    "bytes": 5088
+  },
+  {
+    "path": "docs/MEDIA-SMOKE-REPORT.json",
+    "sha256": "57f481c338e9119980e157fef92b02b33490c83df4b827b237077e5380c21748",
+    "bytes": 4378
+  },
+  {
+    "path": "docs/MICROSOFT-COMPONENT-TERMS-DRAFT.md",
+    "sha256": "d8b23e8ae4f5aff4dd6a8d3fec40ced153e12cb19201fcc00eaeb51bc337e0b1",
+    "bytes": 2719
+  },
+  {
+    "path": "docs/MUTATION-RESULTS-2026-07-30-AUTOSAVE-AUDIT.txt",
+    "sha256": "5095d3a213fe826604849a05eb394befdb04ee1ab6d52e2ef1fe28f61bf02be3",
+    "bytes": 1178
+  },
+  {
+    "path": "docs/MUTATION-RESULTS-2026-07-30-COMPILE-RELEASE-AUDIT.txt",
+    "sha256": "66111db21ed264ee79ddb1bf421c9c8a9f4ebc3a36031fa88d888e02b2c2b8cc",
+    "bytes": 1364
+  },
+  {
+    "path": "docs/MUTATION-RESULTS-2026-07-30-DIARIZATION.txt",
+    "sha256": "7d2b250e10566e45329f1af8f030d5af16ad2174558e7546988bbd5dbf9b6136",
+    "bytes": 783
+  },
+  {
+    "path": "docs/MUTATION-RESULTS-2026-07-30-DROPDOWN-NETWORK-FULL.txt",
+    "sha256": "bfa8ac705fbd9c3bcb8cd7e12bb1b729c431c4c19ece36cfb7fb675fff322170",
+    "bytes": 1760
+  },
+  {
+    "path": "docs/MUTATION-RESULTS-2026-07-31-INDEPENDENT-FULL.txt",
+    "sha256": "389cda287a5cf1ef14502cac99a2f2013dc1af7c30d88619e39fb8eaf8e6cd40",
+    "bytes": 1975
+  },
+  {
+    "path": "docs/MUTATION-RESULTS-2026-08-04-UI-DROPDOWN-FULL.txt",
+    "sha256": "970b1017b4f0009b3d5648b4d49a765971757d823847e0af715fd3ac8b36ad1d",
+    "bytes": 2387
+  },
+  {
+    "path": "docs/RELEASE-CHECKLIST.md",
+    "sha256": "e6a5119be17a470dcda81f99d6815480ca353c06de93dd134571ef306816a7ac",
+    "bytes": 11993
+  },
+  {
+    "path": "docs/SDK-LICENSE-SOURCES.json",
+    "sha256": "c2849071fafda0c7e0360e6806f76f4d300528bc1b732b08fc6aa9bd2f004ed7",
+    "bytes": 899
+  },
+  {
+    "path": "docs/SOURCE-PROVENANCE.md",
+    "sha256": "9e0ad16af025d509729bb3b05dc82cba8d600d009abe4740d000a9283bc8150c",
+    "bytes": 2575
+  },
+  {
+    "path": "docs/THEME-LIVE-UPDATE-FIX.md",
+    "sha256": "75d2003142e3eb2004f206a5a5ee33ad8a6d8fdc7b299b910b65627dfb6002f0",
+    "bytes": 2617
+  },
+  {
+    "path": "docs/TROUBLESHOOTING.md",
+    "sha256": "7281a7f02cdda0f93007c4eb8e546ec35b63e980c8e822ae7e7329433afba379",
+    "bytes": 14057
+  },
+  {
+    "path": "docs/USER-GUIDE.md",
+    "sha256": "e7cbea22c51d307445686c348d0d53118d292ae19ae0dd01c5a7e8ec485497db",
+    "bytes": 13854
+  },
+  {
+    "path": "global.json",
+    "sha256": "409acf6e73b4444e70892cbe88249fb45234c58f4edf5372bedf39def552c277",
+    "bytes": 116
+  },
+  {
+    "path": "licenses/Apache-2.0.txt",
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "bytes": 11358
+  },
+  {
+    "path": "licenses/Microsoft-Windows-SDK-original.rtf",
+    "sha256": "dd07eb178e00c6bba4148457fc00ff77cd4887eb521d504186fe59c9ec8bbe62",
+    "bytes": 246945
+  },
+  {
+    "path": "licenses/Microsoft-Windows-SDK.txt",
+    "sha256": "2789763155a8ab04143396c7d1af037d73782378c256bed308aad7a25d6850a2",
+    "bytes": 28549
+  },
+  {
+    "path": "licenses/NAudio-3.3.0-MIT.txt",
+    "sha256": "e518e168af44d37da3de236e719c986169e47b46b90e37c1355056175744e037",
+    "bytes": 1064
+  },
+  {
+    "path": "licenses/NAudio-MIT.txt",
+    "sha256": "303e01786b271eb464b3f43d18a375f2f17d37bc708a37c2fdf45b289fb5bfaa",
+    "bytes": 1059
+  },
+  {
+    "path": "licenses/System.Numerics.Tensors-10.0.13-MIT.txt",
+    "sha256": "cfc21f5e8bd655ae997eec916138b707b1d290b83272c02a95c9f821b8c87310",
+    "bytes": 1116
+  },
+  {
+    "path": "licenses/System.Numerics.Tensors-10.0.13-THIRD-PARTY-NOTICES.txt",
+    "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21",
+    "bytes": 78041
+  },
+  {
+    "path": "scripts/DiagnosticLauncher/DiagnosticLauncher.csproj",
+    "sha256": "7a062e832acd071c12bfc671a5686eda15b92db82cfd16a7f54b4fba0b9dabe9",
+    "bytes": 620
+  },
+  {
+    "path": "scripts/DiagnosticLauncher/Program.cs",
+    "sha256": "4c3ea7f9d2bc4b710d146f77b7d0364c52b400d11dde900e88258bc0acf5056c",
+    "bytes": 6368
+  },
+  {
+    "path": "scripts/DiagnosticLauncher/packages.lock.json",
+    "sha256": "a4364d81a6de2707d66fbced18fbbc926c882ab96e1d1aebbb17e871285b9d75",
+    "bytes": 66
+  },
+  {
+    "path": "scripts/generate_release_manifests.py",
+    "sha256": "7cddcd00724a6a9fdd3fa3ee742aacaa6dc32a6d1b1c1e204f2b53c7bff90010",
+    "bytes": 4134
+  },
+  {
+    "path": "scripts/media_smoke.py",
+    "sha256": "57a113ddf3720912667291afdb1b031376e1b648f0d3287e01829dfadfebce48",
+    "bytes": 15925
+  },
+  {
+    "path": "scripts/static_verify.py",
+    "sha256": "c84cf98531ad705faed5bb1607bb25a458344e44f0b53d9191f0077860780ba4",
+    "bytes": 35880
+  },
+  {
+    "path": "scripts/test_release_verifier.py",
+    "sha256": "12dbde735f91b994b8128be578813b8502ab7980fe983032079382347da94601",
+    "bytes": 18059
+  },
+  {
+    "path": "scripts/verify_source_export.py",
+    "sha256": "e2b0f5027700d70895962dc8f6d199745ff2ed618e8c8a7bb6758dae1f7e556e",
+    "bytes": 4912
+  },
+  {
+    "path": "src/CosmicTranscriber/AboutWindow.xaml",
+    "sha256": "63e10f712f4b5666c5698df6e1c01ae633c08153285172886d250454acbc3be9",
+    "bytes": 5758
+  },
+  {
+    "path": "src/CosmicTranscriber/AboutWindow.xaml.cs",
+    "sha256": "be1bf0e65f5cc857ae1e19fe4095df9ea5713ac4e86e2e68614e70ebb8fd7a51",
+    "bytes": 2936
+  },
+  {
+    "path": "src/CosmicTranscriber/App.xaml",
+    "sha256": "db28777c080376e8d433911cb01062573ca397b4281ebcd5587e9046cbc3b832",
+    "bytes": 436
+  },
+  {
+    "path": "src/CosmicTranscriber/App.xaml.cs",
+    "sha256": "bc5b036c331aebf322e0ad64d05eeca6247940c170b9cffe670872e8433954cc",
+    "bytes": 6677
+  },
+  {
+    "path": "src/CosmicTranscriber/CompletionWindow.xaml",
+    "sha256": "647075c653e968f8126480767fba26867fdded6e985528bc7a75546a07db99fc",
+    "bytes": 6154
+  },
+  {
+    "path": "src/CosmicTranscriber/CompletionWindow.xaml.cs",
+    "sha256": "f9b135f063f2068f4513748b200a9be744088747fbf31c9e3e576dd4bd69aad7",
+    "bytes": 4124
+  },
+  {
+    "path": "src/CosmicTranscriber/CosmicTranscriber.csproj",
+    "sha256": "520c427a4932aa600ead54f05a9df96cea747d7dfcfffc214e0b0f6de9a87665",
+    "bytes": 1811
+  },
+  {
+    "path": "src/CosmicTranscriber/GlobalUsings.cs",
+    "sha256": "9f764fb146ac594e58bbf676478322b03ed568c427fa4c24c1ac33ad53b32c73",
+    "bytes": 236
+  },
+  {
+    "path": "src/CosmicTranscriber/MainWindow.xaml",
+    "sha256": "a310fd0e726034626249cc7c931ab13d52b5cd37db75e6e89e4e59ef12a4a447",
+    "bytes": 50000
+  },
+  {
+    "path": "src/CosmicTranscriber/MainWindow.xaml.cs",
+    "sha256": "8f37ed2accbad45c6fe1f2a5183c5ef08554e138e309856016b7e4a014971610",
+    "bytes": 98261
+  },
+  {
+    "path": "src/CosmicTranscriber/Models/AppSettings.cs",
+    "sha256": "b69710b8c8029e7d3c5e5b7daf202266f70d45bbb52c70ebf03d860af1844420",
+    "bytes": 1439
+  },
+  {
+    "path": "src/CosmicTranscriber/Models/AudioJobItem.cs",
+    "sha256": "4c4c60e8de1464b6078aa3aab907b3fdbaf50b660ba0b7e5e3a7e5ecd78b5848",
+    "bytes": 1829
+  },
+  {
+    "path": "src/CosmicTranscriber/Models/TranscriptionModelCatalog.cs",
+    "sha256": "688e5736cbe2856f2330aa4457afdcbda99cba804846663cdbeabc0d5e4a715b",
+    "bytes": 2111
+  },
+  {
+    "path": "src/CosmicTranscriber/Models/TranscriptionModels.cs",
+    "sha256": "cff2ec2454ea2479d9b2badbd114b91a202b3210277d21f65bef2eab02e38df1",
+    "bytes": 1660
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/ApiKeyStore.cs",
+    "sha256": "c013ef42ee715ae4e713445d375337b7f68bcdc0f5138700465e44d5a3ccfed7",
+    "bytes": 8501
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/AppSettingsService.cs",
+    "sha256": "8ab42e3b3a1e667309333ec0da6dec227896d8805f0e099a304a4f726d5b97af",
+    "bytes": 9667
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/CheckpointCacheService.cs",
+    "sha256": "8843ff0d3e682ac95d0194fe52c09a5b966917cfe4f4bef84c31ac2db5a21227",
+    "bytes": 13200
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/Mp3AudioUtilities.cs",
+    "sha256": "032f9a06c0e455e33cd491dc91b639a65be3cef4b3a264801f0212f65d78e3b1",
+    "bytes": 10790
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/Mp3Chunker.cs",
+    "sha256": "d9a34aca250bb419f487d41c31f0148cb75fa1ec7de3cae2f489fbd637905cc9",
+    "bytes": 14413
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/Mp3MetadataService.cs",
+    "sha256": "c7b58a1622c8126ba8b4a1f7b016fde9206957c82a646ffafa6f29dbba11297a",
+    "bytes": 208
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/OpenAiTranscriptionClient.cs",
+    "sha256": "f41bca488caee4147198d96908ae363531dfaa03ef86e4adcbcd9540d1a908aa",
+    "bytes": 35399
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/OutputDirectoryService.cs",
+    "sha256": "bedebaf446cde069ed7d75ea61196271c9f45cfd45975eb7b6ac0e2694321b26",
+    "bytes": 1749
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/TranscriptOutputWriter.cs",
+    "sha256": "5ed0d69ad3ca2abf01cacb26f482b83b7e52b5b792fc499218d3e4cb2f5809b7",
+    "bytes": 15201
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/TranscriptionCoordinator.cs",
+    "sha256": "4da37a0d129c40c482b67ec7dd6ec429b82d343a6ad0dca1c7852b44f9e95a91",
+    "bytes": 29055
+  },
+  {
+    "path": "src/CosmicTranscriber/Themes/CosmicNight.xaml",
+    "sha256": "b3f91875e726ee434b304b479222ee8f6b108a53ad8d7e64b858667304b18f45",
+    "bytes": 3281
+  },
+  {
+    "path": "src/CosmicTranscriber/Themes/CosmicPaper.xaml",
+    "sha256": "20523728befc7e31216e33295cbde740ea7b89f3c5fc471d59344eb9d888b1c6",
+    "bytes": 3285
+  },
+  {
+    "path": "src/CosmicTranscriber/Themes/SharedStyles.xaml",
+    "sha256": "df63103d3710a4d4a26ee85b0a3fbcc22c87068f2e08d3a99eef5d27b73a1406",
+    "bytes": 23618
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/AppVersion.cs",
+    "sha256": "ea9db9ddb595b134d5ef6242fb7ea5991bed8404c99bb6b452f96d5966018654",
+    "bytes": 1017
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/BoundedFileReader.cs",
+    "sha256": "88a816277029dc8becf679103144450c3b54353fc42a590f98a634a3b3723bd5",
+    "bytes": 2064
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/DiagnosticLogWriter.cs",
+    "sha256": "e0a4d345cc403e5fc27182641476fe5a904fe2f8a04918ba05b5855fa48fc9f5",
+    "bytes": 3736
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/FocusViewportTrace.cs",
+    "sha256": "e274278f1329360d6c5da09b93b04099a5f3d19c88d0059471beaf3e68d623ce",
+    "bytes": 1045
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/FocusViewportVisibility.cs",
+    "sha256": "40fdbddfc9a0cda3550605b109c8b10f8f8cb5951a370b919f2ac75c81c5d4c8",
+    "bytes": 975
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/FocusedViewportRevealer.cs",
+    "sha256": "8ae95fe063665eb17e67f4758236860d36e1ec93bcba1891a0126acfbcc7a14c",
+    "bytes": 16142
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/Formatters.cs",
+    "sha256": "d90e885d0605e6f07dfea21c26937ac02efdbb6f4ecf63a77395cbfcfb85405d",
+    "bytes": 2730
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/InputValidation.cs",
+    "sha256": "2317391d7fb22bd0dd9a1935d7a2b0aa3e369611698f792e39cd3344fafe61fe",
+    "bytes": 7935
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/NaturalStringComparer.cs",
+    "sha256": "058294d2121633b8afd626a43a833ed03fd1908deb8a1f0845ba414d7aca8767",
+    "bytes": 2704
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/ObservableObject.cs",
+    "sha256": "e275c764df707acc4d51c35e54efb858c75bf8f99e11381e122596cf062fdd41",
+    "bytes": 723
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/RunPresentation.cs",
+    "sha256": "a022f06d8f90880ff51d6ae87737e81548cf658190bc1b8484f0414791e51512",
+    "bytes": 1208
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/SafeFileSystem.cs",
+    "sha256": "b7d73c5e024371b3c8d31e1de5a73c27005e02e0c3ba861a60f394a34dd16e20",
+    "bytes": 11418
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/StartupDiagnostics.cs",
+    "sha256": "155793fe54da3df971eaa95ae23b7a5f2b2baf61ec88927fbb47e3138aec2e6d",
+    "bytes": 9222
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/WindowsSecurity.cs",
+    "sha256": "2e8b509d49007852398ca2860e9343070648d8cbd7b019c4740550fe277b3cf2",
+    "bytes": 11590
+  },
+  {
+    "path": "src/CosmicTranscriber/app.manifest",
+    "sha256": "6fd497b562c7c9d151ddcbfd00f575c6ac949216f0d6210857e973bfaefb91a0",
+    "bytes": 1085
+  },
+  {
+    "path": "src/CosmicTranscriber/packages.lock.json",
+    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
+    "bytes": 1945
+  },
+  {
+    "path": "tests/DesktopRegression/DesktopRegression.csproj",
+    "sha256": "80399a79becd13828bb15ae7267e3eb8bc75ba3e81ab98db1ae42a15263e1116",
+    "bytes": 891
+  },
+  {
+    "path": "tests/DesktopRegression/Program.cs",
+    "sha256": "e2a9ea246b5800da894b4e11d0ec37c5919d655ecc5ea1a5cffa34da8b5ab836",
+    "bytes": 10002
+  },
+  {
+    "path": "tests/DesktopRegression/README.md",
+    "sha256": "92ada3652e149c1221f82e35ebf8eec8ea5867b6cb5d3663618459a3223d1681",
+    "bytes": 1796
+  },
+  {
+    "path": "tests/DesktopRegression/packages.lock.json",
+    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
+    "bytes": 1945
+  },
+  {
+    "path": "tests/DiagnosticLaunchFixture/DiagnosticLaunchFixture.csproj",
+    "sha256": "c212c16fb58c886a0320b61f4d2f9afdeb854950222b54e5063af36f1d5be394",
+    "bytes": 846
+  },
+  {
+    "path": "tests/DiagnosticLaunchFixture/Program.cs",
+    "sha256": "b5912f884a7e0f3e13a182e0925137a3740612966d736faed16c232742b35d48",
+    "bytes": 489
+  },
+  {
+    "path": "tests/DiagnosticLaunchFixture/packages.lock.json",
+    "sha256": "a4364d81a6de2707d66fbced18fbbc926c882ab96e1d1aebbb17e871285b9d75",
+    "bytes": 66
+  },
+  {
+    "path": "tests/DiagnosticsRegression/DiagnosticsRegression.csproj",
+    "sha256": "692a5986b169cff67f0c0b2c67637f4c42aa0072dc1a2066e8903223e4f945bc",
+    "bytes": 969
+  },
+  {
+    "path": "tests/DiagnosticsRegression/Program.cs",
+    "sha256": "cd7156d36b24c3253f3d2651cb32cc37842f5cd0dfc01a2cceaf99c82547840a",
+    "bytes": 9490
+  },
+  {
+    "path": "tests/DiagnosticsRegression/packages.lock.json",
+    "sha256": "a4364d81a6de2707d66fbced18fbbc926c882ab96e1d1aebbb17e871285b9d75",
+    "bytes": 66
+  },
+  {
+    "path": "tests/FocusViewportRegression/FocusViewportRegression.csproj",
+    "sha256": "011c1b5178217404f8d2450248db6a894c3cbd586e9d33c8c5fec21a6caf0129",
+    "bytes": 366
+  },
+  {
+    "path": "tests/FocusViewportRegression/Program.cs",
+    "sha256": "353609eda4237f67552c651affa82762b4ea262d4aa59b6156bbef0808d0846d",
+    "bytes": 1116
+  },
+  {
+    "path": "tests/FocusViewportRegression/packages.lock.json",
+    "sha256": "a4364d81a6de2707d66fbced18fbbc926c882ab96e1d1aebbb17e871285b9d75",
+    "bytes": 66
+  },
+  {
+    "path": "tests/LayoutRegression/LayoutModels.cs",
+    "sha256": "444979a7b7e0d38a23d6b3511420bcdd01459541812c928922f8e3cb1dd1047b",
+    "bytes": 223
+  },
+  {
+    "path": "tests/LayoutRegression/LayoutRegression.csproj",
+    "sha256": "2a7515e357410b76ca63bb2b3c00ec5d9450e6a990e6e2477ff62e367fa68c33",
+    "bytes": 300
+  },
+  {
+    "path": "tests/LayoutRegression/Program.cs",
+    "sha256": "75718e73c195793258fdf690254c5ce5975a8b894865f457cce737999efee4e4",
+    "bytes": 20926
+  },
+  {
+    "path": "tests/LayoutRegression/README.md",
+    "sha256": "5787985e5e70c7a0ee9721ebf9bcb44793c4f72d9b4fcb06060f2ba335b6052a",
+    "bytes": 6272
+  },
+  {
+    "path": "tests/LayoutRegression/packages.lock.json",
+    "sha256": "6d68a9226aeef5493d7459517549d4973f96e781be1d4a31dc29963e13f505fc",
+    "bytes": 84
+  },
+  {
+    "path": "tests/NestedFocusRegression/NestedFocusRegression.csproj",
+    "sha256": "0eed121ba125969e0e725fc8388bb8afab047eb22cfd659b503114e98b250f6b",
+    "bytes": 851
+  },
+  {
+    "path": "tests/NestedFocusRegression/Program.cs",
+    "sha256": "a7d4c2a61ea0edec2fc56a1c5234a6e47815d49c47d770b4b286ced8673118a4",
+    "bytes": 15381
+  },
+  {
+    "path": "tests/NestedFocusRegression/packages.lock.json",
+    "sha256": "6d68a9226aeef5493d7459517549d4973f96e781be1d4a31dc29963e13f505fc",
+    "bytes": 84
+  },
+  {
+    "path": "tests/NormalSettingsRegression/NormalSettingsRegression.csproj",
+    "sha256": "80399a79becd13828bb15ae7267e3eb8bc75ba3e81ab98db1ae42a15263e1116",
+    "bytes": 891
+  },
+  {
+    "path": "tests/NormalSettingsRegression/Program.cs",
+    "sha256": "0c780491015e27a0e66ab4554ae9fc1c35ec5fc15a6b4c56631a8eccc43e0d3d",
+    "bytes": 3215
+  },
+  {
+    "path": "tests/NormalSettingsRegression/packages.lock.json",
+    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
+    "bytes": 1945
+  },
+  {
+    "path": "tests/ThemeRegression/Program.cs",
+    "sha256": "1715e16cb3086e8a20a5616803126039aabbf34a3d09862e5f5094f484a75ed9",
+    "bytes": 6150
+  },
+  {
+    "path": "tests/ThemeRegression/Stubs.cs",
+    "sha256": "33e736089c0321e1fd2c47ebcba4869968ea24a10651cfdea60cecd241521e0e",
+    "bytes": 1427
+  },
+  {
+    "path": "tests/ThemeRegression/ThemeRegression.csproj",
+    "sha256": "5a9dffd85e862d3bda75c80ec79209fb7191612d7ffe898a6699015731f9e48d",
+    "bytes": 812
+  },
+  {
+    "path": "tests/ThemeRegression/packages.lock.json",
+    "sha256": "6d68a9226aeef5493d7459517549d4973f96e781be1d4a31dc29963e13f505fc",
+    "bytes": 84
+  },
+  {
+    "path": "tests/test_source_export.py",
+    "sha256": "6412f32824d55f4e1668eb0b20b524a653988ce316c79a6316173c1f68aa5cd4",
+    "bytes": 4072
+  }
+]

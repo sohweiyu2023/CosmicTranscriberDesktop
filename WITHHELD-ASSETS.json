@@ -1,0 +1,39 @@
+{
+  "scope": "public_source_only",
+  "files": [
+    {
+      "path": "src/CosmicTranscriber/Assets/CosmicTranscriber.ico",
+      "sha256": "fb10482fb5e1860f8553a9ca77e6b43e39c311680cd771f67ee76a7e3fd56a0f",
+      "bytes": 65859,
+      "status": "withheld_pending_asset_or_embedded_image_rights_evidence"
+    },
+    {
+      "path": "src/CosmicTranscriber/Assets/CosmicTranscriber.png",
+      "sha256": "d26e36b0d6f9b0d3f3f3c6c1f937097815edbfb0161a4399567f4bec98afa37f",
+      "bytes": 58685,
+      "status": "withheld_pending_asset_or_embedded_image_rights_evidence"
+    },
+    {
+      "path": "docs/UI_PREVIEW-1.0.27.png",
+      "sha256": "c6b7aaa586ff0305c66039039988ebe867b5af28cf160f9a1f4419d716c0b57d",
+      "bytes": 643525,
+      "status": "withheld_pending_asset_or_embedded_image_rights_evidence"
+    },
+    {
+      "path": "docs/CosmicTranscriber-1.0.27-Comprehensive-Manual.docx",
+      "sha256": "348d0b112f463a31981bf1f4c94b974ebec9c4a574e55c240511f7c1d99a82c4",
+      "bytes": 696306,
+      "status": "withheld_pending_asset_or_embedded_image_rights_evidence"
+    },
+    {
+      "path": "docs/UI_PREVIEW-1.0.27.html",
+      "sha256": "5ce6dc4dd74b48a064a5f13f02685d19f42f25684b91466d461e61e065fb3510",
+      "bytes": 11679,
+      "status": "withheld_specific_media_filename_and_local_path_provenance_not_established_synthetic"
+    }
+  ],
+  "runtimeComponents": "No EXE/DLL/PDB/runtime/SDK/package-cache binaries are committed. Restore project dependencies from their official packages under their own applicable terms.",
+  "installedAppChanged": false,
+  "replacementArtworkAdded": false,
+  "defaultIcon": "ApplicationIcon is conditional; asset-free source builds use the SDK default icon."
+}

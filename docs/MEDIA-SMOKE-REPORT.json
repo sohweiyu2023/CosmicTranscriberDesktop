@@ -1,0 +1,106 @@
+{
+  "test_date": "2026-08-04",
+  "method": "Fresh independent rerun: generated deterministic 680-second CBR and VBR MP3 sources; parsed MPEG Layer III frames; frame-copied nominal five-minute chunks with a contiguous 1.25-second speech-overlap preroll. The initial Xing/Info/VBRI frame was retained in chunk 1 as a decoder reservoir carrier, rewritten with chunk-local frame/byte/TOC totals, and excluded from logical timestamps. Every chunk was decoded to mono 44.1 kHz PCM with FFmpeg; chunk 1 PCM was compared byte-for-byte with the original decoded source prefix. FFprobe container estimates were recorded separately.",
+  "target_chunk_seconds": 300.0,
+  "target_preroll_seconds": 1.25,
+  "results": [
+    {
+      "profile": "CBR",
+      "source_frames": 26034,
+      "source_decoded_pcm_seconds": 680.0,
+      "first_frame_is_xing_info_vbri": true,
+      "metadata_carrier_retained_in_chunk_1": true,
+      "metadata_header_rewritten_for_chunk_1": true,
+      "metadata_carrier_frame_seconds_excluded_from_timestamps": 0.026122,
+      "first_audio_frame_main_data_begin_bytes": 0,
+      "second_audio_frame_main_data_begin_bytes": 5,
+      "chunks": [
+        {
+          "index": 1,
+          "logical_seconds": 299.990204,
+          "speech_overlap_seconds": 0.0,
+          "bytes": 1200143,
+          "container_estimated_seconds": 300.016327,
+          "container_vs_expected_delta_seconds": 0.026123,
+          "decoded_pcm_seconds": 299.965147,
+          "decoded_vs_logical_plus_overlap_delta_seconds": -0.025057,
+          "pcm_matches_source_prefix": true,
+          "decoder_exit_code": 0
+        },
+        {
+          "index": 2,
+          "logical_seconds": 299.990204,
+          "speech_overlap_seconds": 1.253878,
+          "bytes": 1204977,
+          "container_estimated_seconds": 301.24425,
+          "container_vs_expected_delta_seconds": 0.000168,
+          "decoded_pcm_seconds": 301.244082,
+          "decoded_vs_logical_plus_overlap_delta_seconds": 0.0,
+          "pcm_matches_source_prefix": null,
+          "decoder_exit_code": 0
+        },
+        {
+          "index": 3,
+          "logical_seconds": 80.065306,
+          "speech_overlap_seconds": 1.253878,
+          "bytes": 325277,
+          "container_estimated_seconds": 81.31925,
+          "container_vs_expected_delta_seconds": 6.6e-05,
+          "decoded_pcm_seconds": 81.319184,
+          "decoded_vs_logical_plus_overlap_delta_seconds": -0.0,
+          "pcm_matches_source_prefix": null,
+          "decoder_exit_code": 0
+        }
+      ]
+    },
+    {
+      "profile": "VBR",
+      "source_frames": 26034,
+      "source_decoded_pcm_seconds": 680.0,
+      "first_frame_is_xing_info_vbri": true,
+      "metadata_carrier_retained_in_chunk_1": true,
+      "metadata_header_rewritten_for_chunk_1": true,
+      "metadata_carrier_frame_seconds_excluded_from_timestamps": 0.026122,
+      "first_audio_frame_main_data_begin_bytes": 0,
+      "second_audio_frame_main_data_begin_bytes": 413,
+      "chunks": [
+        {
+          "index": 1,
+          "logical_seconds": 299.990204,
+          "speech_overlap_seconds": 0.0,
+          "bytes": 2283012,
+          "container_estimated_seconds": 300.016327,
+          "container_vs_expected_delta_seconds": 0.026123,
+          "decoded_pcm_seconds": 299.965147,
+          "decoded_vs_logical_plus_overlap_delta_seconds": -0.025057,
+          "pcm_matches_source_prefix": true,
+          "decoder_exit_code": 0
+        },
+        {
+          "index": 2,
+          "logical_seconds": 299.990204,
+          "speech_overlap_seconds": 1.253878,
+          "bytes": 2290210,
+          "container_estimated_seconds": 300.75971,
+          "container_vs_expected_delta_seconds": -0.484372,
+          "decoded_pcm_seconds": 301.244082,
+          "decoded_vs_logical_plus_overlap_delta_seconds": 0.0,
+          "pcm_matches_source_prefix": null,
+          "decoder_exit_code": 0
+        },
+        {
+          "index": 3,
+          "logical_seconds": 80.065306,
+          "speech_overlap_seconds": 1.253878,
+          "bytes": 618801,
+          "container_estimated_seconds": 80.650494,
+          "container_vs_expected_delta_seconds": -0.66869,
+          "decoded_pcm_seconds": 81.319184,
+          "decoded_vs_logical_plus_overlap_delta_seconds": -0.0,
+          "pcm_matches_source_prefix": null,
+          "decoder_exit_code": 0
+        }
+      ]
+    }
+  ]
+}

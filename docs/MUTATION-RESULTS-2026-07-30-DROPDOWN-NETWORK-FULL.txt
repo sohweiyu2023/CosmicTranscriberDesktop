@@ -1,0 +1,41 @@
+PASS 01/40: remove diarization model
+PASS 02/40: remove file-upload eligibility
+PASS 03/40: replace diarized response format
+PASS 04/40: remove VAD chunking
+PASS 05/40: allow unsupported prompt
+PASS 06/40: send keywords to diarization
+PASS 07/40: remove speaker property parser
+PASS 08/40: remove timestamp validation
+PASS 09/40: disable duration ceiling
+PASS 10/40: restore diarization preroll
+PASS 11/40: remove speaker checkpoint hash
+PASS 12/40: remove checkpoint size guard
+PASS 13/40: remove Part label scoping
+PASS 14/40: remove diarized text export
+PASS 15/40: remove diarization UI option
+PASS 16/40: enable unsupported keyword box
+PASS 17/40: disable duration safety control
+PASS 18/40: replace default model
+PASS 19/40: remove autosave delay
+PASS 20/40: register autosave before startup complete
+PASS 21/40: remove output path autosave
+PASS 22/40: remove autosave timer restart
+PASS 23/40: make invalid language block all saves
+PASS 24/40: remove invalid price isolation
+PASS 25/40: remove autosave status control
+PASS 26/40: put API key in ordinary settings
+PASS 27/40: remove durable settings publication
+PASS 28/40: stale version
+PASS 29/40: remove Start_Click diarization local
+PASS 30/40: launch portable app during publish
+PASS 31/40: remove runtime-log ignore
+PASS 32/40: omit gitignore from generated inventory
+PASS 33/40: restore fragile custom ComboBox popup
+PASS 34/40: remove model wheel guard
+PASS 35/40: disable closed ComboBox wheel suppression
+PASS 36/40: remove client request identifier
+PASS 37/40: remove server request identifier logging
+PASS 38/40: remove authenticated system proxy support
+PASS 39/40: remove regional Chinese language support
+PASS 40/40: remove singular ISO-639-1 enforcement
+ALL 40 RELEASE MUTATIONS DETECTED

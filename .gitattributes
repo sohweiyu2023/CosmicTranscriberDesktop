@@ -1,0 +1,2 @@
+# Preserve the audited source bytes and deterministic inventory across clones.
+* -text

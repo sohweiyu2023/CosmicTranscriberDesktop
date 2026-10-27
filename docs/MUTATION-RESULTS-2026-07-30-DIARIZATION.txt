@@ -1,0 +1,20 @@
+PASS 01/19: remove diarization model
+PASS 02/19: remove file-upload eligibility
+PASS 03/19: replace diarized response format
+PASS 04/19: remove VAD chunking
+PASS 05/19: allow unsupported prompt
+PASS 06/19: send keywords to diarization
+PASS 07/19: remove speaker property parser
+PASS 08/19: remove timestamp validation
+PASS 09/19: disable duration ceiling
+PASS 10/19: restore diarization preroll
+PASS 11/19: remove speaker checkpoint hash
+PASS 12/19: remove checkpoint size guard
+PASS 13/19: remove Part label scoping
+PASS 14/19: remove diarized text export
+PASS 15/19: remove diarization UI option
+PASS 16/19: enable unsupported keyword box
+PASS 17/19: disable duration safety control
+PASS 18/19: replace default model
+PASS 19/19: stale version
+ALL 19 DIARIZATION MUTATIONS DETECTED

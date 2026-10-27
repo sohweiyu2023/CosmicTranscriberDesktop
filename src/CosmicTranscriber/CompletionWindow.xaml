@@ -1,0 +1,108 @@
+<Window x:Class="CosmicTranscriber.CompletionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Transcription complete"
+        Width="570"
+        Height="480"
+        MinWidth="480"
+        MinHeight="420"
+        ResizeMode="CanResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Loaded="Window_Loaded"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        Background="{DynamicResource AppBackgroundBrush}">
+    <Grid Background="{DynamicResource WindowGradientBrush}">
+        <Border Margin="24" Style="{StaticResource CardStyle}" Padding="26">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="18" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border x:Name="IconBorder" Width="54" Height="54" CornerRadius="17"
+                            HorizontalAlignment="Left" VerticalAlignment="Top"
+                            Background="{DynamicResource AccentSoftBrush}"
+                            BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1">
+                        <TextBlock x:Name="IconText" Text="✓" FontSize="29" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource SuccessBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock x:Name="CompletionTitleText" Text="Transcription complete"
+                                   FontFamily="{StaticResource DisplayFont}" FontSize="23"
+                                   FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock x:Name="CompletionSubtitleText"
+                                   Text="Your transcript files are ready."
+                                   Style="{StaticResource MutedTextStyle}" FontSize="13"
+                                   TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Grid>
+
+                <Border Grid.Row="2" Background="{DynamicResource SurfaceElevatedBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="14" Padding="16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="10" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="RUN SUMMARY" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock Grid.Row="2" x:Name="SummaryText" Text="0 succeeded"
+                                   FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="4" Background="{DynamicResource SurfaceElevatedBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="14" Padding="16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="OUTPUT FOLDER" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBox Grid.Row="2" x:Name="OutputPathTextBox" IsReadOnly="True"
+                                 TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                                 BorderThickness="0" Padding="0" Background="Transparent"
+                                 Foreground="{DynamicResource TextSecondaryBrush}"
+                                 AutomationProperties.Name="Transcription output folder" />
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="You can reopen this folder later from the main window."
+                               Style="{StaticResource MutedTextStyle}" FontSize="11.5"
+                               TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,18,0" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Content="Close" Click="Close_Click"
+                                Style="{StaticResource SecondaryButtonStyle}" IsCancel="True"
+                                MinWidth="90" Margin="0,0,10,0" />
+                        <Button x:Name="OpenFolderButton" Content="Open output folder" Click="OpenFolder_Click"
+                                Style="{StaticResource PrimaryButtonStyle}" IsDefault="True"
+                                MinWidth="170" AutomationProperties.Name="Open transcription output folder" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
