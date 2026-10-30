@@ -375,7 +375,7 @@ require('"mp3-frame-no-preroll-vbrmeta-1.6"' in coordinator,
 require('CheckpointSchema = "cosmic-transcriber-checkpoint-1.11"' in coordinator,
         "Checkpoint schema was not changed for structured speaker data")
 require("IReadOnlyList<SpeakerSegment> SpeakerSegments" in coordinator
-        and "ComputeCheckpointPayloadSha256(envelope.Text, envelope.SpeakerSegments)" in coordinator,
+        and "ComputeCheckpointPayloadSha256(envelope.Text, envelope.SpeakerSegments, envelope.AttemptId, envelope.ClientRequestId)" in coordinator,
         "Speaker segments are not integrity-protected in checkpoints")
 require("MaximumCheckpointBytes = 16 * 1024 * 1024" in coordinator
         and "Encoding.UTF8.GetByteCount(content) > MaximumCheckpointBytes" in coordinator
@@ -600,6 +600,16 @@ if checksums_path.is_file():
                 "SHA256SUMS.txt is stale, incomplete, or malformed")
     except OSError as exc:
         errors.append(f"Cannot read SHA256SUMS.txt: {exc}")
+
+
+# Pending-intent structural guards supplement crash/restart and stale-attempt regression tests.
+ledger = read(src / "Services" / "PendingTranscriptionLedger.cs")
+require("if (beforeDispatch is not null) await beforeDispatch(clientRequestId" in client
+        and "FileMode.CreateNew" in ledger and "Flush(flushToDisk: true)" in ledger,
+        "Paid intent must be durably reserved by awaited actual-ID callback before dispatch")
+require("checkpointAttempt != expected.AttemptId || checkpointClientId != expected.ClientRequestId" in ledger
+        and "attempt_id = attemptId.Value, client_request_id = clientRequestId" in coordinator,
+        "Reconciliation must bind checkpoint checksum and intent to the exact attempt/client ID")
 
 if errors:
     print(f"COSMIC TRANSCRIBER VERIFY FAILED ({len(errors)} finding(s))")

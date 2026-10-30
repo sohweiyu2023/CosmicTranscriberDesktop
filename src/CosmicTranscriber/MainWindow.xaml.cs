@@ -1379,7 +1379,7 @@ public partial class MainWindow : Window
                 catch (OperationCanceledException)
                 {
                     item.Status = AudioJobStatus.Cancelled;
-                    item.Detail = "Cancelled; checkpoints retained";
+                    item.Detail = "Cancelled; checkpoints and unresolved intents retained";
                     throw;
                 }
                 catch (Exception ex)
@@ -1499,16 +1499,16 @@ public partial class MainWindow : Window
             foreach (var item in queuedFiles.Where(item => item.Status is AudioJobStatus.Ready or AudioJobStatus.Preparing or AudioJobStatus.Transcribing))
             {
                 item.Status = AudioJobStatus.Cancelled;
-                item.Detail = "Cancelled; checkpoints retained";
+                item.Detail = "Cancelled; checkpoints and unresolved intents retained";
             }
 
             if (!_isClosing)
             {
                 HeaderStatusText.Text = "Cancelled";
                 FooterTitleText.Text = "Run cancelled";
-                FooterDetailText.Text = "Completed transcript checkpoints were retained and will be reused next time.";
-                CurrentActionText.Text = "Cancelled safely";
-                AppendLog("Run cancelled. Existing checkpoints remain available for resume.");
+                FooterDetailText.Text = "Completed checkpoints were retained. Unresolved paid attempts may block restart and require review.";
+                CurrentActionText.Text = "Cancelled; paid outcomes may need review";
+                AppendLog("Run cancelled. Accepted checkpoints remain available; unresolved paid intents are retained and may block restart.");
             }
         }
         catch (Exception ex)
@@ -1598,7 +1598,7 @@ public partial class MainWindow : Window
 
     private static bool IsSystemicRunFailure(Exception exception)
     {
-        if (exception is HttpRequestException or OpenAiProtocolException or CheckpointStorageException
+        if (exception is PendingTranscriptionException or HttpRequestException or OpenAiProtocolException or CheckpointStorageException
             or AudioPreparationStorageException or TranscriptExportException)
         {
             return true;

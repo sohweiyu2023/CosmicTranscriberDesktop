@@ -224,7 +224,8 @@ public sealed class OpenAiTranscriptionClient : IDisposable
         string? keywords,
         int retryCount,
         Action<string>? log,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<string, CancellationToken, Task>? beforeDispatch = null)
     {
         var normalizedKey = InputValidation.NormalizeApiKey(apiKey);
         var normalizedModel = NormalizeModel(model);
@@ -346,6 +347,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
                 form.Add(audioContent, "file", "audio.mp3");
                 request.Content = form;
 
+                if (beforeDispatch is not null) await beforeDispatch(clientRequestId, attemptCancellation.Token);
                 operation.Stage(DiagnosticStage.Dispatched);
                 using var response = await _httpClient.SendAsync(
                     request,
