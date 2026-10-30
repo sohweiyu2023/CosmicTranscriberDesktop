@@ -32,9 +32,43 @@ foreach (var price in new string?[] { null, "", "abc", "NaN", "Infinity", "-0.01
 Check(RunPresentation.EstimatedCost("0", TimeSpan.FromMinutes(10)) == "US$0.000 est.", "explicit zero estimate");
 Check(RunPresentation.EstimatedCost("0.006", TimeSpan.FromMinutes(10)) == "US$0.060 est.", "valid estimate");
 Check(RunPresentation.EstimatedCost("1e308", TimeSpan.FromMinutes(10)) == "Invalid estimate", "estimate overflow");
-Check(RunPresentation.CompletionSubtitle(0, true).StartsWith("No final transcript files"), "zero-export partial run message");
-Check(RunPresentation.CompletionSubtitle(2, true).StartsWith("Completed transcripts were saved"), "partial run with exports message");
+Check(RunPresentation.CompletionGuidance(0, true, CompletionEvidence.ReviewRequired).NextAction == CompletionNextAction.PreserveAndReview, "zero-export partial run message");
+Check(RunPresentation.CompletionGuidance(2, true, CompletionEvidence.AcceptedCheckpoints).NextAction == CompletionNextAction.ReviewAndReuseAccepted, "partial run with exports message");
 Check(RunPresentation.CompletionSubtitle(2, false) == "Your transcript files are ready.", "successful run message");
+// Completion decisions use typed evidence, never provider/error message text.
+foreach (var exportCount in new[] { 0, 2 }) {
+    foreach (var state in new[] { CompletionEvidence.UnresolvedPaidAttempt,
+        CompletionEvidence.UnresolvedPaidAttempt | CompletionEvidence.AcceptedCheckpoints,
+        CompletionEvidence.UnresolvedPaidAttempt | CompletionEvidence.FailedBeforeDispatch | CompletionEvidence.ReviewRequired }) {
+        var advice = RunPresentation.CompletionGuidance(exportCount, true, state);
+        Check(advice.NextAction == CompletionNextAction.PreserveAndReconcile && advice.Message.Contains("Do not clear the cache or retry unchanged"), "uncertain message/action preserves evidence: " + state + "/" + exportCount);
+        Check(!advice.Message.Contains("then retry") && !advice.Message.Contains("to resume"), "uncertain never recommends unchanged resume");
+    }
+}
+var beforeEvidence = new RunCompletionEvidence();
+beforeEvidence.Failed(new IOException("retry unchanged; accepted; fake provider text"), false, false);
+Check(beforeEvidence.Value == CompletionEvidence.FailedBeforeDispatch && RunPresentation.CompletionGuidance(0, true, beforeEvidence.Value).NextAction == CompletionNextAction.CorrectInput, "known pre-coordinator rejection corrects input");
+var uncertainEvidence = new RunCompletionEvidence();
+uncertainEvidence.Accepted(); uncertainEvidence.Failed(new PendingTranscriptionException(), true, false);
+Check(RunPresentation.CompletionGuidance(2, true, uncertainEvidence.Value).NextAction == CompletionNextAction.PreserveAndReconcile, "mixed accepted and pending never recommends reuse of unresolved work");
+var storageEvidence = new RunCompletionEvidence();
+storageEvidence.Failed(new CheckpointStorageException("synthetic", new IOException()), true, false);
+Check(RunPresentation.CompletionGuidance(0, true, storageEvidence.Value).NextAction == CompletionNextAction.PreserveAndReconcile, "accepted-but-not-durably-reconciled storage failure needs review");
+var earlyStorage = new RunCompletionEvidence(); earlyStorage.Failed(new CheckpointStorageException("pre-dispatch lease failure", new IOException()), true, false);
+Check(RunPresentation.CompletionGuidance(0,true,earlyStorage.Value).Message.StartsWith("The paid outcome or checkpoint state") && !RunPresentation.CompletionGuidance(0,true,earlyStorage.Value).Message.StartsWith("A paid attempt is unresolved"), "pre-dispatch storage failure does not assert a paid attempt");
+var unknownEvidence = new RunCompletionEvidence(); unknownEvidence.Failed(new IOException("definitely before dispatch"), true, false);
+Check(unknownEvidence.Value == CompletionEvidence.ReviewRequired, "unclassified coordinator failure is conservative regardless of message");
+var exportEvidence = new RunCompletionEvidence(); exportEvidence.Accepted(); exportEvidence.Failed(new IOException(), true, true);
+Check(RunPresentation.CompletionGuidance(0, true, exportEvidence.Value).NextAction == CompletionNextAction.ReviewAndReuseAccepted, "validated accepted result followed by export failure reuses checkpoints");
+var inputAdvice=RunPresentation.CompletionGuidance(0,true,beforeEvidence.Value);
+Check(inputAdvice.Message.Contains("before its transcription request was dispatched") && inputAdvice.Message.Contains("other or earlier runs"), "predispatch wording does not claim global free billing");
+Check(RunPresentation.CompletionGuidance(0,true,CompletionEvidence.None).NextAction == CompletionNextAction.PreserveAndReview && !RunPresentation.CompletionSubtitle(0,true).Contains("then retry"), "missing/legacy evidence cannot promise replay");
+Check(RunPresentation.CompletionGuidance(2,false,CompletionEvidence.AcceptedCheckpoints).NextAction == CompletionNextAction.OpenOutputs, "successful accepted run exposes outputs");
+var mainSource=File.ReadAllText(Path.Combine(root,"src/CosmicTranscriber/MainWindow.xaml.cs"));
+Check(mainSource.Contains("completionEvidence.Value)") && mainSource.Contains("completionEvidence.Failed(ex, coordinatorStarted, coordinatorCompleted)") && mainSource.Contains("completionEvidence.Accepted()"), "actual completion path receives typed run evidence");
+Check(!mainSource.Contains("retained for a safe retry") && mainSource.Contains("FooterDetailText.Text = RunPresentation.CompletionGuidance") && mainSource.Contains("RunPresentation.CompletionGuidance(writtenOutputs.Count, completedWithIssues, completionEvidence.Value).Message"), "outer failure and completion fallback retain typed conservative guidance");
+var completionSource=File.ReadAllText(Path.Combine(root,"src/CosmicTranscriber/CompletionWindow.xaml.cs"));
+Check(completionSource.Contains("RunPresentation.CompletionGuidance(outputFileCount, completedWithErrors, evidence).Message"), "actual completion window uses tested guidance");
 var xaml = XDocument.Load(Path.Combine(root, "src/CosmicTranscriber/MainWindow.xaml"));
 XNamespace names = "http://schemas.microsoft.com/winfx/2006/xaml";
 foreach (var field in new[] { "OutputPathTextBox", "CombinedTitleTextBox", "PricePerMinuteTextBox" })

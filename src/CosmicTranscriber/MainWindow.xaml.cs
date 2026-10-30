@@ -1263,6 +1263,7 @@ public partial class MainWindow : Window
         var failureCount = 0;
         var skippedCount = 0;
         var stopwatch = Stopwatch.StartNew();
+        var completionEvidence = new RunCompletionEvidence();
 
         foreach (var item in queuedFiles)
         {
@@ -1322,12 +1323,15 @@ public partial class MainWindow : Window
                     FooterDetailText.Text = update.Message;
                 });
 
+                var coordinatorStarted = false;
+                var coordinatorCompleted = false;
                 try
                 {
                     EnsureSourceUnchanged(item);
                     FileTranscriptionResult result;
                     try
                     {
+                        coordinatorStarted = true;
                         result = await _coordinator.ProcessFileAsync(
                             item,
                             outputDirectory,
@@ -1335,6 +1339,8 @@ public partial class MainWindow : Window
                             progress,
                             AppendLog,
                             cancellationToken);
+                        coordinatorCompleted = true;
+                        completionEvidence.Accepted();
                     }
                     finally
                     {
@@ -1385,6 +1391,7 @@ public partial class MainWindow : Window
                 catch (Exception ex)
                 {
                     StartupDiagnostics.WriteException("TRANSCRIPTION FILE FAILURE", ex);
+                    completionEvidence.Failed(ex, coordinatorStarted, coordinatorCompleted);
                     failureCount++;
                     item.Status = AudioJobStatus.Failed;
                     item.Detail = InputValidation.SingleLineForLog(ex.Message, 500);
@@ -1444,7 +1451,7 @@ public partial class MainWindow : Window
                     }
 
                     AppendLog("Combined export was not created because the queue was incomplete. " +
-                              "Successful transcript checkpoints were retained for a safe retry.");
+                              "Accepted checkpoints were retained. Review failed items and unresolved attempts before another request.");
                 }
             }
 
@@ -1473,7 +1480,8 @@ public partial class MainWindow : Window
                         failureCount,
                         skippedCount,
                         writtenOutputs.Count,
-                        stopwatch.Elapsed)
+                        stopwatch.Elapsed,
+                        completionEvidence.Value)
                     {
                         Owner = this
                     };
@@ -1486,7 +1494,8 @@ public partial class MainWindow : Window
                               InputValidation.SingleLineForLog(completionEx.Message));
                     MessageBox.Show(this,
                         $"Transcription run finished.\n\nSucceeded: {successCount}\nFailed: {failureCount}\n" +
-                        $"Skipped: {skippedCount}\nOutput files: {writtenOutputs.Count}\n\n{outputDirectory}",
+                        $"Skipped: {skippedCount}\nOutput files: {writtenOutputs.Count}\n\n{outputDirectory}\n\n" +
+                        RunPresentation.CompletionGuidance(writtenOutputs.Count, completedWithIssues, completionEvidence.Value).Message,
                         completedWithIssues ? "Completed with issues" : "Transcription complete",
                         MessageBoxButton.OK,
                         completedWithIssues ? MessageBoxImage.Warning : MessageBoxImage.Information);
@@ -1514,6 +1523,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             StartupDiagnostics.WriteException("TRANSCRIPTION RUN FAILURE", ex);
+            completionEvidence.Failed(ex, coordinatorStarted: true, coordinatorCompleted: false);
             stopwatch.Stop();
             foreach (var item in queuedFiles.Where(item => item.Status is AudioJobStatus.Preparing or AudioJobStatus.Transcribing))
             {
@@ -1537,10 +1547,10 @@ public partial class MainWindow : Window
             {
                 HeaderStatusText.Text = "Run failed";
                 FooterTitleText.Text = "Unexpected run failure";
-                FooterDetailText.Text = "Completed transcript checkpoints were retained for a safe retry.";
+                FooterDetailText.Text = RunPresentation.CompletionGuidance(writtenOutputs.Count, true, completionEvidence.Value).Message;
                 CurrentActionText.Text = InputValidation.SingleLineForLog(ex.Message, 500);
                 MessageBox.Show(this,
-                    "The run stopped because of an unexpected error. Completed transcript checkpoints were retained.\n\n" + ex.Message,
+                    "The run stopped because of an unexpected error.\n\n" + FooterDetailText.Text + "\n\n" + ex.Message,
                     "Transcription run failed", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

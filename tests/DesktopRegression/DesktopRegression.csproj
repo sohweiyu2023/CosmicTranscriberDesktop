@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <RunPresentationSource Condition="'$(RunPresentationSource)' == ''">../../src/CosmicTranscriber/Utilities/RunPresentation.cs</RunPresentationSource>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
@@ -11,6 +12,7 @@
     <Compile Include="../../src/CosmicTranscriber/GlobalUsings.cs" Link="Production/GlobalUsings.cs" />
     <Compile Include="../../src/CosmicTranscriber/Models/*.cs" Link="Production/Models/%(Filename)%(Extension)" />
     <Compile Include="../../src/CosmicTranscriber/Services/*.cs" Link="Production/Services/%(Filename)%(Extension)" />
-    <Compile Include="../../src/CosmicTranscriber/Utilities/*.cs" Link="Production/Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RunPresentationSource)" Link="Production/Utilities/RunPresentation.cs" />
+    <Compile Exclude="../../src/CosmicTranscriber/Utilities/RunPresentation.cs" Include="../../src/CosmicTranscriber/Utilities/*.cs" Link="Production/Utilities/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

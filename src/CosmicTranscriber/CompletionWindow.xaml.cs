@@ -15,7 +15,8 @@ public partial class CompletionWindow : Window
         int failureCount,
         int skippedCount,
         int outputFileCount,
-        TimeSpan elapsed)
+        TimeSpan elapsed,
+        CompletionEvidence evidence = CompletionEvidence.ReviewRequired)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
         if (successCount < 0 || failureCount < 0 || skippedCount < 0 || outputFileCount < 0)
@@ -29,7 +30,7 @@ public partial class CompletionWindow : Window
         var completedWithErrors = failureCount > 0 || skippedCount > 0;
         Title = completedWithErrors ? "Transcription completed with issues" : "Transcription complete";
         CompletionTitleText.Text = completedWithErrors ? "Run completed with issues" : "Transcription complete";
-        CompletionSubtitleText.Text = RunPresentation.CompletionSubtitle(outputFileCount, completedWithErrors);
+        CompletionSubtitleText.Text = RunPresentation.CompletionGuidance(outputFileCount, completedWithErrors, evidence).Message;
         IconText.Text = completedWithErrors ? "!" : "✓";
         IconText.Foreground = (Brush)FindResource(completedWithErrors ? "WarningBrush" : "SuccessBrush");
         IconBorder.BorderBrush = IconText.Foreground;
