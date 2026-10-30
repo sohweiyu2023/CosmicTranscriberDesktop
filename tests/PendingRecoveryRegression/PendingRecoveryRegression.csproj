@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><PendingLedgerSource Condition="'$(PendingLedgerSource)' == ''">../../src/CosmicTranscriber/Services/PendingTranscriptionLedger.cs</PendingLedgerSource><OutputType>Exe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+  <PropertyGroup><RecoveryReviewSource Condition="'$(RecoveryReviewSource)' == ''">../../src/CosmicTranscriber/Services/RecoveryReviewService.cs</RecoveryReviewSource><PendingLedgerSource Condition="'$(PendingLedgerSource)' == ''">../../src/CosmicTranscriber/Services/PendingTranscriptionLedger.cs</PendingLedgerSource><OutputType>Exe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NAudio" Version="3.3.0" /><PackageReference Include="System.Numerics.Tensors" Version="10.0.13" />
     <Compile Include="../../src/CosmicTranscriber/GlobalUsings.cs" Link="Production/GlobalUsings.cs" />
     <Compile Include="../../src/CosmicTranscriber/Models/*.cs" Link="Production/Models/%(Filename)%(Extension)" />
     <Compile Include="$(PendingLedgerSource)" Link="Production/Services/PendingTranscriptionLedger.cs" />
-    <Compile Include="../../src/CosmicTranscriber/Services/*.cs" Exclude="../../src/CosmicTranscriber/Services/PendingTranscriptionLedger.cs" Link="Production/Services/%(Filename)%(Extension)" />
+    <Compile Include="$(RecoveryReviewSource)" Link="Production/Services/RecoveryReviewService.cs" />
+    <Compile Include="../../src/CosmicTranscriber/Services/*.cs" Exclude="../../src/CosmicTranscriber/Services/PendingTranscriptionLedger.cs;../../src/CosmicTranscriber/Services/RecoveryReviewService.cs" Link="Production/Services/%(Filename)%(Extension)" />
     <Compile Include="../../src/CosmicTranscriber/Utilities/*.cs" Link="Production/Utilities/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

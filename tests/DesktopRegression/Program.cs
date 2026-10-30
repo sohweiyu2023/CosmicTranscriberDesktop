@@ -69,6 +69,14 @@ Check(mainSource.Contains("completionEvidence.Value)") && mainSource.Contains("c
 Check(!mainSource.Contains("retained for a safe retry") && mainSource.Contains("FooterDetailText.Text = RunPresentation.CompletionGuidance") && mainSource.Contains("RunPresentation.CompletionGuidance(writtenOutputs.Count, completedWithIssues, completionEvidence.Value).Message"), "outer failure and completion fallback retain typed conservative guidance");
 var completionSource=File.ReadAllText(Path.Combine(root,"src/CosmicTranscriber/CompletionWindow.xaml.cs"));
 Check(completionSource.Contains("RunPresentation.CompletionGuidance(outputFileCount, completedWithErrors, evidence).Message"), "actual completion window uses tested guidance");
+var completionXaml=XDocument.Load(Path.Combine(root,"src/CosmicTranscriber/CompletionWindow.xaml"));
+XNamespace completionNames="http://schemas.microsoft.com/winfx/2006/xaml";
+var completionViewport=completionXaml.Descendants().Single(e=>(string?)e.Attribute(completionNames+"Name")=="CompletionViewport");
+Check(completionViewport.Name.LocalName=="ScrollViewer" && completionViewport.Descendants().Any(e=>(string?)e.Attribute(completionNames+"Name")=="ReviewAttemptsButton"),"completion text and recovery actions share a real outer viewport");
+var outputField=completionXaml.Descendants().Single(e=>(string?)e.Attribute(completionNames+"Name")=="OutputPathTextBox");
+Check((string?)outputField.Attribute("MinHeight")=="48" && outputField.Ancestors().Any(e=>e==completionViewport),"completion path has useful height inside scrollable body");
+var recoveryXaml=XDocument.Load(Path.Combine(root,"src/CosmicTranscriber/RecoveryWindow.xaml"));
+Check(recoveryXaml.Descendants().Any(e=>e.Name.LocalName=="ScrollViewer") && recoveryXaml.Descendants().Any(e=>(string?)e.Attribute(completionNames+"Name")=="RecheckRecoveryButton"),"recovery actions live in a vertically scrollable window");
 var xaml = XDocument.Load(Path.Combine(root, "src/CosmicTranscriber/MainWindow.xaml"));
 XNamespace names = "http://schemas.microsoft.com/winfx/2006/xaml";
 foreach (var field in new[] { "OutputPathTextBox", "CombinedTitleTextBox", "PricePerMinuteTextBox" })

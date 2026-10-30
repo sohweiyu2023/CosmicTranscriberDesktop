@@ -13,3 +13,8 @@ A crash before send can leave a conservative false positive. A crash during uplo
 There is deliberately no automatic retry, age-based unlock, free-failure inference or new credential persistence. **No ordinary user resolution/override UI exists yet.** If an outcome cannot be corroborated by a matching accepted checkpoint, preserve the cache and review the existing attempt and possible charges; do not delete markers or clear the cache as a workaround. A maintained, explicit review workflow is still required before this can be treated as an everyday recovery feature. No provider lookup API or billing reconciliation guarantee is claimed.
 
 Offline tests use only synthetic audio and fake HTTP. Cases include pre-send interruption, upload uncertainty, accepted response with checkpoint write failure, durable checkpoint before reconciliation, old/legacy mismatch, attempt checksum tampering, partial/corrupt/locked markers, delete failure, competing reservations, all-directory clear preflight, cache lease contention, cancellation just after acceptance and later-chunk pending evidence blocking earlier new dispatch. A deliberately weakened attempt-binding negative control must fail the stale-checkpoint assertion. These simulated crash states do not certify physical power-loss durability or native UI behavior.
+
+
+## Explicit local review workflow
+
+The new [uncertain-outcome review guide](UNCERTAIN-OUTCOME-REVIEW.md) documents inventory and selected local recheck, exact validated accepted-checkpoint reconciliation, create-once manual receipts and the safe unknown state. It adds no paid replay, external billing assertion or override. Manual receipt history is separate from cache and does not retroactively cover automatic reconciliation.

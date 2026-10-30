@@ -14,6 +14,7 @@
         SnapsToDevicePixels="True"
         Background="{DynamicResource AppBackgroundBrush}">
     <Grid Background="{DynamicResource WindowGradientBrush}">
+      <ScrollViewer x:Name="CompletionViewport" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <Border Margin="24" Style="{StaticResource CardStyle}" Padding="26">
             <Grid>
                 <Grid.RowDefinitions>
@@ -21,7 +22,7 @@
                     <RowDefinition Height="18" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="16" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="20" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -77,7 +78,7 @@
                         </Grid.RowDefinitions>
                         <TextBlock Text="OUTPUT FOLDER" FontSize="11" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextMutedBrush}" />
-                        <TextBox Grid.Row="2" x:Name="OutputPathTextBox" IsReadOnly="True"
+                        <TextBox Grid.Row="2" x:Name="OutputPathTextBox" IsReadOnly="True" MinHeight="48" MaxHeight="110"
                                  TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                                  BorderThickness="0" Padding="0" Background="Transparent"
                                  Foreground="{DynamicResource TextSecondaryBrush}"
@@ -85,24 +86,22 @@
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="6">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                <StackPanel Grid.Row="6">
                     <TextBlock Text="You can reopen this folder later from the main window."
-                               Style="{StaticResource MutedTextStyle}" FontSize="11.5"
-                               TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,18,0" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Button Content="Close" Click="Close_Click"
-                                Style="{StaticResource SecondaryButtonStyle}" IsCancel="True"
-                                MinWidth="90" Margin="0,0,10,0" />
+                               Style="{StaticResource MutedTextStyle}" FontSize="11.5" TextWrapping="Wrap" />
+                    <WrapPanel HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <Button x:Name="ReviewAttemptsButton" Content="Review attempts" Click="ReviewAttempts_Click"
+                                Style="{StaticResource QuietButtonStyle}" Visibility="Collapsed" Margin="0,0,10,8"
+                                AutomationProperties.Name="Review unresolved attempts without provider requests" />
+                        <Button Content="Close" Click="Close_Click" Style="{StaticResource SecondaryButtonStyle}"
+                                IsCancel="True" MinWidth="90" Margin="0,0,10,8" />
                         <Button x:Name="OpenFolderButton" Content="Open output folder" Click="OpenFolder_Click"
-                                Style="{StaticResource PrimaryButtonStyle}" IsDefault="True"
-                                MinWidth="170" AutomationProperties.Name="Open transcription output folder" />
-                    </StackPanel>
-                </Grid>
+                                Style="{StaticResource PrimaryButtonStyle}" IsDefault="True" MinWidth="170" Margin="0,0,0,8"
+                                AutomationProperties.Name="Open transcription output folder" />
+                    </WrapPanel>
+                </StackPanel>
             </Grid>
         </Border>
+      </ScrollViewer>
     </Grid>
 </Window>

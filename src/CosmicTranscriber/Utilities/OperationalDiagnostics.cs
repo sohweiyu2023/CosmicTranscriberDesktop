@@ -1,7 +1,8 @@
 namespace CosmicTranscriber.Utilities;
 
 // Only compile-time vocabulary crosses the operational logging boundary.
-public enum DiagnosticArea { Other, Startup, Settings, Authentication, Transcription, ConnectionTest, Checkpoint, Export, OutputDirectory, Cleanup }
+public enum DiagnosticArea { Other, Startup, Settings, Authentication, Transcription, ConnectionTest, Checkpoint, Export, OutputDirectory, Cleanup, RecoveryInventory, RecoveryRecheck, RecoveryHistory, RecoveryReconcile }
+public enum DiagnosticWindowKind { Main, Recovery, Other }
 public enum DiagnosticStorageKind { LocalApplicationData, Temporary, Executable, Unavailable }
 public enum DiagnosticStage { Started, Validated, Dispatched, ResponseHeaders, ResponseBody, Accepted, Completed, Failed, Cancelled, Reused, Invalidated, Rollback, CleanupFailed, Ended }
 public enum DiagnosticReason { None, Other, Missing, Corrupt, Validation, StorageFailure, ProviderRejected, ProviderOutcomeUnknown, UserCancelled, MalformedResponse, Incomplete, LocalContention }

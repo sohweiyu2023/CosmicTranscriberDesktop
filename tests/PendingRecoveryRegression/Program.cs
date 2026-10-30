@@ -135,6 +135,120 @@ foreach (var partial in new[] { "", "{partial", "{}" }) {
     await Reject(() => new TranscriptionCoordinator(new Mp3Chunker(), client).ProcessFileAsync(longItem, output, request, null, null, CancellationToken.None), "later pending chunk blocks whole-context new dispatch");
     Check(h.Calls == 0 && File.Exists(later), "all markers preflight before earlier unpaid chunk1 can dispatch");
 }
+// User-facing local-only recovery workflow; fresh synthetic contexts, never a real ledger.
+{
+    var c=Context("review-unknown"); var intent=Intent(c.Pending); var before=File.ReadAllBytes(c.Pending);
+    var service=new RecoveryReviewService(c.Output); var rows=await service.InspectAsync(CancellationToken.None);
+    Check(rows.Count==1 && rows[0].AttemptId==intent.AttemptId && rows[0].ClientRequestId==intent.ClientRequestId,"review exposes bounded identifiers without transcript");
+    var outcome=await service.RecheckAsync(rows[0],CancellationToken.None);
+    Check(!outcome.Reconciled && outcome.Message.Contains("Unknown outcomes remain blocked") && outcome.Message.Contains("cannot verify external billing evidence"),"unknown review cannot authorize replay or budget release");
+    Check(File.ReadAllBytes(c.Pending).SequenceEqual(before) && !Directory.Exists(service.HistoryDirectory),"unknown preserves intent without fabricated accepted history");
+}
+{
+    var c=Context("review-accepted"); var intent=Intent(c.Pending); await Save(c.Checkpoint,intent); var accepted=File.ReadAllBytes(c.Checkpoint);
+    var service=new RecoveryReviewService(c.Output); var row=(await service.InspectAsync(CancellationToken.None)).Single();
+    var outcome=await service.RecheckAsync(row,CancellationToken.None);
+    Check(Directory.Exists(service.HistoryDirectory),"accepted reconciliation requires durable history before marker removal");
+    var receipts=Directory.GetFiles(service.HistoryDirectory,"*.json");
+    Check(outcome.Reconciled && outcome.ReceiptId==intent.AttemptId && !File.Exists(c.Pending) && File.ReadAllBytes(c.Checkpoint).SequenceEqual(accepted),"exact accepted evidence reconciles metadata while preserving checkpoint");
+    var receipt=File.ReadAllText(receipts.Single());
+    Check(receipt.Contains(intent.ClientRequestId) && !receipt.Contains("accepted synthetic transcript") && !receipt.Contains("local-mock-key"),"create-once receipt preserves intent identity without content/key");
+    Check(!(await service.InspectAsync(CancellationToken.None)).Any() && outcome.Message.Contains("no charge or budget was reversed"),"resolved inventory and no-budget-release guidance agree");
+    var h=new Handler(); var result=await Run(c.Output,h); Check(h.Calls==0 && result.Chunks.Single().ReusedFromCheckpoint,"user-reconciled accepted work reuses with zero fake HTTP");
+    var history=File.ReadAllBytes(receipts.Single()); await CheckpointCacheService.ClearAsync(c.Output,CancellationToken.None);
+    Check(File.ReadAllBytes(receipts.Single()).SequenceEqual(history),"checkpoint clear cannot erase separate recovery history");
+}
+{
+    var c=Context("review-mismatch"); var old=Intent(c.Pending); await Save(c.Checkpoint,old);
+    PendingTranscriptionLedger.ReconcileValidatedCheckpoint(c.Pending,old,old.AttemptId,old.ClientRequestId); var current=Intent(c.Pending);
+    var service=new RecoveryReviewService(c.Output); var row=(await service.InspectAsync(CancellationToken.None)).Single(); var before=File.ReadAllBytes(c.Pending);var checkpoint=File.ReadAllBytes(c.Checkpoint);
+    Check(!(await service.RecheckAsync(row,CancellationToken.None)).Reconciled && File.ReadAllBytes(c.Pending).SequenceEqual(before) && File.ReadAllBytes(c.Checkpoint).SequenceEqual(checkpoint),"mismatched older accepted response cannot reconcile fresh intent");
+    Check(!Directory.Exists(service.HistoryDirectory),"mismatch creates no accepted receipt");
+}
+{
+    var c=Context("review-legacy");var intent=Intent(c.Pending);await Save(c.Checkpoint,null);
+    var service=new RecoveryReviewService(c.Output);var row=(await service.InspectAsync(CancellationToken.None)).Single();
+    Check(!(await service.RecheckAsync(row,CancellationToken.None)).Reconciled && File.Exists(c.Pending),"legacy checkpoint cannot unlock identity-bound intent");
+}
+foreach(var bad in new[]{"{partial","null","{}"}) {
+    var c=Context("review-corrupt-"+passed);File.WriteAllText(c.Pending,bad);var service=new RecoveryReviewService(c.Output);
+    var row=(await service.InspectAsync(CancellationToken.None)).Single();
+    Check(row.AttemptId is null && !(await service.RecheckAsync(row,CancellationToken.None)).Reconciled && File.ReadAllText(c.Pending)==bad,"invalid intent stays visibly unknown and unmodified");
+}
+{
+    var c=Context("review-invalid-checkpoint");var intent=Intent(c.Pending);await Save(c.Checkpoint,intent);var bytes=File.ReadAllText(c.Checkpoint).Replace("accepted synthetic transcript","changed synthetic transcript");File.WriteAllText(c.Checkpoint,bytes);
+    var service=new RecoveryReviewService(c.Output);var row=(await service.InspectAsync(CancellationToken.None)).Single();
+    Check(!(await service.RecheckAsync(row,CancellationToken.None)).Reconciled && File.ReadAllText(c.Checkpoint)==bytes && File.Exists(c.Pending),"checksum failure preserves both checkpoint and pending instead of silently deleting evidence");
+}
+{
+    var c=Context("review-history-before-delete");var intent=Intent(c.Pending);await Save(c.Checkpoint,intent);var service=new RecoveryReviewService(c.Output);var row=(await service.InspectAsync(CancellationToken.None)).Single();
+    byte[] history; string historyPath;
+    using(var held=new FileStream(c.Pending,FileMode.Open,FileAccess.Read,FileShare.Read)) {
+        Check(!(await service.RecheckAsync(row,CancellationToken.None)).Reconciled && File.Exists(c.Pending),"blocked marker deletion keeps pending even after accepted proof");
+        historyPath=Directory.GetFiles(service.HistoryDirectory,"*.json").Single();history=File.ReadAllBytes(historyPath);
+    }
+    Check((await service.RecheckAsync(row,CancellationToken.None)).Reconciled && File.ReadAllBytes(historyPath).SequenceEqual(history),"retry verifies existing immutable receipt without rewriting it");
+    var fresh=Intent(c.Pending);var pending=File.ReadAllBytes(c.Pending);
+    Check(!(await service.RecheckAsync(row,CancellationToken.None)).Reconciled && File.ReadAllBytes(c.Pending).SequenceEqual(pending),"stale UI selection never applies to a new intent");
+}
+foreach(var bad in new[]{"{partial","null"}) {
+    var c=Context("review-bad-history-"+passed);var intent=Intent(c.Pending);await Save(c.Checkpoint,intent);var service=new RecoveryReviewService(c.Output);var row=(await service.InspectAsync(CancellationToken.None)).Single();
+    Directory.CreateDirectory(service.HistoryDirectory);var history=Path.Combine(service.HistoryDirectory,$"accepted-{intent.AttemptId:N}.json");File.WriteAllText(history,bad);
+    await Reject(()=>service.RecheckAsync(row,CancellationToken.None),"existing malformed receipt cannot be overwritten");
+    Check(File.ReadAllText(history)==bad && File.Exists(c.Pending),"failed immutable-history write preserves pending and historical bytes");
+}
+{
+    var c=Context("review-busy");var intent=Intent(c.Pending);await Save(c.Checkpoint,intent);var service=new RecoveryReviewService(c.Output);var row=(await service.InspectAsync(CancellationToken.None)).Single();
+    using(var held=new FileStream(Path.Combine(c.Work,".work.lock"),FileMode.Open,FileAccess.ReadWrite,FileShare.None)) {
+        await Reject(()=>service.InspectAsync(CancellationToken.None),"inventory cannot race active work");await Reject(()=>service.RecheckAsync(row,CancellationToken.None),"reconciliation cannot race active work");
+    }
+    Check(File.Exists(c.Pending) && !Directory.Exists(service.HistoryDirectory),"busy work never mutates ledger/history");
+    using var stop=new CancellationTokenSource();stop.Cancel();await Reject(()=>service.RecheckAsync(row,stop.Token),"cancelled recheck");
+    Check(File.Exists(c.Pending) && !Directory.Exists(service.HistoryDirectory),"pre-action cancellation preserves evidence");
+    await Reject(()=>service.RecheckAsync(row with{WorkId="../outside"},CancellationToken.None),"context traversal rejected");
+    Check(File.Exists(c.Pending),"invalid external selection cannot redirect recovery");
+}
+{
+    var c=Context("review-root-foreign");var intent=Intent(c.Pending);var foreign=Path.Combine(CheckpointCacheService.GetCacheRoot(c.Output),"unknown.pending");File.WriteAllText(foreign,"preserve synthetic evidence");
+    await Reject(()=>new RecoveryReviewService(c.Output).InspectAsync(CancellationToken.None),"unexpected root evidence prevents false no-unresolved result");
+    Check(File.ReadAllText(foreign)=="preserve synthetic evidence" && File.Exists(c.Pending),"foreign-root inventory failure preserves evidence");
+}
+{
+    var c=Context("review-cache-exclusive");Intent(c.Pending);var service=new RecoveryReviewService(c.Output);
+    using(var init=CheckpointCacheService.AcquireUsage(c.Output)){}
+    using(var held=new FileStream(Path.Combine(CheckpointCacheService.GetCacheRoot(c.Output),".cache-usage.lock"),FileMode.Open,FileAccess.ReadWrite,FileShare.None))
+        await Reject(()=>service.InspectAsync(CancellationToken.None),"cache-clear exclusive lease excludes inventory");
+    Check(File.Exists(c.Pending),"exclusive cache contention preserves intent");
+}
+{
+    var c=Context("review-locked-history");var intent=Intent(c.Pending);await Save(c.Checkpoint,intent);var service=new RecoveryReviewService(c.Output);var row=(await service.InspectAsync(CancellationToken.None)).Single();Directory.CreateDirectory(service.HistoryDirectory);
+    var history=Path.Combine(service.HistoryDirectory,$"accepted-{intent.AttemptId:N}.json");File.WriteAllText(history,"synthetic existing receipt evidence");var original=File.ReadAllBytes(c.Pending);var accepted=File.ReadAllBytes(c.Checkpoint);
+    using(var held=new FileStream(history,FileMode.Open,FileAccess.ReadWrite,FileShare.None)) await Reject(()=>service.RecheckAsync(row,CancellationToken.None),"locked receipt cannot be bypassed or replaced");
+    Check(File.ReadAllText(history)=="synthetic existing receipt evidence" && File.ReadAllBytes(c.Pending).SequenceEqual(original) && File.ReadAllBytes(c.Checkpoint).SequenceEqual(accepted),"locked history preserves all prior bytes and pending gate");
+}
+{
+    var c=Context("review-unreadable-checkpoint");var intent=Intent(c.Pending);await Save(c.Checkpoint,intent);var service=new RecoveryReviewService(c.Output);var row=(await service.InspectAsync(CancellationToken.None)).Single();
+    using(var held=new FileStream(c.Checkpoint,FileMode.Open,FileAccess.Read,FileShare.None)) await Reject(()=>service.RecheckAsync(row,CancellationToken.None),"locked checkpoint is not missing or accepted");
+    Check(File.Exists(c.Pending) && !Directory.Exists(service.HistoryDirectory),"unreadable checkpoint cannot release uncertainty");
+}
+if(args.Length>3) {
+    await Reject(()=>new RecoveryReviewService(Path.GetFullPath(args[3])).InspectAsync(CancellationToken.None),"existing fixture junction cannot redirect recovery reads/writes");
+}
+{
+    var c=Context("review-inventory-limit");var cache=CheckpointCacheService.GetCacheRoot(c.Output);
+    for(var i=0;i<257;i++)Directory.CreateDirectory(Path.Combine(cache,i.ToString("X32")));
+    await Reject(()=>new RecoveryReviewService(c.Output).InspectAsync(CancellationToken.None),"oversized inventory is incomplete failure instead of false all-clear");
+}
+{
+    var path=StartupDiagnostics.LogPath;
+    Check(Path.GetFullPath(path).StartsWith(Path.GetFullPath(AppContext.BaseDirectory),StringComparison.OrdinalIgnoreCase),"harness diagnostics remain in build fixture tree");
+    using var reader=new StreamReader(new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.ReadWrite));
+    var log=reader.ReadToEnd();
+    Check(new[]{"RecoveryInventory","RecoveryRecheck","RecoveryHistory","RecoveryReconcile"}.All(log.Contains),"fixed recovery actions have distinct structured diagnostic areas");
+    var events=log.Split('\n',StringSplitOptions.RemoveEmptyEntries).Select(x=>JsonNode.Parse(x)).ToArray();
+    Check(events.Any(x=>x?["data"]?["area"]?.ToString()=="RecoveryRecheck" && x?["data"]?["stage"]?.ToString()=="Completed" && x?["data"]?["reason"]?.ToString()=="ProviderOutcomeUnknown"),"completed unknown rechecks retain explicit non-resolution reason");
+    Check(!log.Contains("local-mock-key") && !log.Contains("accepted synthetic transcript"),"recovery diagnostics omit credential/transcript sentinels");
+}
 {
     var c = Context("diagnostic-sink-unavailable");
     var field = typeof(StartupDiagnostics).GetField("_writer", BindingFlags.NonPublic | BindingFlags.Static)!;

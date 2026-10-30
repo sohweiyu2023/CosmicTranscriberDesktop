@@ -718,6 +718,17 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ReviewUncertain_Click(object sender, RoutedEventArgs e)
+    {
+        if (!IsUiIdle) return;
+        try { new RecoveryWindow(ResolveOutputPath()) { Owner = this }.ShowDialog(); }
+        catch (Exception error) {
+            StartupDiagnostics.WriteException("Checkpoint", error);
+            MessageBox.Show(this, "Recovery review could not open safely. Preserve the cache and inspect local diagnostic coverage.",
+                "Recovery review unavailable", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private async void ClearCheckpoints_Click(object sender, RoutedEventArgs e)
     {
         if (_isRunning || _isImporting || _isTestingKey || _isClosing)
@@ -1955,6 +1966,7 @@ public partial class MainWindow : Window
     {
         var idle = IsUiIdle;
         StartButton.IsEnabled = idle;
+        ReviewUncertainButton.IsEnabled = idle;
         CancelButton.IsEnabled = _isRunning
             && _runCancellation is { IsCancellationRequested: false };
         TestKeyButton.IsEnabled = idle;

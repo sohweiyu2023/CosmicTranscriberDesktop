@@ -246,6 +246,13 @@ public sealed class TranscriptionCoordinator
         catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.Other); throw; }
     }
 
+    // Recovery UI receives identity metadata only; transcript/audio content stays in its checkpoint.
+    internal static async Task<(Guid? Attempt, string? Client, string Hash)?> ReadRecoveryCheckpointAsync(string path, int index, CancellationToken token)
+    {
+        var checkpoint = await TryReadCheckpointAsync(path, index, token, preserveInvalid: true);
+        return checkpoint is null ? null : (checkpoint.AttemptId, checkpoint.ClientRequestId, checkpoint.PayloadSha256);
+    }
+
     private static async Task ReconcilePendingIntentsAsync(string directory, int chunkCount, CancellationToken token)
     {
         foreach (var path in Directory.EnumerateFiles(directory)) {
