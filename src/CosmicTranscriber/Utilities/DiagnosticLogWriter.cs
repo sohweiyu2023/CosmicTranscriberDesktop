@@ -17,6 +17,8 @@ internal sealed class DiagnosticLogWriter : IDisposable
     private readonly Stopwatch _clock = Stopwatch.StartNew();
     private FileStream _stream;
     private long _sequence;
+    public long OmittedRecords { get; private set; }
+    public long PruneFailures { get; private set; }
     public string Path { get; private set; } = string.Empty;
     internal DiagnosticLogWriter(string directory, Guid session, int fileBytes = DefaultFileBytes, int retainedFiles = DefaultRetainedFiles, DiagnosticLogFamily family = DiagnosticLogFamily.App)
     {
@@ -30,7 +32,14 @@ internal sealed class DiagnosticLogWriter : IDisposable
     {
         var bytes = JsonSerializer.SerializeToUtf8Bytes(new { schemaVersion = 1, utc = DateTimeOffset.UtcNow, sessionId = _session.ToString("N"),
             sequence = ++_sequence, elapsedMs = _clock.ElapsedMilliseconds, processId = Environment.ProcessId, category, eventName, data });
-        if (bytes.Length + 1 > _fileBytes) return;
+        if (bytes.Length + 1 > _fileBytes) {
+            OmittedRecords++;
+            // Compact durable completeness marker; never echo the oversized payload/category.
+            bytes = JsonSerializer.SerializeToUtf8Bytes(new { schemaVersion = 1, utc = DateTimeOffset.UtcNow,
+                sessionId = _session.ToString("N"), sequence = _sequence, elapsedMs = _clock.ElapsedMilliseconds,
+                processId = Environment.ProcessId, category = "DIAGNOSTICS", eventName = "record_omitted",
+                data = new { reason = "record_too_large", omittedRecords = OmittedRecords } });
+        }
         if (_stream.Length + bytes.Length + 1 > _fileBytes) { _stream.Dispose(); _stream = OpenNew(); RotateOld(); }
         SafeFileSystem.EnsureDirectoryIsNotReparsePoint(_directory, "The diagnostic log folder");
         _stream.Write(bytes); _stream.WriteByte((byte)'\n'); _stream.Flush(flushToDisk: true);
@@ -56,9 +65,9 @@ internal sealed class DiagnosticLogWriter : IDisposable
                 .ThenByDescending(f => f.Name).Skip(_retainedFiles - 1))
             {
                 try { SafeFileSystem.EnsureDirectoryIsNotReparsePoint(_directory, "The diagnostic log folder");
-                    SafeFileSystem.EnsureFileIsNotReparsePointIfPresent(file.FullName, "The stale diagnostic log file"); file.Delete(); } catch { }
+                    SafeFileSystem.EnsureFileIsNotReparsePointIfPresent(file.FullName, "The stale diagnostic log file"); file.Delete(); } catch { PruneFailures++; }
             }
-        } catch { }
+        } catch { PruneFailures++; }
     }
     public void Dispose() => _stream.Dispose();
 }

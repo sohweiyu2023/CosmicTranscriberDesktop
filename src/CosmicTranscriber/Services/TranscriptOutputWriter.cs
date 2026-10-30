@@ -22,38 +22,46 @@ public sealed class TranscriptOutputWriter
         bool exportMarkdown,
         bool includeTimestamps)
     {
-        ArgumentNullException.ThrowIfNull(result);
-        EnsureTranscriptSize([result]);
-        var written = new List<string>();
-
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Export);
         try
         {
-            Directory.CreateDirectory(outputDirectory);
-            var baseName = Formatters.SafeFileName(result.SourceName) + ".transcript";
+            ArgumentNullException.ThrowIfNull(result);
+            EnsureTranscriptSize([result]);
+            var written = new List<string>();
 
-            if (exportText)
+            try
             {
-                var path = WriteUniqueAtomic(
-                    Path.Combine(outputDirectory, baseName + ".txt"),
-                    BuildText(result, includeTimestamps));
-                written.Add(path);
-            }
+                Directory.CreateDirectory(outputDirectory);
+                var baseName = Formatters.SafeFileName(result.SourceName) + ".transcript";
 
-            if (exportMarkdown)
+                if (exportText)
+                {
+                    var path = WriteUniqueAtomic(
+                        Path.Combine(outputDirectory, baseName + ".txt"),
+                        BuildText(result, includeTimestamps));
+                    written.Add(path);
+                }
+
+                if (exportMarkdown)
+                {
+                    var path = WriteUniqueAtomic(
+                        Path.Combine(outputDirectory, baseName + ".md"),
+                        BuildMarkdown(result, includeTimestamps));
+                    written.Add(path);
+                }
+
+                return diagnostic.Complete(written);
+            }
+            catch (Exception ex)
             {
-                var path = WriteUniqueAtomic(
-                    Path.Combine(outputDirectory, baseName + ".md"),
-                    BuildMarkdown(result, includeTimestamps));
-                written.Add(path);
+                diagnostic.Stage(DiagnosticStage.Rollback, DiagnosticReason.StorageFailure);
+                DeletePartialOutputs(written);
+                throw new TranscriptExportException("Could not export the transcript files.", ex);
             }
-
-            return written;
+    
         }
-        catch (Exception ex)
-        {
-            DeletePartialOutputs(written);
-            throw new TranscriptExportException("Could not export the transcript files.", ex);
-        }
+        catch (OperationCanceledException) { diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); throw; }
+        catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.StorageFailure); throw; }
     }
 
     public IReadOnlyList<string> WriteCombined(
@@ -64,78 +72,86 @@ public sealed class TranscriptOutputWriter
         bool exportMarkdown,
         bool includeTimestamps)
     {
-        ArgumentNullException.ThrowIfNull(results);
-        if (results.Count == 0)
-        {
-            throw new ArgumentException("At least one completed transcript is required for a combined export.", nameof(results));
-        }
-
-        EnsureTranscriptSize(results);
-        var written = new List<string>();
-
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Export);
         try
         {
-            Directory.CreateDirectory(outputDirectory);
-            var effectiveTitle = string.IsNullOrWhiteSpace(title)
-                ? "Combined Transcript"
-                : InputValidation.SingleLineForLog(
-                    InputValidation.TruncateWithoutSplittingSurrogatePair(
-                        title.Trim(),
-                        InputValidation.MaximumCombinedTitleCharacters),
-                    InputValidation.MaximumCombinedTitleCharacters);
-            if (string.IsNullOrWhiteSpace(effectiveTitle))
+            ArgumentNullException.ThrowIfNull(results);
+            if (results.Count == 0)
             {
-                effectiveTitle = "Combined Transcript";
+                throw new ArgumentException("At least one completed transcript is required for a combined export.", nameof(results));
             }
 
-            var safeTitle = Formatters.SafeFileName(effectiveTitle);
+            EnsureTranscriptSize(results);
+            var written = new List<string>();
 
-            if (exportText)
+            try
             {
-                var builder = new StringBuilder();
-                builder.AppendLine(effectiveTitle);
-                builder.AppendLine(new string('=', Math.Max(8, Math.Min(effectiveTitle.Length, 120))));
-                builder.AppendLine();
-                foreach (var result in results)
+                Directory.CreateDirectory(outputDirectory);
+                var effectiveTitle = string.IsNullOrWhiteSpace(title)
+                    ? "Combined Transcript"
+                    : InputValidation.SingleLineForLog(
+                        InputValidation.TruncateWithoutSplittingSurrogatePair(
+                            title.Trim(),
+                            InputValidation.MaximumCombinedTitleCharacters),
+                        InputValidation.MaximumCombinedTitleCharacters);
+                if (string.IsNullOrWhiteSpace(effectiveTitle))
                 {
-                    builder.AppendLine(result.SourceName);
-                    builder.AppendLine(new string('-', Math.Max(8, Math.Min(result.SourceName.Length, 120))));
-                    builder.AppendLine(BuildTextBody(result, includeTimestamps));
-                    builder.AppendLine();
+                    effectiveTitle = "Combined Transcript";
                 }
 
-                var path = WriteUniqueAtomic(
-                    Path.Combine(outputDirectory, safeTitle + ".txt"),
-                    builder.ToString());
-                written.Add(path);
-            }
+                var safeTitle = Formatters.SafeFileName(effectiveTitle);
 
-            if (exportMarkdown)
-            {
-                var builder = new StringBuilder();
-                builder.Append("# ").AppendLine(MarkdownHeading(effectiveTitle));
-                builder.AppendLine();
-                foreach (var result in results)
+                if (exportText)
                 {
-                    builder.Append("## ").AppendLine(MarkdownHeading(result.SourceName));
+                    var builder = new StringBuilder();
+                    builder.AppendLine(effectiveTitle);
+                    builder.AppendLine(new string('=', Math.Max(8, Math.Min(effectiveTitle.Length, 120))));
                     builder.AppendLine();
-                    builder.AppendLine(BuildMarkdownBody(result, includeTimestamps, headingLevel: 3));
-                    builder.AppendLine();
+                    foreach (var result in results)
+                    {
+                        builder.AppendLine(result.SourceName);
+                        builder.AppendLine(new string('-', Math.Max(8, Math.Min(result.SourceName.Length, 120))));
+                        builder.AppendLine(BuildTextBody(result, includeTimestamps));
+                        builder.AppendLine();
+                    }
+
+                    var path = WriteUniqueAtomic(
+                        Path.Combine(outputDirectory, safeTitle + ".txt"),
+                        builder.ToString());
+                    written.Add(path);
                 }
 
-                var path = WriteUniqueAtomic(
-                    Path.Combine(outputDirectory, safeTitle + ".md"),
-                    builder.ToString());
-                written.Add(path);
-            }
+                if (exportMarkdown)
+                {
+                    var builder = new StringBuilder();
+                    builder.Append("# ").AppendLine(MarkdownHeading(effectiveTitle));
+                    builder.AppendLine();
+                    foreach (var result in results)
+                    {
+                        builder.Append("## ").AppendLine(MarkdownHeading(result.SourceName));
+                        builder.AppendLine();
+                        builder.AppendLine(BuildMarkdownBody(result, includeTimestamps, headingLevel: 3));
+                        builder.AppendLine();
+                    }
 
-            return written;
+                    var path = WriteUniqueAtomic(
+                        Path.Combine(outputDirectory, safeTitle + ".md"),
+                        builder.ToString());
+                    written.Add(path);
+                }
+
+                return diagnostic.Complete(written);
+            }
+            catch (Exception ex)
+            {
+                diagnostic.Stage(DiagnosticStage.Rollback, DiagnosticReason.StorageFailure);
+                DeletePartialOutputs(written);
+                throw new TranscriptExportException("Could not export the combined transcript files.", ex);
+            }
+    
         }
-        catch (Exception ex)
-        {
-            DeletePartialOutputs(written);
-            throw new TranscriptExportException("Could not export the combined transcript files.", ex);
-        }
+        catch (OperationCanceledException) { diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); throw; }
+        catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.StorageFailure); throw; }
     }
 
     private static string BuildText(FileTranscriptionResult result, bool includeTimestamps)
@@ -433,6 +449,7 @@ public sealed class TranscriptOutputWriter
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            StartupDiagnostics.CleanupFailure();
             // Best-effort rollback; the original error remains authoritative.
         }
     }

@@ -317,8 +317,14 @@ require('TryAddWithoutValidation("X-Client-Request-Id"' in client
         "OpenAI client/server request-ID diagnostics are missing from response logging or API errors")
 require("HttpRequestError" in client
         and "DescribeNetworkFailure" in client
-        and 'StartupDiagnostics.WriteException("OPENAI NETWORK"' in client,
-        "Network failures are not categorized with full diagnostic logging")
+        and "operation.Fail(diagnostic, DiagnosticReason.ProviderOutcomeUnknown)" in client,
+        "Network failures lack typed uncertain-outcome diagnostics")
+transcription_client = client[client.index("public async Task<OpenAiTranscriptionResult> TranscribeAsync"):client.index("private static IReadOnlyList<string> OptionalSingleLanguageList")]
+require(transcription_client.count("_httpClient.SendAsync(") == 1
+        and "for (var attempt" not in transcription_client
+        and "Task.Delay(" not in transcription_client
+        and "_ = retryCount;" in transcription_client,
+        "Paid transcription must have one dispatch and no automatic retry loop/timer")
 require("DefaultProxyCredentials = CredentialCache.DefaultCredentials" in client
         and "UseProxy = true" in client,
         "Authenticated system-proxy support is missing")

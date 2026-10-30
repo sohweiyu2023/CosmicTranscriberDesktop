@@ -55,7 +55,7 @@ Check(errors[0].GetProperty("httpStatus").GetInt32()==403 && errors.GetArrayLeng
 var response=records.First(d=>d.RootElement.GetProperty("category").GetString()=="OPENAI_HTTP").RootElement.GetProperty("data");
 Check(response.GetProperty("clientRequestId").GetString()==client && response.GetProperty("processingMs").GetInt64()==34,"typed request/timing metadata");
 Check(response.GetProperty("serverRequestIdSha256").GetString()==Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(secret))).ToLowerInvariant(),"untrusted response identifier hashed");
-Check(records.Single(d=>d.RootElement.GetProperty("category").GetString()=="UI_FOCUS").RootElement.GetProperty("data").GetProperty("controlId").GetString()!.Length==80,"focus identifiers bounded");
+Check(records.Single(d=>d.RootElement.GetProperty("category").GetString()=="UI_FOCUS").RootElement.GetProperty("data").GetProperty("controlId").GetString()=="other","unlisted focus identifier omitted");
 var sequences=records.Select(d=>d.RootElement.GetProperty("sequence").GetInt64()).ToArray();Check(sequences.SequenceEqual(Enumerable.Range(1,sequences.Length).Select(n=>(long)n)),"concurrent writes retain monotonic sequence");
 Check(records[^1].RootElement.GetProperty("eventName").GetString()=="normal_exit","normal exit recorded and flushed");
 using(var reopened=new FileStream(log,FileMode.Open,FileAccess.ReadWrite,FileShare.None)){Check(true,"shutdown releases handle");}

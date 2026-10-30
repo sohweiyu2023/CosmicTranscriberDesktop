@@ -109,7 +109,7 @@ Maintain these invariants:
 - generic multipart filename;
 - strict UTF-8 and JSON shape handling;
 - bounded/single-line remote error display;
-- retry only transient transport/status conditions;
+- never automatically replay an audio POST, including transient transport/status conditions;
 - clear distinction between file-specific and systemic failures.
 
 The key test is operational model-access validation. Pricing is not fetched by the client.
@@ -117,7 +117,7 @@ The key test is operational model-access validation. Pricing is not fetched by t
 The file client supports `gpt-transcribe`, `gpt-4o-transcribe`, and `gpt-4o-mini-transcribe` on `POST /v1/audio/transcriptions`. Realtime-only models are not exposed by the completed-file selector, and the client still rejects any unsupported model defense-in-depth. `gpt-transcribe` receives optional language guidance through repeated `languages[]` form fields; the single-language GPT-4o transcription models retain the singular `language` field. Keep this model-specific protocol split covered by the static gate.
 
 
-Automatic retries remain bounded to 0-5 but default to zero in settings and the UI. A timeout or lost response can be ambiguous; retrying may repeat billable work. Preserve the visible cost-risk warning and keep user cancellation distinct from internal timeout.
+Automatic paid retries are disabled. The legacy0-5 setting remains in profiles for compatibility but is ignored by the client; the UI selector is disabled. Any post-dispatch timeout, body-read or HTTP failure may be ambiguous. Preserve request correlation and keep user cancellation distinct from internal timeout; see LOGGING-SAFE-ERROR-AUDIT.md.
 
 ## 9. MP3 inspection and chunking
 

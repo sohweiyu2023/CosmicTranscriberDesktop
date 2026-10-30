@@ -53,6 +53,7 @@ public partial class AboutWindow : Window
         }
         catch (Exception ex)
         {
+            StartupDiagnostics.WriteException("ABOUT", ex);
             MessageBox.Show(this,
                 "The email address could not be copied. You can copy it manually:\n\n" +
                 PayPalEmail + "\n\n" + ex.Message,
@@ -77,6 +78,7 @@ public partial class AboutWindow : Window
         }
         catch (Exception ex)
         {
+            StartupDiagnostics.WriteException("ABOUT", ex);
             MessageBox.Show(this,
                 failureMessage + "\n\n" + uri + "\n\n" + ex.Message,
                 "Cannot open link",

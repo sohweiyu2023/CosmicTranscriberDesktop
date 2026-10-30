@@ -14,7 +14,7 @@ public sealed class OpenAiProtocolException : Exception
     public OpenAiProtocolException(string message, Exception innerException) : base(message, innerException) { }
 }
 
-public sealed class OpenAiApiException : Exception
+public sealed class OpenAiApiException : Exception, IProviderDiagnosticFailure
 {
     public OpenAiApiException(
         HttpStatusCode statusCode,
@@ -34,6 +34,15 @@ public sealed class OpenAiApiException : Exception
         ClientRequestId = clientRequestId;
     }
 
+
+    int? IProviderDiagnosticFailure.DiagnosticStatus => (int)StatusCode;
+    string? IProviderDiagnosticFailure.DiagnosticCode => ErrorCode;
+    string? IProviderDiagnosticFailure.DiagnosticType => ErrorType;
+    string? IProviderDiagnosticFailure.DiagnosticParam => ErrorParam;
+    string? IProviderDiagnosticFailure.DiagnosticClientId => ClientRequestId;
+    string? IProviderDiagnosticFailure.DiagnosticServerId => RequestId;
+    string? IProviderDiagnosticFailure.DiagnosticFailureKind => null;
+    double? IProviderDiagnosticFailure.DiagnosticElapsedMs => null;
     public HttpStatusCode StatusCode { get; }
     public string? ErrorType { get; }
     public string? ErrorParam { get; }
@@ -42,7 +51,7 @@ public sealed class OpenAiApiException : Exception
     public string? ClientRequestId { get; }
 }
 
-public sealed class OpenAiNetworkException : HttpRequestException
+public sealed class OpenAiNetworkException : HttpRequestException, IProviderDiagnosticFailure
 {
     public OpenAiNetworkException(
         HttpRequestError requestError,
@@ -61,6 +70,15 @@ public sealed class OpenAiNetworkException : HttpRequestException
         Elapsed = elapsed;
     }
 
+
+    int? IProviderDiagnosticFailure.DiagnosticStatus => (int?)StatusCode;
+    string? IProviderDiagnosticFailure.DiagnosticCode => null;
+    string? IProviderDiagnosticFailure.DiagnosticType => null;
+    string? IProviderDiagnosticFailure.DiagnosticParam => null;
+    string? IProviderDiagnosticFailure.DiagnosticClientId => ClientRequestId;
+    string? IProviderDiagnosticFailure.DiagnosticServerId => ServerRequestId;
+    string? IProviderDiagnosticFailure.DiagnosticFailureKind => FailureKind;
+    double? IProviderDiagnosticFailure.DiagnosticElapsedMs => Elapsed.TotalMilliseconds;
     public string FailureKind { get; }
     public string ClientRequestId { get; }
     public string? ServerRequestId { get; }
@@ -74,6 +92,16 @@ public sealed class OpenAiTranscriptionClient : IDisposable
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromMinutes(30);
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
     private readonly HttpClient _httpClient;
+    private readonly TimeSpan _requestTimeout = RequestTimeout;
+
+    // Offline harness seam only. Production always uses its fixed HTTPS handler/base URL.
+    internal OpenAiTranscriptionClient(HttpMessageHandler handler, TimeSpan? requestTimeout = null)
+    {
+        _httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.openai.com/"), Timeout = Timeout.InfiniteTimeSpan };
+        _requestTimeout = requestTimeout ?? RequestTimeout;
+        if (_requestTimeout <= TimeSpan.Zero || _requestTimeout > RequestTimeout) throw new ArgumentOutOfRangeException(nameof(requestTimeout));
+    }
+
 
     public OpenAiTranscriptionClient()
     {
@@ -110,6 +138,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
             throw new ArgumentOutOfRangeException(nameof(timeout), "Connection-test timeout must be between zero and five minutes.");
         }
 
+        using var operation = StartupDiagnostics.Begin(DiagnosticArea.ConnectionTest);
         var normalizedKey = InputValidation.NormalizeApiKey(apiKey);
         var normalizedModel = NormalizeModel(model);
         var clientRequestId = CreateClientRequestId();
@@ -126,6 +155,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
 
         try
         {
+            operation.Stage(DiagnosticStage.Dispatched);
             using var response = await _httpClient.SendAsync(
                 request,
                 HttpCompletionOption.ResponseHeadersRead,
@@ -133,11 +163,15 @@ public sealed class OpenAiTranscriptionClient : IDisposable
             serverRequestId = ReadHeader(response, "x-request-id");
             responseStatusCode = response.StatusCode;
             WriteResponseDiagnostics("model-access-test", clientRequestId, response, requestTimer.Elapsed);
+            operation.Stage(DiagnosticStage.ResponseHeaders);
             if (!response.IsSuccessStatusCode)
             {
                 var body = await ReadResponseBodyAsync(response.Content, attemptCancellation.Token);
-                throw CreateException(response, body, clientRequestId);
+                var failure = CreateException(response, body, clientRequestId);
+                operation.Fail(failure, DiagnosticReason.ProviderRejected);
+                throw failure;
             }
+            operation.Stage(DiagnosticStage.Completed);
         }
         catch (HttpRequestException ex)
         {
@@ -150,7 +184,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
                 responseStatusCode,
                 requestTimer.Elapsed,
                 ex);
-            StartupDiagnostics.WriteException("OPENAI NETWORK", diagnostic);
+            operation.Fail(diagnostic, DiagnosticReason.Other);
             throw diagnostic;
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
@@ -164,8 +198,20 @@ public sealed class OpenAiTranscriptionClient : IDisposable
                 responseStatusCode,
                 requestTimer.Elapsed,
                 ex);
-            StartupDiagnostics.WriteException("OPENAI TIMEOUT", diagnostic);
+            operation.Fail(diagnostic, DiagnosticReason.Other);
             throw diagnostic;
+        }
+        catch (OperationCanceledException)
+        {
+            operation.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
+            throw;
+        }
+        catch (OpenAiProtocolException ex)
+        {
+            operation.Fail(ex, DiagnosticReason.MalformedResponse);
+            StartupDiagnostics.WriteHttpResponse("model-access-test", clientRequestId, (int?)responseStatusCode ?? 0,
+                serverRequestId, requestTimer.Elapsed.TotalMilliseconds, null);
+            throw;
         }
     }
 
@@ -230,12 +276,18 @@ public sealed class OpenAiTranscriptionClient : IDisposable
                 $"{MaximumAudioPayloadBytes:N0}-byte upload ceiling. Lower the chunk-size setting and try again.");
         }
 
-        var attempts = Math.Clamp(retryCount, 0, 5) + 1;
-        for (var attempt = 1; attempt <= attempts; attempt++)
+        // No HTTP/network classification proves non-dispatch. One POST only, including 429/5xx.
+        // Preserve the legacy setting in saved profiles, but never use it to replay paid work.
+        _ = retryCount;
+        const int attempts = 1;
+        using var operation = StartupDiagnostics.Begin(DiagnosticArea.Transcription);
+        const int attempt = 1;
+        // A single lexical dispatch block: no retry loop or retry timer.
+        
         {
             cancellationToken.ThrowIfCancellationRequested();
             using var attemptCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            attemptCancellation.CancelAfter(RequestTimeout);
+            attemptCancellation.CancelAfter(_requestTimeout);
             var clientRequestId = CreateClientRequestId();
             var requestTimer = Stopwatch.StartNew();
             string? serverRequestId = null;
@@ -294,6 +346,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
                 form.Add(audioContent, "file", "audio.mp3");
                 request.Content = form;
 
+                operation.Stage(DiagnosticStage.Dispatched);
                 using var response = await _httpClient.SendAsync(
                     request,
                     HttpCompletionOption.ResponseHeadersRead,
@@ -301,25 +354,21 @@ public sealed class OpenAiTranscriptionClient : IDisposable
                 serverRequestId = ReadHeader(response, "x-request-id");
                 responseStatusCode = response.StatusCode;
                 WriteResponseDiagnostics("audio-transcription", clientRequestId, response, requestTimer.Elapsed);
+                operation.Stage(DiagnosticStage.ResponseHeaders);
                 var body = await ReadResponseBodyAsync(response.Content, attemptCancellation.Token);
+                operation.Stage(DiagnosticStage.ResponseBody);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return ReadTranscriptionResult(body, usesSpeakerDiarization);
+                    var result = ReadTranscriptionResult(body, usesSpeakerDiarization);
+                    operation.Stage(DiagnosticStage.Accepted);
+                    operation.Stage(DiagnosticStage.Completed);
+                    return result;
                 }
 
                 var exception = CreateException(response, body, clientRequestId);
-                if (!IsTransient(response.StatusCode) || attempt == attempts)
-                {
-                    throw exception;
-                }
-
-                var delay = RetryDelay(attempt, response.Headers.RetryAfter);
-                var requestReference = exception.RequestId ?? exception.ClientRequestId ?? "unavailable";
-                log?.Invoke(
-                    $"OpenAI returned HTTP {(int)response.StatusCode} (request {requestReference}). " +
-                    $"Retrying in {delay.TotalSeconds:0} seconds.");
-                await Task.Delay(delay, cancellationToken);
+                operation.Fail(exception, DiagnosticReason.ProviderRejected);
+                throw exception;
             }
             catch (HttpRequestException ex)
             {
@@ -332,17 +381,8 @@ public sealed class OpenAiTranscriptionClient : IDisposable
                     responseStatusCode,
                     requestTimer.Elapsed,
                     ex);
-                StartupDiagnostics.WriteException("OPENAI NETWORK", diagnostic);
-                if (attempt == attempts)
-                {
-                    throw diagnostic;
-                }
-
-                var delay = NetworkRetryDelay(attempt);
-                log?.Invoke(
-                    $"Network error ({diagnostic.FailureKind}; client request {clientRequestId}; " +
-                    $"elapsed {diagnostic.Elapsed.TotalSeconds:0.0}s). Retrying in {delay.TotalSeconds:0} seconds.");
-                await Task.Delay(delay, cancellationToken);
+                operation.Fail(diagnostic, DiagnosticReason.ProviderOutcomeUnknown);
+                throw diagnostic;
             }
             catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
             {
@@ -355,21 +395,25 @@ public sealed class OpenAiTranscriptionClient : IDisposable
                     responseStatusCode,
                     requestTimer.Elapsed,
                     ex);
-                StartupDiagnostics.WriteException("OPENAI TIMEOUT", diagnostic);
-                if (attempt == attempts)
-                {
-                    throw diagnostic;
-                }
-
-                var delay = NetworkRetryDelay(attempt);
-                log?.Invoke(
-                    $"OpenAI request timed out (client request {clientRequestId}; " +
-                    $"elapsed {diagnostic.Elapsed.TotalSeconds:0.0}s). Retrying in {delay.TotalSeconds:0} seconds.");
-                await Task.Delay(delay, cancellationToken);
+                operation.Fail(diagnostic, DiagnosticReason.ProviderOutcomeUnknown);
+                throw diagnostic;
+            }
+            catch (OperationCanceledException)
+            {
+                // User cancellation after dispatch also does not establish zero charge.
+                operation.Stage(DiagnosticStage.Cancelled, DiagnosticReason.ProviderOutcomeUnknown);
+                throw;
+            }
+            catch (OpenAiProtocolException ex)
+            {
+                operation.Fail(ex, DiagnosticReason.MalformedResponse);
+                StartupDiagnostics.WriteHttpResponse("audio-transcription", clientRequestId, (int?)responseStatusCode ?? 0,
+                    serverRequestId, requestTimer.Elapsed.TotalMilliseconds, null);
+                throw;
             }
         }
 
-        throw new InvalidOperationException("Transcription failed after all retry attempts.");
+
     }
 
     private static IReadOnlyList<string> OptionalSingleLanguageList(string? language)
@@ -696,38 +740,11 @@ public sealed class OpenAiTranscriptionClient : IDisposable
         }
     }
 
-    private static bool IsTransient(HttpStatusCode statusCode)
-    {
-        var numeric = (int)statusCode;
-        return statusCode is HttpStatusCode.RequestTimeout or HttpStatusCode.Conflict or HttpStatusCode.TooManyRequests
-            || numeric == 425
-            || numeric >= 500;
-    }
 
-    private static TimeSpan RetryDelay(int attempt, RetryConditionHeaderValue? retryAfter)
-    {
-        if (retryAfter?.Delta is { } delta && delta > TimeSpan.Zero)
-        {
-            return delta > TimeSpan.FromMinutes(2) ? TimeSpan.FromMinutes(2) : delta;
-        }
 
-        if (retryAfter?.Date is { } retryDate)
-        {
-            var dateDelay = retryDate - DateTimeOffset.UtcNow;
-            if (dateDelay > TimeSpan.Zero)
-            {
-                return dateDelay > TimeSpan.FromMinutes(2) ? TimeSpan.FromMinutes(2) : dateDelay;
-            }
-        }
 
-        return NetworkRetryDelay(attempt);
-    }
 
-    private static TimeSpan NetworkRetryDelay(int attempt)
-    {
-        var baseSeconds = Math.Min(30, 2 * Math.Pow(2, Math.Max(0, attempt - 1)));
-        return TimeSpan.FromSeconds(baseSeconds + (Random.Shared.NextDouble() * 1.5));
-    }
+
 
     private static OpenAiApiException CreateException(
         HttpResponseMessage response,

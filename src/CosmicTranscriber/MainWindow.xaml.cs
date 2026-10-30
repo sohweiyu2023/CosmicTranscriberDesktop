@@ -140,6 +140,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+                StartupDiagnostics.WriteException("Startup", ex);
             if (!_isClosing)
             {
                 AppendLog("Could not open the file picker: " + InputValidation.SingleLineForLog(ex.Message));
@@ -177,6 +178,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+                StartupDiagnostics.WriteException("Startup", ex);
             if (!_isClosing)
             {
                 AppendLog("Could not open the folder picker: " + InputValidation.SingleLineForLog(ex.Message));
@@ -220,6 +222,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            StartupDiagnostics.WriteException("CLIPBOARD", ex);
             if (!_isClosing)
             {
                 AppendLog("Could not read copied file paths: " + InputValidation.SingleLineForLog(ex.Message));
@@ -1048,6 +1051,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            StartupDiagnostics.WriteException("Authentication", ex);
             MessageBox.Show(this, ex.Message, "Could not forget saved key",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -1233,6 +1237,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
+                StartupDiagnostics.WriteException("Authentication", ex);
                 MessageBox.Show(this,
                     "Transcription can continue, but the key could not be saved securely:\n\n" + ex.Message,
                     "Secure key storage warning", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -1476,6 +1481,7 @@ public partial class MainWindow : Window
                 }
                 catch (Exception completionEx)
                 {
+                StartupDiagnostics.WriteException("Export", completionEx);
                     AppendLog("Could not show the completion window: " +
                               InputValidation.SingleLineForLog(completionEx.Message));
                     MessageBox.Show(this,
@@ -2227,6 +2233,7 @@ public partial class MainWindow : Window
     {
         try
         {
+            AppendLog(StartupDiagnostics.HealthSummary);
             var directory = StartupDiagnostics.LogDirectory;
             if (string.IsNullOrWhiteSpace(directory))
             {

@@ -126,8 +126,8 @@
   },
   {
     "path": "README.md",
-    "sha256": "02dae9d68832700312d8a85b9372327abc02f77b1028806607cc980dfc1d9970",
-    "bytes": 9888
+    "sha256": "7eab319777c4e2f6c084bf0830aa4fad09124047b108b5efdcf1bf3df7edd20e",
+    "bytes": 10503
   },
   {
     "path": "RUN-DIAGNOSTIC.cmd",
@@ -171,8 +171,8 @@
   },
   {
     "path": "docs/DEVELOPER-GUIDE.md",
-    "sha256": "4d7e189358b6d77cb2cd7d876da5e4900ca4fb2c0873de5e24d85e0faeb4982d",
-    "bytes": 16014
+    "sha256": "e74bcf8654d4731d444ea2f664aa9c67a0b4525273aa69742873ae7163ef498c",
+    "bytes": 16141
   },
   {
     "path": "docs/DIAGNOSTICS.md",
@@ -188,6 +188,11 @@
     "path": "docs/LICENSING_AUDIT_2026-10-21.md",
     "sha256": "3b5d5bb6296ffd70eedd243e8930727f616152a4ea32348fc3584de6874b5394",
     "bytes": 5088
+  },
+  {
+    "path": "docs/LOGGING-SAFE-ERROR-AUDIT.md",
+    "sha256": "4c6e6125edf9fd4d5ab229b5f1437fda5ce6946049bf0c369f6de7c1bd179fb2",
+    "bytes": 6869
   },
   {
     "path": "docs/MEDIA-SMOKE-REPORT.json",
@@ -231,8 +236,8 @@
   },
   {
     "path": "docs/RELEASE-CHECKLIST.md",
-    "sha256": "e6a5119be17a470dcda81f99d6815480ca353c06de93dd134571ef306816a7ac",
-    "bytes": 11993
+    "sha256": "f2e7c6142ad20e70ca08eae00c812f0a661752b662a8036f91191c998e062876",
+    "bytes": 12078
   },
   {
     "path": "docs/SDK-LICENSE-SOURCES.json",
@@ -251,8 +256,8 @@
   },
   {
     "path": "docs/TROUBLESHOOTING.md",
-    "sha256": "7281a7f02cdda0f93007c4eb8e546ec35b63e980c8e822ae7e7329433afba379",
-    "bytes": 14057
+    "sha256": "1b7240437b11aa618120dee25427350762badf6fd86b8fdaeaa31c80e772fb88",
+    "bytes": 14350
   },
   {
     "path": "docs/USER-GUIDE.md",
@@ -326,8 +331,8 @@
   },
   {
     "path": "scripts/static_verify.py",
-    "sha256": "c84cf98531ad705faed5bb1607bb25a458344e44f0b53d9191f0077860780ba4",
-    "bytes": 35880
+    "sha256": "19355dbad976447ae995e01f445a9e8280193791a50885748e67312fa04f61f6",
+    "bytes": 37014
   },
   {
     "path": "scripts/test_release_verifier.py",
@@ -346,8 +351,8 @@
   },
   {
     "path": "src/CosmicTranscriber/AboutWindow.xaml.cs",
-    "sha256": "be1bf0e65f5cc857ae1e19fe4095df9ea5713ac4e86e2e68614e70ebb8fd7a51",
-    "bytes": 2936
+    "sha256": "cb7a9f33b1fd9f4a64dd449d00a44827f11e7d27ef9cff08f76687f9c12b3be8",
+    "bytes": 3056
   },
   {
     "path": "src/CosmicTranscriber/App.xaml",
@@ -381,13 +386,13 @@
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml",
-    "sha256": "a310fd0e726034626249cc7c931ab13d52b5cd37db75e6e89e4e59ef12a4a447",
-    "bytes": 50000
+    "sha256": "c3264f8bdac23df6f81ea66d8ae774fa7f748fbb8eb1962b1093769c7bf2f1ab",
+    "bytes": 50054
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml.cs",
-    "sha256": "8f37ed2accbad45c6fe1f2a5183c5ef08554e138e309856016b7e4a014971610",
-    "bytes": 98261
+    "sha256": "cc749f8470d769cf0161c8c95af40f23acf6f97cf76d1c1042ddd146d19e070f",
+    "bytes": 98738
   },
   {
     "path": "src/CosmicTranscriber/Models/AppSettings.cs",
@@ -411,13 +416,13 @@
   },
   {
     "path": "src/CosmicTranscriber/Services/ApiKeyStore.cs",
-    "sha256": "c013ef42ee715ae4e713445d375337b7f68bcdc0f5138700465e44d5a3ccfed7",
-    "bytes": 8501
+    "sha256": "c78e56919b77b3d86703cda276cd7833bc0486089d7e0be28472e2e2adf50e54",
+    "bytes": 11612
   },
   {
     "path": "src/CosmicTranscriber/Services/AppSettingsService.cs",
-    "sha256": "8ab42e3b3a1e667309333ec0da6dec227896d8805f0e099a304a4f726d5b97af",
-    "bytes": 9667
+    "sha256": "4f7aa9fa9d5d6d2dd64d148c6319e06196dc34b00d0f3cd8737978666aabdb62",
+    "bytes": 11556
   },
   {
     "path": "src/CosmicTranscriber/Services/CheckpointCacheService.cs",
@@ -441,23 +446,23 @@
   },
   {
     "path": "src/CosmicTranscriber/Services/OpenAiTranscriptionClient.cs",
-    "sha256": "f41bca488caee4147198d96908ae363531dfaa03ef86e4adcbcd9540d1a908aa",
-    "bytes": 35399
+    "sha256": "3f70ad739d084655ff938ea11e6e1ae239e8562cd29d510c68c85ee4df565f6f",
+    "bytes": 36856
   },
   {
     "path": "src/CosmicTranscriber/Services/OutputDirectoryService.cs",
-    "sha256": "bedebaf446cde069ed7d75ea61196271c9f45cfd45975eb7b6ac0e2694321b26",
-    "bytes": 1749
+    "sha256": "7ed60264601afd8ee23e2cb413439751b76214b15aba9882d673597124d7f6b2",
+    "bytes": 2384
   },
   {
     "path": "src/CosmicTranscriber/Services/TranscriptOutputWriter.cs",
-    "sha256": "5ed0d69ad3ca2abf01cacb26f482b83b7e52b5b792fc499218d3e4cb2f5809b7",
-    "bytes": 15201
+    "sha256": "782dd5e042a18c22c9f37b1cd21bca08bbc03c46ec683d3b2b227f747e6d873e",
+    "bytes": 16542
   },
   {
     "path": "src/CosmicTranscriber/Services/TranscriptionCoordinator.cs",
-    "sha256": "4da37a0d129c40c482b67ec7dd6ec429b82d343a6ad0dca1c7852b44f9e95a91",
-    "bytes": 29055
+    "sha256": "b169cf07cbca8b163666f2e7d70e8fc707146a6da592d7f1427966202932908c",
+    "bytes": 31762
   },
   {
     "path": "src/CosmicTranscriber/Themes/CosmicNight.xaml",
@@ -486,8 +491,13 @@
   },
   {
     "path": "src/CosmicTranscriber/Utilities/DiagnosticLogWriter.cs",
-    "sha256": "e0a4d345cc403e5fc27182641476fe5a904fe2f8a04918ba05b5855fa48fc9f5",
-    "bytes": 3736
+    "sha256": "a620663e5c85245d9bc2f80299f8e1f14d8808c14bcbe667ee69c26febd59598",
+    "bytes": 4440
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/DiagnosticVocabulary.cs",
+    "sha256": "cced29ca2a79a3efeccd60a16b5f3feecd59ad4303de1839fe276aa0f1c34a4b",
+    "bytes": 2680
   },
   {
     "path": "src/CosmicTranscriber/Utilities/FocusViewportTrace.cs",
@@ -525,6 +535,11 @@
     "bytes": 723
   },
   {
+    "path": "src/CosmicTranscriber/Utilities/OperationalDiagnostics.cs",
+    "sha256": "74a9320fa9d97a162dc5a9da03dad63b080460133e8ae6bbd2e2f707f84cc33e",
+    "bytes": 2748
+  },
+  {
     "path": "src/CosmicTranscriber/Utilities/RunPresentation.cs",
     "sha256": "a022f06d8f90880ff51d6ae87737e81548cf658190bc1b8484f0414791e51512",
     "bytes": 1208
@@ -536,8 +551,8 @@
   },
   {
     "path": "src/CosmicTranscriber/Utilities/StartupDiagnostics.cs",
-    "sha256": "155793fe54da3df971eaa95ae23b7a5f2b2baf61ec88927fbb47e3138aec2e6d",
-    "bytes": 9222
+    "sha256": "27814fe9552227f0be305926608456f34090717c737a305a9213fa526cc08d0f",
+    "bytes": 18269
   },
   {
     "path": "src/CosmicTranscriber/Utilities/WindowsSecurity.cs",
@@ -561,13 +576,13 @@
   },
   {
     "path": "tests/DesktopRegression/Program.cs",
-    "sha256": "e2a9ea246b5800da894b4e11d0ec37c5919d655ecc5ea1a5cffa34da8b5ab836",
-    "bytes": 10002
+    "sha256": "a86a693a28caa5866cd737283b189219c37df7f8b4ddb8cf748eb39f9cb92693",
+    "bytes": 10097
   },
   {
     "path": "tests/DesktopRegression/README.md",
-    "sha256": "92ada3652e149c1221f82e35ebf8eec8ea5867b6cb5d3663618459a3223d1681",
-    "bytes": 1796
+    "sha256": "3a2c627b7ccc61763e827886eb42651498c5881e21eb08c1a24a6dd19a2e1ae8",
+    "bytes": 1828
   },
   {
     "path": "tests/DesktopRegression/packages.lock.json",
@@ -591,13 +606,13 @@
   },
   {
     "path": "tests/DiagnosticsRegression/DiagnosticsRegression.csproj",
-    "sha256": "692a5986b169cff67f0c0b2c67637f4c42aa0072dc1a2066e8903223e4f945bc",
-    "bytes": 969
+    "sha256": "bcefd7824162963a26b7cd99f80844663c5c811e11a531810c3f7d807075f22f",
+    "bytes": 1223
   },
   {
     "path": "tests/DiagnosticsRegression/Program.cs",
-    "sha256": "cd7156d36b24c3253f3d2651cb32cc37842f5cd0dfc01a2cceaf99c82547840a",
-    "bytes": 9490
+    "sha256": "86787026407ed257f2b8d40fab6a6754311fc7c5d27353a9a0a162dabfb513f3",
+    "bytes": 9495
   },
   {
     "path": "tests/DiagnosticsRegression/packages.lock.json",
@@ -671,6 +686,21 @@
   },
   {
     "path": "tests/NormalSettingsRegression/packages.lock.json",
+    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
+    "bytes": 1945
+  },
+  {
+    "path": "tests/SafetyRegression/Program.cs",
+    "sha256": "7ef073e28a1fe6df716bfbce51ac204760f189488f901858ac89ebb4a13d7c73",
+    "bytes": 16403
+  },
+  {
+    "path": "tests/SafetyRegression/SafetyRegression.csproj",
+    "sha256": "9ad99f99684836cac4d23c3ba3fdcc3978d6aec7af34f72cc1cab39e0e7dfdc8",
+    "bytes": 1192
+  },
+  {
+    "path": "tests/SafetyRegression/packages.lock.json",
     "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
     "bytes": 1945
   },
