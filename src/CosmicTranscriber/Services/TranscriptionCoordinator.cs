@@ -48,184 +48,191 @@ public sealed class TranscriptionCoordinator
         Action<string>? log,
         CancellationToken cancellationToken)
     {
-        using var cacheUsage = AcquireCacheUsage(outputDirectory);
-        await using var sourceLease = new FileStream(
-            item.SourcePath,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            bufferSize: 1024 * 256,
-            useAsync: true);
-
-        var currentHash = Convert.ToHexString(await SHA256.HashDataAsync(sourceLease, cancellationToken));
-        if (!string.Equals(currentHash, item.SourceSha256, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new IOException(
-                "The source MP3 content changed after it was queued. Remove it, add it again, and retry.");
-        }
-
-        sourceLease.Position = 0;
-        var workDirectory = ResolveWorkDirectory(item, outputDirectory, request);
-        CreateCheckpointDirectory(workDirectory);
-        CheckpointCacheService.ValidateWorkDirectoryForUse(workDirectory, cancellationToken);
-        await using var workLock = await AcquireWorkLockAsync(workDirectory, cancellationToken);
-        CheckpointCacheService.ValidateWorkDirectoryForUse(workDirectory, cancellationToken);
-        var chunkDirectory = Path.Combine(workDirectory, $"chunks-{Environment.ProcessId}");
-        var usesSpeakerDiarization = TranscriptionModelCatalog.SupportsSpeakerDiarization(request.Model);
-        var transcriptDirectory = Path.Combine(workDirectory, "transcripts");
-        CreateCheckpointDirectory(transcriptDirectory);
-
-        IReadOnlyList<AudioChunk>? chunks = null;
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Transcription);
         try
         {
-            progress?.Report(new CoordinatorProgress(
-                "Preparing",
-                "Inspecting and safely chunking the MP3…",
-                0,
-                0,
-                0));
+            using var cacheUsage = AcquireCacheUsage(outputDirectory);
+            await using var sourceLease = new FileStream(
+                item.SourcePath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 1024 * 256,
+                useAsync: true);
 
-            var chunkProgress = new CallbackProgress<double>(fraction =>
-                progress?.Report(new CoordinatorProgress(
-                    "Preparing",
-                    $"Preparing audio… {fraction:P0}",
-                    Math.Clamp(fraction * 0.12, 0, 0.12),
-                    0,
-                    0)));
-
-            chunks = await Task.Run(
-                () => _chunker.CreateChunksAsync(
-                    item.SourcePath,
-                    chunkDirectory,
-                    request.ChunkMegabytes,
-                    request.MaximumChunkMinutes,
-                    item.Duration,
-                    enforceDurationLimit: true,
-                    includePreroll: !usesSpeakerDiarization,
-                    progress: chunkProgress,
-                    cancellationToken: cancellationToken),
-                cancellationToken);
-
-            await WriteManifestAsync(workDirectory, item, request, chunks, cancellationToken);
-            log?.Invoke($"{item.FileName}: {chunks.Count} upload chunk(s) ready.");
-
-            var results = new List<ChunkTranscript>(chunks.Count);
-            long transcriptCharacters = 0;
-            var previousMeaningfulText = string.Empty;
-            var contextCheckpointChainIntact = true;
-
-            for (var index = 0; index < chunks.Count; index++)
+            var currentHash = Convert.ToHexString(await SHA256.HashDataAsync(sourceLease, cancellationToken));
+            if (!string.Equals(currentHash, item.SourceSha256, StringComparison.OrdinalIgnoreCase))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                var chunk = chunks[index];
-                var checkpointPath = Path.Combine(transcriptDirectory, $"chunk-{chunk.Index:000}.json");
-                var canReuse = !request.UsePreviousContext || contextCheckpointChainIntact;
-                var checkpoint = canReuse
-                    ? await TryReadCheckpointAsync(checkpointPath, chunk.Index, cancellationToken)
-                    : null;
-                var reused = checkpoint is not null;
-                string text;
-                IReadOnlyList<SpeakerSegment> localSpeakerSegments;
-
-                if (checkpoint is not null)
-                {
-                    text = checkpoint.Text;
-                    localSpeakerSegments = checkpoint.SpeakerSegments;
-                    log?.Invoke($"{item.FileName}: reused checkpoint for chunk {chunk.Index}/{chunks.Count}.");
-                }
-                else
-                {
-                    if (request.UsePreviousContext)
-                    {
-                        contextCheckpointChainIntact = false;
-                    }
-
-                    var contextualPrompt = usesSpeakerDiarization
-                        ? string.Empty
-                        : BuildPrompt(
-                            request,
-                            previousMeaningfulText,
-                            chunk.Index > 1 ? chunk.PrerollDuration : TimeSpan.Zero);
-                    progress?.Report(new CoordinatorProgress(
-                        "Transcribing",
-                        $"Uploading chunk {chunk.Index} of {chunks.Count}…",
-                        0.12 + (0.88 * index / chunks.Count),
-                        chunk.Index,
-                        chunks.Count));
-
-                    var response = await _client.TranscribeAsync(
-                        request.ApiKey,
-                        request.Model,
-                        chunk.Path,
-                        contextualPrompt,
-                        request.Language,
-                        usesSpeakerDiarization ? null : request.Keywords,
-                        request.RetryCount,
-                        log,
-                        cancellationToken);
-                    text = response.Text;
-                    localSpeakerSegments = response.SpeakerSegments;
-
-                    // Once OpenAI has returned a successful billable response, persist it with
-                    // a short storage-only token before observing ordinary run cancellation.
-                    // This prevents a cancel click in the narrow post-response window from
-                    // discarding paid work and retranscribing the same chunk on the next run.
-                    await SaveCompletedResponseCheckpointAsync(
-                        checkpointPath,
-                        chunk.Index,
-                        text,
-                        localSpeakerSegments);
-                    cancellationToken.ThrowIfCancellationRequested();
-                    log?.Invoke($"{item.FileName}: checkpoint saved for chunk {chunk.Index}/{chunks.Count}.");
-                }
-
-                if (text.Length > MaximumTranscriptCharactersPerFile - transcriptCharacters)
-                {
-                    throw new TranscriptSizeLimitException(
-                        $"The transcript for {item.FileName} exceeded the safe {MaximumTranscriptCharactersPerFile:N0}-character in-memory limit. " +
-                        "Split the source recording into smaller files and retry; completed chunk checkpoints were retained.");
-                }
-
-                transcriptCharacters += text.Length;
-                var end = chunk.Start + chunk.Duration;
-                var globalSpeakerSegments = OffsetAndScopeSpeakerSegments(
-                    localSpeakerSegments,
-                    chunk,
-                    chunks.Count);
-                results.Add(new ChunkTranscript(chunk.Index, chunk.Start, end, text, reused)
-                {
-                    SpeakerSegments = globalSpeakerSegments
-                });
-                if (!usesSpeakerDiarization && !string.IsNullOrWhiteSpace(text))
-                {
-                    previousMeaningfulText = text;
-                }
-
-                progress?.Report(new CoordinatorProgress(
-                    "Transcribing",
-                    reused
-                        ? $"Restored chunk {chunk.Index} of {chunks.Count} from checkpoint."
-                        : $"Completed chunk {chunk.Index} of {chunks.Count}.",
-                    0.12 + (0.88 * (index + 1) / chunks.Count),
-                    chunk.Index,
-                    chunks.Count));
+                throw new IOException(
+                    "The source MP3 content changed after it was queued. Remove it, add it again, and retry.");
             }
 
-            return new FileTranscriptionResult(
-                item.SourcePath,
-                Path.GetFileNameWithoutExtension(item.SourcePath) ?? "audio",
-                item.Duration,
-                results)
+            sourceLease.Position = 0;
+            var workDirectory = ResolveWorkDirectory(item, outputDirectory, request);
+            CreateCheckpointDirectory(workDirectory);
+            CheckpointCacheService.ValidateWorkDirectoryForUse(workDirectory, cancellationToken);
+            await using var workLock = await AcquireWorkLockAsync(workDirectory, cancellationToken);
+            CheckpointCacheService.ValidateWorkDirectoryForUse(workDirectory, cancellationToken);
+            var chunkDirectory = Path.Combine(workDirectory, $"chunks-{Environment.ProcessId}");
+            var usesSpeakerDiarization = TranscriptionModelCatalog.SupportsSpeakerDiarization(request.Model);
+            var transcriptDirectory = Path.Combine(workDirectory, "transcripts");
+            CreateCheckpointDirectory(transcriptDirectory);
+
+            IReadOnlyList<AudioChunk>? chunks = null;
+            try
             {
-                HasSpeakerDiarization = usesSpeakerDiarization
-            };
+                progress?.Report(new CoordinatorProgress(
+                    "Preparing",
+                    "Inspecting and safely chunking the MP3…",
+                    0,
+                    0,
+                    0));
+
+                var chunkProgress = new CallbackProgress<double>(fraction =>
+                    progress?.Report(new CoordinatorProgress(
+                        "Preparing",
+                        $"Preparing audio… {fraction:P0}",
+                        Math.Clamp(fraction * 0.12, 0, 0.12),
+                        0,
+                        0)));
+
+                chunks = await Task.Run(
+                    () => _chunker.CreateChunksAsync(
+                        item.SourcePath,
+                        chunkDirectory,
+                        request.ChunkMegabytes,
+                        request.MaximumChunkMinutes,
+                        item.Duration,
+                        enforceDurationLimit: true,
+                        includePreroll: !usesSpeakerDiarization,
+                        progress: chunkProgress,
+                        cancellationToken: cancellationToken),
+                    cancellationToken);
+
+                await WriteManifestAsync(workDirectory, item, request, chunks, cancellationToken);
+                log?.Invoke($"{item.FileName}: {chunks.Count} upload chunk(s) ready.");
+
+                var results = new List<ChunkTranscript>(chunks.Count);
+                long transcriptCharacters = 0;
+                var previousMeaningfulText = string.Empty;
+                var contextCheckpointChainIntact = true;
+
+                for (var index = 0; index < chunks.Count; index++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var chunk = chunks[index];
+                    var checkpointPath = Path.Combine(transcriptDirectory, $"chunk-{chunk.Index:000}.json");
+                    var canReuse = !request.UsePreviousContext || contextCheckpointChainIntact;
+                    var checkpoint = canReuse
+                        ? await TryReadCheckpointAsync(checkpointPath, chunk.Index, cancellationToken)
+                        : null;
+                    var reused = checkpoint is not null;
+                    string text;
+                    IReadOnlyList<SpeakerSegment> localSpeakerSegments;
+
+                    if (checkpoint is not null)
+                    {
+                        text = checkpoint.Text;
+                        localSpeakerSegments = checkpoint.SpeakerSegments;
+                        log?.Invoke($"{item.FileName}: reused checkpoint for chunk {chunk.Index}/{chunks.Count}.");
+                    }
+                    else
+                    {
+                        if (request.UsePreviousContext)
+                        {
+                            contextCheckpointChainIntact = false;
+                        }
+
+                        var contextualPrompt = usesSpeakerDiarization
+                            ? string.Empty
+                            : BuildPrompt(
+                                request,
+                                previousMeaningfulText,
+                                chunk.Index > 1 ? chunk.PrerollDuration : TimeSpan.Zero);
+                        progress?.Report(new CoordinatorProgress(
+                            "Transcribing",
+                            $"Uploading chunk {chunk.Index} of {chunks.Count}…",
+                            0.12 + (0.88 * index / chunks.Count),
+                            chunk.Index,
+                            chunks.Count));
+
+                        var response = await _client.TranscribeAsync(
+                            request.ApiKey,
+                            request.Model,
+                            chunk.Path,
+                            contextualPrompt,
+                            request.Language,
+                            usesSpeakerDiarization ? null : request.Keywords,
+                            request.RetryCount,
+                            log,
+                            cancellationToken);
+                        text = response.Text;
+                        localSpeakerSegments = response.SpeakerSegments;
+
+                        // Once OpenAI has returned a successful billable response, persist it with
+                        // a short storage-only token before observing ordinary run cancellation.
+                        // This prevents a cancel click in the narrow post-response window from
+                        // discarding paid work and retranscribing the same chunk on the next run.
+                        await SaveCompletedResponseCheckpointAsync(
+                            checkpointPath,
+                            chunk.Index,
+                            text,
+                            localSpeakerSegments);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        log?.Invoke($"{item.FileName}: checkpoint saved for chunk {chunk.Index}/{chunks.Count}.");
+                    }
+
+                    if (text.Length > MaximumTranscriptCharactersPerFile - transcriptCharacters)
+                    {
+                        throw new TranscriptSizeLimitException(
+                            $"The transcript for {item.FileName} exceeded the safe {MaximumTranscriptCharactersPerFile:N0}-character in-memory limit. " +
+                            "Split the source recording into smaller files and retry; completed chunk checkpoints were retained.");
+                    }
+
+                    transcriptCharacters += text.Length;
+                    var end = chunk.Start + chunk.Duration;
+                    var globalSpeakerSegments = OffsetAndScopeSpeakerSegments(
+                        localSpeakerSegments,
+                        chunk,
+                        chunks.Count);
+                    results.Add(new ChunkTranscript(chunk.Index, chunk.Start, end, text, reused)
+                    {
+                        SpeakerSegments = globalSpeakerSegments
+                    });
+                    if (!usesSpeakerDiarization && !string.IsNullOrWhiteSpace(text))
+                    {
+                        previousMeaningfulText = text;
+                    }
+
+                    progress?.Report(new CoordinatorProgress(
+                        "Transcribing",
+                        reused
+                            ? $"Restored chunk {chunk.Index} of {chunks.Count} from checkpoint."
+                            : $"Completed chunk {chunk.Index} of {chunks.Count}.",
+                        0.12 + (0.88 * (index + 1) / chunks.Count),
+                        chunk.Index,
+                        chunks.Count));
+                }
+
+                return diagnostic.Complete(new FileTranscriptionResult(
+                    item.SourcePath,
+                    Path.GetFileNameWithoutExtension(item.SourcePath) ?? "audio",
+                    item.Duration,
+                    results)
+                {
+                    HasSpeakerDiarization = usesSpeakerDiarization
+                });
+            }
+            finally
+            {
+                // Prepared MP3 audio is temporary. Remove it after success, failure, or cancellation;
+                // only the small transcript checkpoints are retained for resume.
+                TryDeleteDirectory(chunkDirectory, log);
+            }
+    
         }
-        finally
-        {
-            // Prepared MP3 audio is temporary. Remove it after success, failure, or cancellation;
-            // only the small transcript checkpoints are retained for resume.
-            TryDeleteDirectory(chunkDirectory, log);
-        }
+        catch (OperationCanceledException) { diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); throw; }
+        catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.Other); throw; }
     }
 
     private static string BuildPrompt(
@@ -323,56 +330,66 @@ public sealed class TranscriptionCoordinator
         int expectedIndex,
         CancellationToken cancellationToken)
     {
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Checkpoint);
         try
         {
-            // Open directly. File.Exists can return false for access-denied paths, which
-            // would make an existing completed checkpoint look absent and risk rebilling.
-            // Refuse a file-system link so a cache checkpoint cannot redirect reads to
-            // unrelated storage outside the application-owned work directory.
-            SafeFileSystem.EnsureFileIsNotReparsePointIfPresent(path, "The saved checkpoint");
-            var bytes = await BoundedFileReader.ReadAllBytesAsync(
-                path,
-                MaximumCheckpointBytes,
-                cancellationToken);
-            var json = StrictUtf8.GetString(bytes);
-            var envelope = JsonSerializer.Deserialize<CheckpointEnvelope>(json);
-            if (envelope is null
-                || !string.Equals(envelope.Schema, CheckpointSchema, StringComparison.Ordinal)
-                || envelope.Index != expectedIndex
-                || envelope.Text is null
-                || envelope.SpeakerSegments is null
-                || string.IsNullOrWhiteSpace(envelope.PayloadSha256)
-                || !string.Equals(
-                    envelope.PayloadSha256,
-                    ComputeCheckpointPayloadSha256(envelope.Text, envelope.SpeakerSegments),
-                    StringComparison.OrdinalIgnoreCase))
+            try
             {
-                DeleteInvalidCheckpointOrThrow(path);
-                return null;
-            }
+                // Open directly. File.Exists can return false for access-denied paths, which
+                // would make an existing completed checkpoint look absent and risk rebilling.
+                // Refuse a file-system link so a cache checkpoint cannot redirect reads to
+                // unrelated storage outside the application-owned work directory.
+                SafeFileSystem.EnsureFileIsNotReparsePointIfPresent(path, "The saved checkpoint");
+                var bytes = await BoundedFileReader.ReadAllBytesAsync(
+                    path,
+                    MaximumCheckpointBytes,
+                    cancellationToken);
+                var json = StrictUtf8.GetString(bytes);
+                var envelope = JsonSerializer.Deserialize<CheckpointEnvelope>(json);
+                if (envelope is null
+                    || !string.Equals(envelope.Schema, CheckpointSchema, StringComparison.Ordinal)
+                    || envelope.Index != expectedIndex
+                    || envelope.Text is null
+                    || envelope.SpeakerSegments is null
+                    || string.IsNullOrWhiteSpace(envelope.PayloadSha256)
+                    || !string.Equals(
+                        envelope.PayloadSha256,
+                        ComputeCheckpointPayloadSha256(envelope.Text, envelope.SpeakerSegments),
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    diagnostic.Stage(DiagnosticStage.Invalidated, DiagnosticReason.Corrupt);
+                    DeleteInvalidCheckpointOrThrow(path);
+                    return diagnostic.Complete<CheckpointEnvelope?>(null, DiagnosticReason.Corrupt);
+                }
 
-            return envelope;
+                diagnostic.Stage(DiagnosticStage.Reused);
+                return diagnostic.Complete(envelope);
+            }
+            catch (FileNotFoundException)
+            {
+                return diagnostic.Complete<CheckpointEnvelope?>(null, DiagnosticReason.Missing);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return diagnostic.Complete<CheckpointEnvelope?>(null, DiagnosticReason.Missing);
+            }
+            catch (Exception ex) when (ex is JsonException or DecoderFallbackException or InvalidDataException)
+            {
+                diagnostic.Stage(DiagnosticStage.Invalidated, DiagnosticReason.Corrupt);
+                DeleteInvalidCheckpointOrThrow(path);
+                return diagnostic.Complete<CheckpointEnvelope?>(null, DiagnosticReason.Corrupt);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
+            {
+                throw new CheckpointStorageException(
+                    "Cosmic Transcriber found checkpoint data but could not read it safely. " +
+                    "Check permissions and free space in the output folder before retrying.",
+                    ex);
+            }
+    
         }
-        catch (FileNotFoundException)
-        {
-            return null;
-        }
-        catch (DirectoryNotFoundException)
-        {
-            return null;
-        }
-        catch (Exception ex) when (ex is JsonException or DecoderFallbackException or InvalidDataException)
-        {
-            DeleteInvalidCheckpointOrThrow(path);
-            return null;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
-        {
-            throw new CheckpointStorageException(
-                "Cosmic Transcriber found checkpoint data but could not read it safely. " +
-                "Check permissions and free space in the output folder before retrying.",
-                ex);
-        }
+        catch (OperationCanceledException) { diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); throw; }
+        catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.StorageFailure); throw; }
     }
 
     private static async Task SaveCompletedResponseCheckpointAsync(
@@ -381,18 +398,27 @@ public sealed class TranscriptionCoordinator
         string text,
         IReadOnlyList<SpeakerSegment> speakerSegments)
     {
-        using var storageTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Checkpoint);
         try
         {
-            await WriteCheckpointAsync(path, index, text, speakerSegments, storageTimeout.Token);
+            using var storageTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            try
+            {
+                await WriteCheckpointAsync(path, index, text, speakerSegments, storageTimeout.Token);
+            }
+            catch (OperationCanceledException ex) when (storageTimeout.IsCancellationRequested)
+            {
+                throw new CheckpointStorageException(
+                    "OpenAI returned a completed transcription, but saving its checkpoint did not finish within 30 seconds. " +
+                    "The queue was stopped to avoid repeating billable work.",
+                    ex);
+            }
+    
+            diagnostic.Stage(DiagnosticStage.Completed);
+
         }
-        catch (OperationCanceledException ex) when (storageTimeout.IsCancellationRequested)
-        {
-            throw new CheckpointStorageException(
-                "OpenAI returned a completed transcription, but saving its checkpoint did not finish within 30 seconds. " +
-                "The queue was stopped to avoid repeating billable work.",
-                ex);
-        }
+        catch (OperationCanceledException) { diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); throw; }
+        catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.StorageFailure); throw; }
     }
 
     private static Task WriteCheckpointAsync(
@@ -553,7 +579,8 @@ public sealed class TranscriptionCoordinator
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
         {
-            log?.Invoke("Temporary MP3 chunk cleanup warning: " + InputValidation.SingleLineForLog(ex.Message));
+            StartupDiagnostics.CleanupFailure();
+            try { log?.Invoke("Temporary MP3 chunk cleanup warning: " + InputValidation.SingleLineForLog(ex.Message)); } catch { StartupDiagnostics.CleanupFailure(); }
         }
     }
 
@@ -582,6 +609,7 @@ public sealed class TranscriptionCoordinator
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
         {
+            StartupDiagnostics.CleanupFailure();
             // Temporary-file cleanup is best-effort only; the primary operation has
             // already either succeeded or surfaced its own authoritative failure.
         }

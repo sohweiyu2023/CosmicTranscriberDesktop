@@ -86,8 +86,8 @@ await Reject<OpenAiApiException>(() => unauthorizedClient.TranscribeAsync("local
 Check(unauthorized.Calls == 1, "401 not retried");
 var retry = new FakeHandler { FirstTransient = true };
 using var retryClient = MockClient(retry);
-await retryClient.TranscribeAsync("local-mock-key", request.Model, chunks[0].Path, "", null, null, 1, null, CancellationToken.None);
-Check(retry.Calls == 2, "transient failure retries once");
+await Reject<OpenAiApiException>(() => retryClient.TranscribeAsync("local-mock-key", request.Model, chunks[0].Path, "", null, null, 1, null, CancellationToken.None), "503 surfaced without paid replay");
+Check(retry.Calls == 1, "transient failure never automatically replays paid POST");
 var malformed = new FakeHandler { Body = "{}" };
 using var malformedClient = MockClient(malformed);
 await Reject<OpenAiProtocolException>(() => malformedClient.TranscribeAsync("local-mock-key", request.Model, chunks[0].Path, "", null, null, 0, null, CancellationToken.None), "malformed response reports protocol error");

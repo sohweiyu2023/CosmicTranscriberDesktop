@@ -19,56 +19,75 @@ public sealed class AppSettingsService
         SettingsDirectory = ResolveSettingsDirectory();
     }
 
+    internal AppSettingsService(string directory) { SettingsDirectory = Path.GetFullPath(directory); }
+
     public string SettingsDirectory { get; }
 
     public string SettingsPath => Path.Combine(SettingsDirectory, "settings.json");
 
     public AppSettings Load()
     {
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Settings);
         try
         {
-            // Read directly so access denial is recorded as a storage problem rather than
-            // being flattened into the same path as a genuinely absent settings file.
-            SafeFileSystem.EnsureFileIsNotReparsePointIfPresent(SettingsPath, "The settings file");
-            var bytes = BoundedFileReader.ReadAllBytes(SettingsPath, MaximumSettingsFileBytes);
-            var json = new UTF8Encoding(false, true).GetString(bytes);
-            var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions) ?? new AppSettings();
-            Normalize(settings);
-            StartupDiagnostics.Write("SETTINGS", "Settings loaded successfully.");
-            return settings;
+            try
+            {
+                // Read directly so access denial is recorded as a storage problem rather than
+                // being flattened into the same path as a genuinely absent settings file.
+                SafeFileSystem.EnsureFileIsNotReparsePointIfPresent(SettingsPath, "The settings file");
+                var bytes = BoundedFileReader.ReadAllBytes(SettingsPath, MaximumSettingsFileBytes);
+                var json = new UTF8Encoding(false, true).GetString(bytes);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions) ?? new AppSettings();
+                Normalize(settings);
+                StartupDiagnostics.Write("SETTINGS", "Settings loaded successfully.");
+                return diagnostic.Complete(settings);
+            }
+            catch (FileNotFoundException)
+            {
+                StartupDiagnostics.Write("SETTINGS", "No settings file exists; using defaults.");
+                return diagnostic.Complete(new AppSettings(), DiagnosticReason.Missing);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                StartupDiagnostics.Write("SETTINGS", "No settings directory exists; using defaults.");
+                return diagnostic.Complete(new AppSettings(), DiagnosticReason.Missing);
+            }
+            catch (Exception ex) when (ex is SecurityException or IOException or UnauthorizedAccessException or JsonException or NotSupportedException or InvalidDataException or DecoderFallbackException)
+            {
+                StartupDiagnostics.WriteException("SETTINGS FALLBACK", ex);
+                return diagnostic.Complete(new AppSettings(), ex is JsonException or InvalidDataException or DecoderFallbackException ? DiagnosticReason.Corrupt : DiagnosticReason.StorageFailure);
+            }
+    
         }
-        catch (FileNotFoundException)
-        {
-            StartupDiagnostics.Write("SETTINGS", "No settings file exists; using defaults.");
-            return new AppSettings();
-        }
-        catch (DirectoryNotFoundException)
-        {
-            StartupDiagnostics.Write("SETTINGS", "No settings directory exists; using defaults.");
-            return new AppSettings();
-        }
-        catch (Exception ex) when (ex is SecurityException or IOException or UnauthorizedAccessException or JsonException or NotSupportedException or InvalidDataException or DecoderFallbackException)
-        {
-            StartupDiagnostics.WriteException("SETTINGS FALLBACK", ex);
-            return new AppSettings();
-        }
+        catch (OperationCanceledException) { diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); throw; }
+        catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.StorageFailure); throw; }
     }
 
     public void Save(AppSettings settings, bool writeDiagnostic = true)
     {
-        ArgumentNullException.ThrowIfNull(settings);
-        Normalize(settings);
-        var payload = new UTF8Encoding(false).GetBytes(JsonSerializer.Serialize(settings, JsonOptions));
-        SafeFileSystem.WriteAllBytesDurableAtomic(SettingsPath, payload, "The settings file");
-        if (writeDiagnostic)
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Settings, writeDiagnostic);
+        try
         {
-            StartupDiagnostics.Write("SETTINGS", "Settings saved successfully.");
+            ArgumentNullException.ThrowIfNull(settings);
+            Normalize(settings);
+            var payload = new UTF8Encoding(false).GetBytes(JsonSerializer.Serialize(settings, JsonOptions));
+            SafeFileSystem.WriteAllBytesDurableAtomic(SettingsPath, payload, "The settings file");
+            if (writeDiagnostic)
+            {
+                StartupDiagnostics.Write("SETTINGS", "Settings saved successfully.");
+            }
+    
+            diagnostic.Stage(DiagnosticStage.Completed);
+
         }
+        catch (OperationCanceledException) { diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); throw; }
+        catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.StorageFailure); throw; }
     }
 
 
     private static string ResolveSettingsDirectory()
     {
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Settings);
         var candidates = new List<(string Path, string Description)>();
 
         try
@@ -111,7 +130,8 @@ public sealed class AppSettingsService
                         $"Local AppData was unavailable or not writable; settings will use {candidate.Description}.");
                 }
 
-                return candidate.Path;
+                StartupDiagnostics.WriteStorageSelection(DiagnosticArea.Settings, candidate.Description is "Local AppData" ? DiagnosticStorageKind.LocalApplicationData : candidate.Description is "the current user's temporary folder" ? DiagnosticStorageKind.Temporary : DiagnosticStorageKind.Executable);
+                return diagnostic.Complete(candidate.Path);
             }
 
             if (failure is not null)
@@ -125,6 +145,8 @@ public sealed class AppSettingsService
         StartupDiagnostics.Write(
             "SETTINGS FALLBACK",
             "No writable settings directory was found. The app will remain usable, but settings and secure key persistence may fail until Windows folder permissions are corrected.");
+        StartupDiagnostics.WriteStorageSelection(DiagnosticArea.Settings, DiagnosticStorageKind.Unavailable);
+        diagnostic.Stage(DiagnosticStage.Failed, DiagnosticReason.StorageFailure);
         return executableFallback;
     }
 

@@ -1,3 +1,4 @@
+using CosmicTranscriber.Utilities;
 namespace CosmicTranscriber.Services;
 
 public static class OutputDirectoryService
@@ -25,27 +26,35 @@ public static class OutputDirectoryService
 
     public static bool CanWrite(string path)
     {
-        string? probe = null;
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.OutputDirectory);
         try
         {
-            Directory.CreateDirectory(path);
-            probe = Path.Combine(path, $".write-test-{Guid.NewGuid():N}.tmp");
-            File.WriteAllText(probe, "ok");
-            File.Delete(probe);
-            probe = null;
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-        finally
-        {
-            if (probe is not null && File.Exists(probe))
+            string? probe = null;
+            try
             {
-                try { File.Delete(probe); } catch { /* Best-effort cleanup only. */ }
+                Directory.CreateDirectory(path);
+                probe = Path.Combine(path, $".write-test-{Guid.NewGuid():N}.tmp");
+                File.WriteAllText(probe, "ok");
+                File.Delete(probe);
+                probe = null;
+                return diagnostic.Complete(true);
             }
+            catch (Exception probeError)
+            {
+                diagnostic.Fail(probeError, DiagnosticReason.StorageFailure);
+                return false;
+            }
+            finally
+            {
+                if (probe is not null && File.Exists(probe))
+                {
+                    try { File.Delete(probe); } catch { StartupDiagnostics.CleanupFailure(); /* Primary result preserved. */ }
+                }
+            }
+    
         }
+        catch (OperationCanceledException) { diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); throw; }
+        catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.StorageFailure); throw; }
     }
 
     private static string BuildUserFallback(Environment.SpecialFolder folder)

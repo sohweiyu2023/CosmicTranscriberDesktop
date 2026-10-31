@@ -104,8 +104,8 @@ Use this checklist on Windows 10/11 with the .NET 10 SDK. Record failures and un
 - [ ] Price field accepts finite nonnegative invariant-decimal input and updates the estimate.
 - [ ] Estimate caveat is visible; current official price is manually verified before test spending.
 - [ ] All four visible file models are selectable; test the models supported by the account.
-- [ ] Automatic retries default to 0 and the duplicate-billing warning is visible.
-- [ ] Authentication, rate/billing, unavailable model, proxy/TLS, timeout, opt-in retry, and bounded remote-error paths are exercised.
+- [ ] Automatic paid retries are disabled in UI and code even for legacy profiles with nonzero counts; one-dispatch fake HTTP tests pass.
+- [ ] Authentication, rate/billing, unavailable model, proxy/TLS, timeout, no-replay and bounded remote-error paths are exercised offline; no paid retry is implied.
 - [ ] Multipart upload exposes a generic filename, not the local source filename.
 
 ## H. Real transcription and output

@@ -10,6 +10,10 @@ Build with the existing supported .NET10 Windows Desktop SDK (`dotnet build Cosm
 
 Cosmic Transcriber is a Windows 10/11 WPF desktop application for transcribing long MP3 recordings with OpenAI speech-to-text models. It supports batch import, full-window drag-and-drop, a copied-file Paste fallback, frame-safe chunking, cancellation, resumable checkpoints, TXT/Markdown export, speaker-labelled transcription, editable cost estimates, optional current-user DPAPI key storage, persistent diagnostics, and dark/light themes.
 
+## Proposed safe-error follow-up
+
+Automatic paid retries are disabled, including for legacy profiles with a nonzero count. Structured operation stages, privacy-filtered provider correlation and bounded diagnostic completeness status are covered by offline regression tests. See [coverage and remaining recovery limits](docs/LOGGING-SAFE-ERROR-AUDIT.md). This source proposal does not update the installed app or clear binary distribution holds.
+
 ## What changed in 1.0.27
 
 - **Readable, dependable selectors:** the model and retry controls now use a self-contained opaque WPF template that explicitly pairs the themed surface with the selected text foreground. It retains the required `PART_Popup`, a bounded scrolling `ItemsPresenter`, no transparent popup window, and no popup animation.
@@ -25,7 +29,7 @@ Cosmic Transcriber is a Windows 10/11 WPF desktop application for transcribing l
 1. Build or launch Cosmic Transcriber normally. Do not choose **Run as administrator**.
 2. Open **API key**, enter your key, and choose **Test connection**.
 3. Add MP3s with **+ Files**, **Folder**, drag-and-drop anywhere in the window, or copy files/folders in File Explorer and choose **Paste**.
-4. Configure the output folder, model, optional languages, one-per-line keywords, prompt/context, chunk limits, retries, and export formats.
+4. Configure the output folder, model, optional languages, one-per-line keywords, prompt/context, chunk limits and export formats. The legacy automatic retry selector is disabled.
 5. Watch the **Settings autosave** card. Valid changes save after a short pause.
 6. Choose **Start transcription**. Completed chunks are checkpointed for safe resume.
 7. At completion, review the styled summary and choose **Open output folder**.

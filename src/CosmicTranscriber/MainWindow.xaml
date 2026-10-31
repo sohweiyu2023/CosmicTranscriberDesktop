@@ -517,12 +517,12 @@
                                         <ColumnDefinition Width="90" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Automatic retries (cost risk)" Style="{StaticResource LabelStyle}" VerticalAlignment="Center" Margin="0"
-                                               ToolTip="A lost response can make a retry repeat a billable transcription request. Zero is the safest default." />
-                                    <ComboBox Grid.Column="2" x:Name="RetryComboBox" SelectedIndex="0"
+                                    <TextBlock Text="Automatic paid retries disabled" Style="{StaticResource LabelStyle}" VerticalAlignment="Center" Margin="0"
+                                               ToolTip="Uncertain provider outcomes are never retried automatically. Review the existing attempt and possible charges before starting again." />
+                                    <ComboBox Grid.Column="2" x:Name="RetryComboBox" SelectedIndex="0" IsEnabled="False"
                                               PreviewMouseWheel="ComboBox_PreviewMouseWheel"
-                                              AutomationProperties.Name="Automatic retry count; retries can repeat billable work after an ambiguous network failure"
-                                              ToolTip="A lost response can make a retry repeat a billable transcription request. Zero is the safest default.">
+                                              AutomationProperties.Name="Automatic paid retries disabled; saved legacy count is ignored"
+                                              ToolTip="Uncertain provider outcomes are never retried automatically. Review the existing attempt and possible charges before starting again.">
                                         <ComboBoxItem Content="0" />
                                         <ComboBoxItem Content="1" />
                                         <ComboBoxItem Content="2" />

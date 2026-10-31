@@ -116,7 +116,7 @@ The estimate is total audio minutes multiplied by the editable USD-per-minute va
 - Check whether the error is file-specific or systemic.
 - Authentication, rate/billing, output/storage, and systemic protocol failures intentionally stop later files.
 - Lower chunk size/duration for marginal connections.
-- Keep automatic retries at 0 while diagnosing. A lost/timeout response may already represent billable completed work; enabling retries can repeat that chunk. Increase retries only after accepting this risk.
+- Automatic paid retries are disabled regardless of saved retry count. A lost/timeout response may represent billable completed work. Review the existing attempt and possible charges before any later manually initiated request; no durable pending-request ledger currently proves non-dispatch across restart.
 - Confirm enough disk space remains for temporary chunks, checkpoints, and output.
 - Keep the source and output paths available for the whole run.
 - Resume with identical settings to reuse valid checkpoints.
