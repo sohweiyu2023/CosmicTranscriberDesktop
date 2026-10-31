@@ -21,8 +21,8 @@
   },
   {
     "path": "BUILD.cmd",
-    "sha256": "0da81f3cc830069df70be4030ca268568a7debf76becee2f7460f701843f1b12",
-    "bytes": 1998
+    "sha256": "9255531d152c8b0ace0190ea5ac4dee5ff5d99dbf967899687868c1639c15dc7",
+    "bytes": 1986
   },
   {
     "path": "CHANGELOG.md",
@@ -111,8 +111,8 @@
   },
   {
     "path": "PUBLISH-WIN-X64.cmd",
-    "sha256": "e1966a57cafb5ae9c97f6aa96499b5ce14c9eec41036688cde70f36518e19142",
-    "bytes": 1947
+    "sha256": "7202609a049a98c1f051a39ff7a3c71ff6d7fdead797909bd4c7213bef954c4e",
+    "bytes": 1944
   },
   {
     "path": "QA-REPORT-1.0.22.md",
@@ -126,23 +126,23 @@
   },
   {
     "path": "README.md",
-    "sha256": "7eab319777c4e2f6c084bf0830aa4fad09124047b108b5efdcf1bf3df7edd20e",
-    "bytes": 10503
+    "sha256": "7dd5a61964cff3cd4d28f647ace6d05e8d223960b8d5e3eb0429e93416a3c948",
+    "bytes": 11010
   },
   {
     "path": "RUN-DIAGNOSTIC.cmd",
-    "sha256": "6dcfabcb24c0b3ad501b70c529df1352fe2addc0007663b3660ad89e374332bd",
-    "bytes": 572
+    "sha256": "9a9c7853491793f6af3a71cdb28d2729deff7c4264ba9d056cf4ef00be5e8dab",
+    "bytes": 560
   },
   {
     "path": "RUN.cmd",
-    "sha256": "2bc3c3fcd04a0c91206dbdaac902ccf002c705c0e5b28b030960656f5069efc3",
-    "bytes": 498
+    "sha256": "219258795a7d50ee2cabd99e1383ec014983f4c7f848b8c58cf75dd0ddda20dd",
+    "bytes": 486
   },
   {
     "path": "THIRD-PARTY-NOTICES.md",
-    "sha256": "97619e24b238456c4740ce53b483bd3a6d8f4174aafc7f00545abfe88cc162f2",
-    "bytes": 4671
+    "sha256": "ff00f29f11e297e81eb1cf605263a827a0718f67ad6f263e0dc02aa9a3317958",
+    "bytes": 4676
   },
   {
     "path": "WITHHELD-ASSETS.json",
@@ -160,6 +160,11 @@
     "bytes": 1368
   },
   {
+    "path": "docs/CORE-ONLY-PACKAGING.md",
+    "sha256": "95762a2e7ee451114306e0bc27b8206facd2299cbcc7822ba7fc4789f576f369",
+    "bytes": 2980
+  },
+  {
     "path": "docs/CosmicTranscriber-1.0.27-Comprehensive-Manual-a11y.json",
     "sha256": "5e98ad51f95db7fc7714fcd595e02fdb3e10c9b51aa8986e0eea5cda22a4c4d6",
     "bytes": 203
@@ -173,6 +178,11 @@
     "path": "docs/DEVELOPER-GUIDE.md",
     "sha256": "e74bcf8654d4731d444ea2f664aa9c67a0b4525273aa69742873ae7163ef498c",
     "bytes": 16141
+  },
+  {
+    "path": "docs/DIAGNOSTIC-SUPPORT.md",
+    "sha256": "575b8da3ae7ca7da9dfbff97e09b8299ff5f8090261bdf81f58d36858573c089",
+    "bytes": 5066
   },
   {
     "path": "docs/DIAGNOSTICS.md",
@@ -236,8 +246,8 @@
   },
   {
     "path": "docs/PENDING-REQUEST-RECOVERY.md",
-    "sha256": "ed2ae1a072b58cb2fdfaaeb0e1466a534538c74fdab04ba92696d5c7acca7072",
-    "bytes": 4062
+    "sha256": "add04d74b58360b8cb420d10d7cf19e426507aec9a0f66e1e08ca5560065b818",
+    "bytes": 4479
   },
   {
     "path": "docs/RELEASE-CHECKLIST.md",
@@ -251,8 +261,8 @@
   },
   {
     "path": "docs/SOURCE-PROVENANCE.md",
-    "sha256": "9e0ad16af025d509729bb3b05dc82cba8d600d009abe4740d000a9283bc8150c",
-    "bytes": 2575
+    "sha256": "b5444c48ba3a8cc37fb45849b865a3931713cbb2fdb18951bab098e241d59f78",
+    "bytes": 2992
   },
   {
     "path": "docs/THEME-LIVE-UPDATE-FIX.md",
@@ -263,6 +273,11 @@
     "path": "docs/TROUBLESHOOTING.md",
     "sha256": "6f3dc6b0ad1364b779876eab835c2f7615ca6cdc5d0cf710a5f85eba5066720c",
     "bytes": 14473
+  },
+  {
+    "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",
+    "sha256": "f73332438d5685f5bbfeb0846cbe2e5e72ce4f84e25b876ddd9c97766ae56958",
+    "bytes": 3852
   },
   {
     "path": "docs/USER-GUIDE.md",
@@ -311,13 +326,13 @@
   },
   {
     "path": "scripts/DiagnosticLauncher/DiagnosticLauncher.csproj",
-    "sha256": "7a062e832acd071c12bfc671a5686eda15b92db82cfd16a7f54b4fba0b9dabe9",
-    "bytes": 620
+    "sha256": "2f78fa79cf0712c7145350ff2ee9d70938f51549fd6416001d1900f25d7c7af3",
+    "bytes": 830
   },
   {
     "path": "scripts/DiagnosticLauncher/Program.cs",
-    "sha256": "4c3ea7f9d2bc4b710d146f77b7d0364c52b400d11dde900e88258bc0acf5056c",
-    "bytes": 6368
+    "sha256": "c0f678b08e6489c59ac5449193a26cf592b8506421f05d1e9354baf7663b4751",
+    "bytes": 6274
   },
   {
     "path": "scripts/DiagnosticLauncher/packages.lock.json",
@@ -371,18 +386,18 @@
   },
   {
     "path": "src/CosmicTranscriber/CompletionWindow.xaml",
-    "sha256": "647075c653e968f8126480767fba26867fdded6e985528bc7a75546a07db99fc",
-    "bytes": 6154
+    "sha256": "fee597137a8d9c425845a48c7f6edd5b182ef70d49016b2b0b2f151a4bd9e47f",
+    "bytes": 6403
   },
   {
     "path": "src/CosmicTranscriber/CompletionWindow.xaml.cs",
-    "sha256": "f9b135f063f2068f4513748b200a9be744088747fbf31c9e3e576dd4bd69aad7",
-    "bytes": 4124
+    "sha256": "586c3e2e43feea17bb8b46f10c5f231e4ba2ddb5665c383589b0e5b04f9a106a",
+    "bytes": 4814
   },
   {
     "path": "src/CosmicTranscriber/CosmicTranscriber.csproj",
-    "sha256": "520c427a4932aa600ead54f05a9df96cea747d7dfcfffc214e0b0f6de9a87665",
-    "bytes": 1811
+    "sha256": "e957eed75661f8519485260df759e5dcdbb4c0d37d4ac0fcab9353a4523aa1f2",
+    "bytes": 2305
   },
   {
     "path": "src/CosmicTranscriber/GlobalUsings.cs",
@@ -391,13 +406,13 @@
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml",
-    "sha256": "c3264f8bdac23df6f81ea66d8ae774fa7f748fbb8eb1962b1093769c7bf2f1ab",
-    "bytes": 50054
+    "sha256": "d82fedc39a143f2417db59779e84527cc5d0bfbb392b7fd4704da76774429d51",
+    "bytes": 50380
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml.cs",
-    "sha256": "8891adfb89fc8f70722ac9f26f48c4718b098f9e404ea4cacec6eb71e9038f63",
-    "bytes": 98913
+    "sha256": "880174a3668a2eb8c0530c59ec54aaac03c2909dbd796ef3db020d6a69e18b46",
+    "bytes": 103877
   },
   {
     "path": "src/CosmicTranscriber/Models/AppSettings.cs",
@@ -418,6 +433,16 @@
     "path": "src/CosmicTranscriber/Models/TranscriptionModels.cs",
     "sha256": "cff2ec2454ea2479d9b2badbd114b91a202b3210277d21f65bef2eab02e38df1",
     "bytes": 1660
+  },
+  {
+    "path": "src/CosmicTranscriber/RecoveryWindow.xaml",
+    "sha256": "973878599c2a4a07867efcc9b25c4595f36d52114b17ad88dcec99377bef6f8b",
+    "bytes": 3976
+  },
+  {
+    "path": "src/CosmicTranscriber/RecoveryWindow.xaml.cs",
+    "sha256": "3c28e1a5e733818f3d0e52b3ed29b3bd5315567738a3e918e3935f60d958ce48",
+    "bytes": 5423
   },
   {
     "path": "src/CosmicTranscriber/Services/ApiKeyStore.cs",
@@ -465,14 +490,19 @@
     "bytes": 6673
   },
   {
+    "path": "src/CosmicTranscriber/Services/RecoveryReviewService.cs",
+    "sha256": "39e7c93cc52b6522d5882bf0dedbcf811b4ddf48ae14a40dda53e6348e9b67ab",
+    "bytes": 12181
+  },
+  {
     "path": "src/CosmicTranscriber/Services/TranscriptOutputWriter.cs",
     "sha256": "782dd5e042a18c22c9f37b1cd21bca08bbc03c46ec683d3b2b227f747e6d873e",
     "bytes": 16542
   },
   {
     "path": "src/CosmicTranscriber/Services/TranscriptionCoordinator.cs",
-    "sha256": "d3ddc6849803105823673ce49bd32c9e6ddab2dc002fac74fad4c05e7afb7b14",
-    "bytes": 34968
+    "sha256": "6f69d98ba4455ab6e1374ab55089a61a23d4306eca261854dae86af7226e13f0",
+    "bytes": 35457
   },
   {
     "path": "src/CosmicTranscriber/Themes/CosmicNight.xaml",
@@ -505,9 +535,24 @@
     "bytes": 4440
   },
   {
+    "path": "src/CosmicTranscriber/Utilities/DiagnosticOutputDrain.cs",
+    "sha256": "9f4c9986d6ec9c3d613d4547a8d7b185999cf2f98562c29fe78631440d573bab",
+    "bytes": 1900
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/DiagnosticSinkFactory.cs",
+    "sha256": "1c2ed327a464f168e258ee10ee09547bd919167226f0f915df20d95724ffa5d4",
+    "bytes": 3484
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/DiagnosticSupportExporter.cs",
+    "sha256": "cb9b02f35dce5f1ec085026b86b0762fb65a8de3d64bdda4077c83d4086da9be",
+    "bytes": 24028
+  },
+  {
     "path": "src/CosmicTranscriber/Utilities/DiagnosticVocabulary.cs",
-    "sha256": "cced29ca2a79a3efeccd60a16b5f3feecd59ad4303de1839fe276aa0f1c34a4b",
-    "bytes": 2680
+    "sha256": "1b9f0fc0e625484563e990b0c2e1002f9232f5c3320d5a06725a969e499d2ec7",
+    "bytes": 4377
   },
   {
     "path": "src/CosmicTranscriber/Utilities/FocusViewportTrace.cs",
@@ -546,23 +591,23 @@
   },
   {
     "path": "src/CosmicTranscriber/Utilities/OperationalDiagnostics.cs",
-    "sha256": "74a9320fa9d97a162dc5a9da03dad63b080460133e8ae6bbd2e2f707f84cc33e",
-    "bytes": 2748
+    "sha256": "b1d2774ca0eddb62eebb0b8d840f3c371b9db8d5601ccacaa8619540bcbb312a",
+    "bytes": 3296
   },
   {
     "path": "src/CosmicTranscriber/Utilities/RunPresentation.cs",
-    "sha256": "a022f06d8f90880ff51d6ae87737e81548cf658190bc1b8484f0414791e51512",
-    "bytes": 1208
+    "sha256": "33596945c1ef7f94d7799aea715e89c1e32ff0ecb1e13aa592fd6bd94b8dddf8",
+    "bytes": 4592
   },
   {
     "path": "src/CosmicTranscriber/Utilities/SafeFileSystem.cs",
-    "sha256": "b7d73c5e024371b3c8d31e1de5a73c27005e02e0c3ba861a60f394a34dd16e20",
-    "bytes": 11418
+    "sha256": "ccb392039ac159db69e98e49f9b397f919789e12b84effb8ba27fb391fb438b8",
+    "bytes": 11855
   },
   {
     "path": "src/CosmicTranscriber/Utilities/StartupDiagnostics.cs",
-    "sha256": "27814fe9552227f0be305926608456f34090717c737a305a9213fa526cc08d0f",
-    "bytes": 18269
+    "sha256": "92dc72d94321904bb6fc9c09b752c3df16a9168165ac09eff2bab7c4733c5c12",
+    "bytes": 19233
   },
   {
     "path": "src/CosmicTranscriber/Utilities/WindowsSecurity.cs",
@@ -576,18 +621,48 @@
   },
   {
     "path": "src/CosmicTranscriber/packages.lock.json",
-    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
-    "bytes": 1945
+    "sha256": "d299e7002b10708fbf7caa78585bab0062c913027a5354384870860575ae1553",
+    "bytes": 665
+  },
+  {
+    "path": "tests/CloseRaceRegression/.gitignore",
+    "sha256": "8ff2532a6e8820e951087cab18b74eb77add8096f3a297eac8d44cb4ee1d80cc",
+    "bytes": 29
+  },
+  {
+    "path": "tests/CloseRaceRegression/CloseRaceRegression.csproj",
+    "sha256": "9ed63a453bd5fcbc70906cb0f94db7dc72ce596b9076832844116c92543ef061",
+    "bytes": 264
+  },
+  {
+    "path": "tests/CloseRaceRegression/Program.cs",
+    "sha256": "c6199e62a3a58b30bf22ff3d7261c2274b623707fd1eca47765dbd42fc21d2ba",
+    "bytes": 3223
+  },
+  {
+    "path": "tests/CloseRaceRegression/README.md",
+    "sha256": "37c0053f4ab670f6a66c586e1cd0eaaed6f94946da2692473caad6db0a82dd02",
+    "bytes": 1043
+  },
+  {
+    "path": "tests/CloseRaceRegression/Run.ps1",
+    "sha256": "2a52711b9518815c6de08381c618f17f810fd4e00cd226bb01db393a0e08db90",
+    "bytes": 880
+  },
+  {
+    "path": "tests/DesktopRegression/CoreFramePreservation.cs",
+    "sha256": "f53cc5828631abc09d2e1abd3c99b867efd4212c0d98afe58111ce3d066cedeb",
+    "bytes": 4007
   },
   {
     "path": "tests/DesktopRegression/DesktopRegression.csproj",
-    "sha256": "80399a79becd13828bb15ae7267e3eb8bc75ba3e81ab98db1ae42a15263e1116",
-    "bytes": 891
+    "sha256": "ba7daf572a7394c2131fdc8c2a349dd580cef876babd7e8c8385d0d79b89278e",
+    "bytes": 1186
   },
   {
     "path": "tests/DesktopRegression/Program.cs",
-    "sha256": "a86a693a28caa5866cd737283b189219c37df7f8b4ddb8cf748eb39f9cb92693",
-    "bytes": 10097
+    "sha256": "6a6ade574e62a92df3bfd429b90c82a9273ee2a85da0902e7ccb4014a6d4228d",
+    "bytes": 16226
   },
   {
     "path": "tests/DesktopRegression/README.md",
@@ -596,13 +671,13 @@
   },
   {
     "path": "tests/DesktopRegression/packages.lock.json",
-    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
-    "bytes": 1945
+    "sha256": "d299e7002b10708fbf7caa78585bab0062c913027a5354384870860575ae1553",
+    "bytes": 665
   },
   {
     "path": "tests/DiagnosticLaunchFixture/DiagnosticLaunchFixture.csproj",
-    "sha256": "c212c16fb58c886a0320b61f4d2f9afdeb854950222b54e5063af36f1d5be394",
-    "bytes": 846
+    "sha256": "78abf32199166a825d1d947232c3d6d86ecb76bb0b68e8256ada264d819898f0",
+    "bytes": 1347
   },
   {
     "path": "tests/DiagnosticLaunchFixture/Program.cs",
@@ -616,13 +691,13 @@
   },
   {
     "path": "tests/DiagnosticsRegression/DiagnosticsRegression.csproj",
-    "sha256": "bcefd7824162963a26b7cd99f80844663c5c811e11a531810c3f7d807075f22f",
-    "bytes": 1223
+    "sha256": "dc57feb929084c888884c6a870ae92b4e02431092c41ea0d2def0d898c60bd41",
+    "bytes": 1483
   },
   {
     "path": "tests/DiagnosticsRegression/Program.cs",
-    "sha256": "86787026407ed257f2b8d40fab6a6754311fc7c5d27353a9a0a162dabfb513f3",
-    "bytes": 9495
+    "sha256": "6b56703403a7f3d15afad308e7ec7f09d3dc0a56f88a94d018e65e427a7cf77c",
+    "bytes": 13146
   },
   {
     "path": "tests/DiagnosticsRegression/packages.lock.json",
@@ -670,6 +745,21 @@
     "bytes": 84
   },
   {
+    "path": "tests/LoggingCoverageRegression/LoggingCoverageRegression.csproj",
+    "sha256": "f3780dc8fa45679cba0995fdebf690851a9821fcc7b5561756dcfc82de7a7b32",
+    "bytes": 1204
+  },
+  {
+    "path": "tests/LoggingCoverageRegression/Program.cs",
+    "sha256": "f90f7a91bcb79aafaf46565e164d0204272223fd53a379e5a03ea56b0e0583cb",
+    "bytes": 24183
+  },
+  {
+    "path": "tests/LoggingCoverageRegression/packages.lock.json",
+    "sha256": "a4364d81a6de2707d66fbced18fbbc926c882ab96e1d1aebbb17e871285b9d75",
+    "bytes": 66
+  },
+  {
     "path": "tests/NestedFocusRegression/NestedFocusRegression.csproj",
     "sha256": "0eed121ba125969e0e725fc8388bb8afab047eb22cfd659b503114e98b250f6b",
     "bytes": 851
@@ -686,8 +776,8 @@
   },
   {
     "path": "tests/NormalSettingsRegression/NormalSettingsRegression.csproj",
-    "sha256": "80399a79becd13828bb15ae7267e3eb8bc75ba3e81ab98db1ae42a15263e1116",
-    "bytes": 891
+    "sha256": "956629a958cf989c5be1df72d169bf1a1dbe1263efe90ab8759ebae71f79fdbe",
+    "bytes": 884
   },
   {
     "path": "tests/NormalSettingsRegression/Program.cs",
@@ -696,23 +786,23 @@
   },
   {
     "path": "tests/NormalSettingsRegression/packages.lock.json",
-    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
-    "bytes": 1945
+    "sha256": "d299e7002b10708fbf7caa78585bab0062c913027a5354384870860575ae1553",
+    "bytes": 665
   },
   {
     "path": "tests/PendingRecoveryRegression/PendingRecoveryRegression.csproj",
-    "sha256": "1f302cfce7185653c6d89b2d1515e9a9edea3aeed5852eff547c4042acad79be",
-    "bytes": 1193
+    "sha256": "23edfd164e90b2cbb185359ccd589105630ce9582b370f4d9129f0666de3c3ba",
+    "bytes": 1489
   },
   {
     "path": "tests/PendingRecoveryRegression/Program.cs",
-    "sha256": "089e5235bca079a55f5f60f9ac448c62d565075e9902afbad5a19f0b29645c4c",
-    "bytes": 14768
+    "sha256": "dae9699a9b5095b01e37ed500ec41a550f9916e97e9560b57adc38fa2be598ec",
+    "bytes": 26816
   },
   {
     "path": "tests/PendingRecoveryRegression/packages.lock.json",
-    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
-    "bytes": 1945
+    "sha256": "d299e7002b10708fbf7caa78585bab0062c913027a5354384870860575ae1553",
+    "bytes": 665
   },
   {
     "path": "tests/SafetyRegression/Program.cs",
@@ -721,13 +811,13 @@
   },
   {
     "path": "tests/SafetyRegression/SafetyRegression.csproj",
-    "sha256": "9ad99f99684836cac4d23c3ba3fdcc3978d6aec7af34f72cc1cab39e0e7dfdc8",
-    "bytes": 1192
+    "sha256": "c65acb9c7ed3dfaee4698b0e7c8e7b0900c272d277db05231aeec2617d6b3d1b",
+    "bytes": 1185
   },
   {
     "path": "tests/SafetyRegression/packages.lock.json",
-    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
-    "bytes": 1945
+    "sha256": "d299e7002b10708fbf7caa78585bab0062c913027a5354384870860575ae1553",
+    "bytes": 665
   },
   {
     "path": "tests/ThemeRegression/Program.cs",

@@ -4,8 +4,8 @@ cd /d "%~dp0"
 if errorlevel 1 goto :root_error
 
 rem Source-only licensing draft: do not build or publish a potentially noncompliant bundle.
-echo DISTRIBUTION HELD: complete Microsoft component terms, recipient agreement and provenance review.
-echo See docs\MICROSOFT-COMPONENT-TERMS-DRAFT.md. No legal agreement is accepted by this script.
+echo DISTRIBUTION HELD: complete reduced-package inventory, notices, native acceptance and release review.
+echo See docs\CORE-ONLY-PACKAGING.md. SDK terms apply if SDK components are reintroduced.
 exit /b 1
 
 echo ================================================================
