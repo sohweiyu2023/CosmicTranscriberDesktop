@@ -12,19 +12,37 @@ public static class StartupDiagnostics
     private static readonly object Sync = new();
     private static readonly Guid Session = Guid.TryParse(Environment.GetEnvironmentVariable("COSMIC_DIAGNOSTIC_SESSION"), out var id) ? id : Guid.NewGuid();
     private static DiagnosticLogWriter? _writer;
+    private static string _lastLogPath = string.Empty;
+    private static DiagnosticInitializationFailure? _initializationFailure;
     private static bool _initialized, _closed, _sinkUnavailable;
     private static long _sinkFailures, _oversized, _fallbackDropped, _cleanupFailures, _pruneFailures;
     private static readonly Queue<string> Fallback = new();
     private static readonly AsyncLocal<Guid?> Active = new();
     internal static Guid? ActiveOperationId { get => Active.Value; set => Active.Value = value; }
     public static DiagnosticOperation Begin(DiagnosticArea area, bool enabled = true) => new(area, enabled);
+    public static void WriteImportPolicy(Guid operationId, bool cacheExclusionResolved)
+    {
+        try { Initialize(); lock (Sync) WriteCore("OPERATION", "scan_policy", new { area="AudioImport", operationId=operationId.ToString("N"), recursive=true, skipInaccessible=true, skipReparse=true, cacheExclusionResolved, boundedQueue=true }); } catch { }
+    }
     public static DiagnosticHealth Health { get { lock (Sync) return new(_sinkUnavailable, _sinkFailures,
-        _oversized + (_writer?.OmittedRecords ?? 0), _fallbackDropped, _cleanupFailures, _pruneFailures + (_writer?.PruneFailures ?? 0), Fallback.ToArray()); } }
-    public static void WriteOperation(DiagnosticArea area, DiagnosticStage stage, Guid operationId, DiagnosticReason reason = DiagnosticReason.None, Guid? parentOperationId = null)
+        _oversized + (_writer?.OmittedRecords ?? 0), _fallbackDropped, _cleanupFailures + SafeFileSystem.AtomicCleanupFailures, _pruneFailures + (_writer?.PruneFailures ?? 0), Fallback.ToArray(), _initializationFailure); } }
+    internal static void InitializationFailed(Exception error)
+    {
+        lock (Sync) {
+            _initializationFailure = new(error is IOException or UnauthorizedAccessException or System.Security.SecurityException ? DiagnosticReason.StorageFailure : error is ArgumentException ? DiagnosticReason.Validation : DiagnosticReason.Other, error.HResult);
+            SinkFailure();
+            if (_writer is not null) {
+                _lastLogPath = _writer.Path; _oversized += _writer.OmittedRecords; _pruneFailures += _writer.PruneFailures;
+                try { _writer.Dispose(); } catch { } _writer = null;
+            }
+        }
+    }
+    public static void WriteOperation(DiagnosticArea area, DiagnosticStage stage, Guid operationId, DiagnosticReason reason = DiagnosticReason.None, Guid? parentOperationId = null, double? operationElapsedMs = null)
     {
         try { Initialize(); lock (Sync) WriteCore("OPERATION", "stage", new {
             area = Enum.IsDefined(area) ? area.ToString() : "Other", stage = Enum.IsDefined(stage) ? stage.ToString() : "Ended",
-            operationId = operationId.ToString("N"), parentOperationId = parentOperationId?.ToString("N"), reason = Enum.IsDefined(reason) ? reason.ToString() : "Other" }); } catch { }
+            operationId = operationId.ToString("N"), parentOperationId = parentOperationId?.ToString("N"), reason = Enum.IsDefined(reason) ? reason.ToString() : "Other",
+            operationElapsedMs = operationElapsedMs is >= 0 ? Finite(operationElapsedMs.Value) : null }); } catch { }
     }
     private static void SinkFailure()
     {
@@ -36,7 +54,7 @@ public static class StartupDiagnostics
     }
 
     public static string SessionId => Session.ToString("N");
-    public static string LogPath { get { Initialize(); lock (Sync) return _writer?.Path ?? string.Empty; } }
+    public static string LogPath { get { Initialize(); lock (Sync) return _writer?.Path ?? _lastLogPath; } }
     public static string LogDirectory => System.IO.Path.GetDirectoryName(LogPath) ?? string.Empty;
 
     public static void Initialize()
@@ -50,16 +68,22 @@ public static class StartupDiagnostics
                 var directories = new[] { System.IO.Path.Combine(AppContext.BaseDirectory, "logs"),
                     System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CosmicTranscriber", "logs"),
                     System.IO.Path.Combine(System.IO.Path.GetTempPath(), "CosmicTranscriber", "logs") };
-                foreach (var directory in directories) { try { _writer = new DiagnosticLogWriter(directory, Session); break; } catch { } }
+                var opened = DiagnosticSinkFactory.Open(directories.Select((directory,index) =>
+                    ((DiagnosticSinkLocation)(index+1), (Func<DiagnosticLogWriter>)(() => new DiagnosticLogWriter(directory, Session)))));
+                _writer = opened.Writer;
+                if (_writer is not null) _lastLogPath = _writer.Path;
                 if (_writer is null) SinkFailure();
                 var assembly = Assembly.GetEntryAssembly() ?? typeof(StartupDiagnostics).Assembly;
                 string hash = "unavailable";
                 try { using var file = File.OpenRead(assembly.Location); hash = Convert.ToHexString(SHA256.HashData(file)).ToLowerInvariant(); } catch { }
                 WriteCore("STARTUP", "session_started", new { version = AppVersion.DisplayVersion, mvid = assembly.ManifestModule.ModuleVersionId,
                     assemblySha256 = hash, runtime = RuntimeInformation.FrameworkDescription, osVersion = Environment.OSVersion.Version.ToString(),
-                    architecture = RuntimeInformation.ProcessArchitecture.ToString(), userInteractive = Environment.UserInteractive });
+                    architecture = RuntimeInformation.ProcessArchitecture.ToString(), userInteractive = Environment.UserInteractive,
+                    logStorageKind = opened.Location.ToString(), logOpenAttempts = opened.Attempts, logOpenFailures = opened.Failures,
+                    logEnumerationFailed = opened.EnumerationFailed,
+                    logOpenFailureDetails = opened.FailureDetails.Select(f => new { location=f.Location.ToString(), reason=f.Reason.ToString(), hresult=f.HResult }).ToArray() });
             }
-            catch { /* Logging must never prevent startup. */ }
+            catch(Exception error) { InitializationFailed(error); /* Fixed bounded health metadata remains available without retrying a failed sink. */ }
         }
     }
 
@@ -199,15 +223,14 @@ public static class StartupDiagnostics
             if (Fallback.Count == 32) { Fallback.Dequeue(); _fallbackDropped++; }
             Fallback.Enqueue("event_not_persisted"); return;
         }
-        try { _writer.Write(Category(category), Identifier(name), data); }
+        try { _writer.Write(Category(category), Identifier(name), data); _lastLogPath = _writer.Path; }
         catch {
+            _lastLogPath = _writer.Path;
             _oversized += _writer.OmittedRecords; _pruneFailures += _writer.PruneFailures; SinkFailure();
             try { _writer.Dispose(); } catch { } _writer = null;
         }
     }
-    private static string Category(string value) => value is
-        "ABOUT" or "CLIPBOARD" or "ACTIVITY" or "API KEY" or "API KEY LOAD FALLBACK" or "API KEY VAULT PRESENCE UNKNOWN" or "API KEY VAULT UNREADABLE" or "Authentication" or "CLEAR ELEVATION COMPATIBILITY" or "COMPLETION" or "COMPLETION OPEN OUTPUT" or "Checkpoint" or "Cleanup" or "ConnectionTest" or "ELEVATION" or "ELEVATION COMPATIBILITY CHECK" or "Export" or "FATAL STARTUP" or "LIFECYCLE" or "MAINWINDOW" or "NATIVE_TEST" or "OPENAI API" or "OPENAI CONNECTION TEST" or "OPENAI_HTTP" or "OPERATION" or "OUTPUT PATH FALLBACK" or "OutputDirectory" or "SETTINGS" or "SETTINGS DIRECTORY" or "SETTINGS DIRECTORY REJECTED" or "SETTINGS FALLBACK" or "SETTINGS SAVE" or "SETTINGS TEMP FALLBACK" or "SOCKET_TEST" or "STARTUP" or "Settings" or "Startup" or "TEST" or "THEME" or "TRANSCRIPTION FILE FAILURE" or "TRANSCRIPTION RUN FAILURE" or "Transcription" or "UI_FOCUS" or "UI_VISIBILITY" or "UNELEVATED RELAUNCH" or "UNHANDLED APPDOMAIN" or "UNHANDLED DISPATCHER" or "UNOBSERVED TASK" or "WINDOW"
-        ? Identifier(value) : "OTHER";
+    private static string Category(string value) => DiagnosticVocabulary.Category(value);
     private static object Provider(IProviderDiagnosticFailure value)
     {
         static string? Known(string? s, params string[] allowed) => s is null ? null : allowed.Contains(s, StringComparer.Ordinal) ? s : "other";

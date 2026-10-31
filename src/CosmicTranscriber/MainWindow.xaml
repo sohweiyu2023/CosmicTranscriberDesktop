@@ -568,9 +568,14 @@
                                         <TextBox x:Name="LogTextBox" Height="150" IsReadOnly="True" AcceptsReturn="True"
                                                  TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontFamily="Cascadia Mono, Consolas"
                                                  FontSize="11" />
+                                        <WrapPanel>
                                         <Button x:Name="OpenDiagnosticLogsButton" Content="Open diagnostic logs" Click="OpenDiagnosticLogs_Click"
                                                 Style="{StaticResource QuietButtonStyle}" HorizontalAlignment="Left"
                                                 AutomationProperties.Name="Open diagnostic logs folder" Margin="0,8,0,0" />
+                                        <Button x:Name="ExportSupportButton" Content="Export redacted support file" Click="ExportSupport_Click"
+                                                Style="{StaticResource QuietButtonStyle}" Margin="8,8,0,0"
+                                                AutomationProperties.Name="Export local redacted diagnostic support file" />
+                                        </WrapPanel>
                                     </StackPanel>
                                 </Expander>
                             </StackPanel>

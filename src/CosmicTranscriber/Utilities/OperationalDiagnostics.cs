@@ -1,7 +1,7 @@
 namespace CosmicTranscriber.Utilities;
 
 // Only compile-time vocabulary crosses the operational logging boundary.
-public enum DiagnosticArea { Other, Startup, Settings, Authentication, Transcription, ConnectionTest, Checkpoint, Export, OutputDirectory, Cleanup, RecoveryInventory, RecoveryRecheck, RecoveryHistory, RecoveryReconcile }
+public enum DiagnosticArea { Other, Startup, Settings, Authentication, Transcription, ConnectionTest, Checkpoint, Export, OutputDirectory, Cleanup, RecoveryInventory, RecoveryRecheck, RecoveryHistory, RecoveryReconcile, AudioImport, CheckpointClear, OutputBrowse, OutputOpen, SupportExport, FilePicker, FolderPicker, Clipboard }
 public enum DiagnosticWindowKind { Main, Recovery, Other }
 public enum DiagnosticStorageKind { LocalApplicationData, Temporary, Executable, Unavailable }
 public enum DiagnosticStage { Started, Validated, Dispatched, ResponseHeaders, ResponseBody, Accepted, Completed, Failed, Cancelled, Reused, Invalidated, Rollback, CleanupFailed, Ended }
@@ -25,21 +25,25 @@ public sealed class DiagnosticOperation : IDisposable
     private bool _terminal;
     private readonly bool _enabled;
     private readonly Guid? _parent;
+    private readonly long _started = System.Diagnostics.Stopwatch.GetTimestamp();
     public Guid Id { get; } = Guid.NewGuid();
     internal DiagnosticOperation(DiagnosticArea area, bool enabled = true) { _area = area; _enabled = enabled; _parent = StartupDiagnostics.ActiveOperationId; if (enabled) { StartupDiagnostics.ActiveOperationId = Id; Stage(DiagnosticStage.Started); } }
     public void Stage(DiagnosticStage stage, DiagnosticReason reason = DiagnosticReason.None)
     {
         if (!_enabled || _terminal) return;
-        StartupDiagnostics.WriteOperation(_area, stage, Id, reason, _parent);
+        StartupDiagnostics.WriteOperation(_area, stage, Id, reason, _parent,
+            System.Diagnostics.Stopwatch.GetElapsedTime(_started).TotalMilliseconds);
         if (stage is DiagnosticStage.Completed or DiagnosticStage.Failed or DiagnosticStage.Cancelled) _terminal = true;
     }
     public T Complete<T>(T value, DiagnosticReason reason = DiagnosticReason.None) { Stage(DiagnosticStage.Completed, reason); return value; }
     public void Fail(Exception error, DiagnosticReason reason = DiagnosticReason.Other)
     {
+        if (!_enabled) return;
         Stage(DiagnosticStage.Failed, reason);
         StartupDiagnostics.WriteException(_area.ToString(), error, Id);
     }
     public void Dispose() { if (!_enabled) return; if (!_terminal) Stage(DiagnosticStage.Ended, DiagnosticReason.Incomplete); StartupDiagnostics.ActiveOperationId = _parent; }
 }
 
-public sealed record DiagnosticHealth(bool SinkUnavailable, long SinkFailures, long OversizedRecords, long FallbackEventsDropped, long CleanupFailures, long PruneFailures, IReadOnlyList<string> RecentFallbackEvents);
+public sealed record DiagnosticInitializationFailure(DiagnosticReason Reason, int HResult);
+public sealed record DiagnosticHealth(bool SinkUnavailable, long SinkFailures, long OversizedRecords, long FallbackEventsDropped, long CleanupFailures, long PruneFailures, IReadOnlyList<string> RecentFallbackEvents, DiagnosticInitializationFailure? InitializationFailure = null);
