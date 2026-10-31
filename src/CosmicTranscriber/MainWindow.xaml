@@ -334,6 +334,9 @@
                                     <Button Grid.Column="1" Content="Clear checkpoints" Click="ClearCheckpoints_Click"
                                             Style="{StaticResource QuietButtonStyle}" ToolTip="Delete partial transcript checkpoints under the selected output folder" />
                                 </Grid>
+                                <Button x:Name="ReviewUncertainButton" Content="Review unresolved attempts" Click="ReviewUncertain_Click"
+                                        AutomationProperties.Name="Review unresolved transcription attempts" Style="{StaticResource QuietButtonStyle}"
+                                        HorizontalAlignment="Left" Margin="0,8,0,0" ToolTip="Inspect attempts and recheck local accepted responses without making provider requests" />
                             </StackPanel>
                         </Border>
 

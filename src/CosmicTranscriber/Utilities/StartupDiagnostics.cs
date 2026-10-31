@@ -98,8 +98,8 @@ public static class StartupDiagnostics
     public static void WriteLifecycle(string stage)
     { Initialize(); lock (Sync) WriteCore("LIFECYCLE", DiagnosticVocabulary.Lifecycle(stage), null); }
 
-    public static void WriteWindow(string stage, bool visible, bool active, string state, double width, double height, double dpiX, double dpiY)
-    { Initialize(); lock (Sync) WriteCore("WINDOW", DiagnosticVocabulary.WindowStage(stage), new { visible, active, state = state is "Normal" or "Maximized" or "Minimized" ? state : "other", width = Finite(width), height = Finite(height), dpiX = Finite(dpiX), dpiY = Finite(dpiY) }); }
+    public static void WriteWindow(string stage, bool visible, bool active, string state, double width, double height, double dpiX, double dpiY, DiagnosticWindowKind kind = DiagnosticWindowKind.Main)
+    { Initialize(); lock (Sync) WriteCore("WINDOW", DiagnosticVocabulary.WindowStage(stage), new { windowKind = Enum.IsDefined(kind) ? kind.ToString() : "Other", visible, active, state = state is "Normal" or "Maximized" or "Minimized" ? state : "other", width = Finite(width), height = Finite(height), dpiX = Finite(dpiX), dpiY = Finite(dpiY) }); }
 
     public static void WriteFocus(string controlId, string controlType)
     { Initialize(); lock (Sync) WriteCore("UI_FOCUS", "keyboard_focus", new { controlId = DiagnosticVocabulary.Control(controlId), controlType = DiagnosticVocabulary.Type(controlType) }); }

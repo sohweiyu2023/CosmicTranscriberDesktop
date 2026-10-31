@@ -15,7 +15,8 @@ public partial class CompletionWindow : Window
         int failureCount,
         int skippedCount,
         int outputFileCount,
-        TimeSpan elapsed)
+        TimeSpan elapsed,
+        CompletionEvidence evidence = CompletionEvidence.ReviewRequired)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
         if (successCount < 0 || failureCount < 0 || skippedCount < 0 || outputFileCount < 0)
@@ -29,7 +30,8 @@ public partial class CompletionWindow : Window
         var completedWithErrors = failureCount > 0 || skippedCount > 0;
         Title = completedWithErrors ? "Transcription completed with issues" : "Transcription complete";
         CompletionTitleText.Text = completedWithErrors ? "Run completed with issues" : "Transcription complete";
-        CompletionSubtitleText.Text = RunPresentation.CompletionSubtitle(outputFileCount, completedWithErrors);
+        CompletionSubtitleText.Text = RunPresentation.CompletionGuidance(outputFileCount, completedWithErrors, evidence).Message;
+        ReviewAttemptsButton.Visibility = completedWithErrors ? Visibility.Visible : Visibility.Collapsed;
         IconText.Text = completedWithErrors ? "!" : "✓";
         IconText.Foreground = (Brush)FindResource(completedWithErrors ? "WarningBrush" : "SuccessBrush");
         IconBorder.BorderBrush = IconText.Foreground;
@@ -42,6 +44,16 @@ public partial class CompletionWindow : Window
             $"{outputFileCount} output file(s)  •  {elapsedText} elapsed";
         OutputPathTextBox.Text = _outputDirectory;
         OpenFolderButton.IsEnabled = Directory.Exists(_outputDirectory);
+    }
+
+    private void ReviewAttempts_Click(object sender, RoutedEventArgs e)
+    {
+        try { new RecoveryWindow(_outputDirectory) { Owner = this }.ShowDialog(); }
+        catch (Exception error) {
+            StartupDiagnostics.WriteException("Checkpoint", error);
+            MessageBox.Show(this,"Recovery review could not open safely. Preserve the cache; no retry is authorized.",
+                "Recovery review unavailable",MessageBoxButton.OK,MessageBoxImage.Warning);
+        }
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)

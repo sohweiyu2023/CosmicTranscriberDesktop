@@ -148,6 +148,7 @@ public static class CheckpointCacheService
 
             SafeFileSystem.ValidateDirectoryTreeWithoutReparsePoints(directory, cancellationToken);
             ValidateKnownWorkDirectoryLayout(directory, cancellationToken);
+            PendingTranscriptionLedger.RefuseClearWithPending(directory, cancellationToken);
         }
 
         foreach (var file in files)
@@ -165,6 +166,7 @@ public static class CheckpointCacheService
         {
             cancellationToken.ThrowIfCancellationRequested();
             ValidateKnownWorkDirectoryLayout(directory, cancellationToken);
+            PendingTranscriptionLedger.RefuseClearWithPending(directory, cancellationToken);
             deleted += SafeFileSystem.DeleteDirectoryTreeWithoutFollowingReparsePoints(
                 directory,
                 cancellationToken);
@@ -230,7 +232,8 @@ public static class CheckpointCacheService
             var name = Path.GetFileName(entry);
             if ((attributes & (FileAttributes.Directory | FileAttributes.ReparsePoint)) != 0
                 || (!IsChunkFileName(name, ".json")
-                    && !IsAtomicChunkTemporaryName(name, ".json")))
+                    && !IsAtomicChunkTemporaryName(name, ".json")
+                    && !PendingTranscriptionLedger.IsMarkerFileName(name)))
             {
                 throw new IOException(
                     "The checkpoint transcript folder contains an unexpected item and was not used or cleared: " + entry);

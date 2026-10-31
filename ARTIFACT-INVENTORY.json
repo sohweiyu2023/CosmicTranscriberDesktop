@@ -191,8 +191,8 @@
   },
   {
     "path": "docs/LOGGING-SAFE-ERROR-AUDIT.md",
-    "sha256": "4c6e6125edf9fd4d5ab229b5f1437fda5ce6946049bf0c369f6de7c1bd179fb2",
-    "bytes": 6869
+    "sha256": "ebfed3081935cf9c1a2981fae97184b09e24a89f2fa19e991dff44d23effa727",
+    "bytes": 6978
   },
   {
     "path": "docs/MEDIA-SMOKE-REPORT.json",
@@ -235,6 +235,11 @@
     "bytes": 2387
   },
   {
+    "path": "docs/PENDING-REQUEST-RECOVERY.md",
+    "sha256": "ed2ae1a072b58cb2fdfaaeb0e1466a534538c74fdab04ba92696d5c7acca7072",
+    "bytes": 4062
+  },
+  {
     "path": "docs/RELEASE-CHECKLIST.md",
     "sha256": "f2e7c6142ad20e70ca08eae00c812f0a661752b662a8036f91191c998e062876",
     "bytes": 12078
@@ -256,8 +261,8 @@
   },
   {
     "path": "docs/TROUBLESHOOTING.md",
-    "sha256": "1b7240437b11aa618120dee25427350762badf6fd86b8fdaeaa31c80e772fb88",
-    "bytes": 14350
+    "sha256": "6f3dc6b0ad1364b779876eab835c2f7615ca6cdc5d0cf710a5f85eba5066720c",
+    "bytes": 14473
   },
   {
     "path": "docs/USER-GUIDE.md",
@@ -331,8 +336,8 @@
   },
   {
     "path": "scripts/static_verify.py",
-    "sha256": "19355dbad976447ae995e01f445a9e8280193791a50885748e67312fa04f61f6",
-    "bytes": 37014
+    "sha256": "a4e2c951846ee55d2121229a486d32ebe46dc00e6fc54910aa3042df66939ec2",
+    "bytes": 37806
   },
   {
     "path": "scripts/test_release_verifier.py",
@@ -391,8 +396,8 @@
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml.cs",
-    "sha256": "cc749f8470d769cf0161c8c95af40f23acf6f97cf76d1c1042ddd146d19e070f",
-    "bytes": 98738
+    "sha256": "8891adfb89fc8f70722ac9f26f48c4718b098f9e404ea4cacec6eb71e9038f63",
+    "bytes": 98913
   },
   {
     "path": "src/CosmicTranscriber/Models/AppSettings.cs",
@@ -426,8 +431,8 @@
   },
   {
     "path": "src/CosmicTranscriber/Services/CheckpointCacheService.cs",
-    "sha256": "8843ff0d3e682ac95d0194fe52c09a5b966917cfe4f4bef84c31ac2db5a21227",
-    "bytes": 13200
+    "sha256": "9a22b42159a29915410f47e30e74cab54292c6cb11c356444b8fc878fdba2ff0",
+    "bytes": 13460
   },
   {
     "path": "src/CosmicTranscriber/Services/Mp3AudioUtilities.cs",
@@ -446,13 +451,18 @@
   },
   {
     "path": "src/CosmicTranscriber/Services/OpenAiTranscriptionClient.cs",
-    "sha256": "3f70ad739d084655ff938ea11e6e1ae239e8562cd29d510c68c85ee4df565f6f",
-    "bytes": 36856
+    "sha256": "c12ca800b26802556f496e81f53274822badadda85402cabda16b7ec3e60c116",
+    "bytes": 37042
   },
   {
     "path": "src/CosmicTranscriber/Services/OutputDirectoryService.cs",
     "sha256": "7ed60264601afd8ee23e2cb413439751b76214b15aba9882d673597124d7f6b2",
     "bytes": 2384
+  },
+  {
+    "path": "src/CosmicTranscriber/Services/PendingTranscriptionLedger.cs",
+    "sha256": "e21a3abfbab712da5a6b6e505d3199a970fe5ace2ecfae30d162e180cd9c5ac7",
+    "bytes": 6673
   },
   {
     "path": "src/CosmicTranscriber/Services/TranscriptOutputWriter.cs",
@@ -461,8 +471,8 @@
   },
   {
     "path": "src/CosmicTranscriber/Services/TranscriptionCoordinator.cs",
-    "sha256": "b169cf07cbca8b163666f2e7d70e8fc707146a6da592d7f1427966202932908c",
-    "bytes": 31762
+    "sha256": "d3ddc6849803105823673ce49bd32c9e6ddab2dc002fac74fad4c05e7afb7b14",
+    "bytes": 34968
   },
   {
     "path": "src/CosmicTranscriber/Themes/CosmicNight.xaml",
@@ -690,9 +700,24 @@
     "bytes": 1945
   },
   {
+    "path": "tests/PendingRecoveryRegression/PendingRecoveryRegression.csproj",
+    "sha256": "1f302cfce7185653c6d89b2d1515e9a9edea3aeed5852eff547c4042acad79be",
+    "bytes": 1193
+  },
+  {
+    "path": "tests/PendingRecoveryRegression/Program.cs",
+    "sha256": "089e5235bca079a55f5f60f9ac448c62d565075e9902afbad5a19f0b29645c4c",
+    "bytes": 14768
+  },
+  {
+    "path": "tests/PendingRecoveryRegression/packages.lock.json",
+    "sha256": "88c04adb9fefc24e554b3c7d5561fc4d5820009af99335dec9526f0bb407ea1f",
+    "bytes": 1945
+  },
+  {
     "path": "tests/SafetyRegression/Program.cs",
-    "sha256": "7ef073e28a1fe6df716bfbce51ac204760f189488f901858ac89ebb4a13d7c73",
-    "bytes": 16403
+    "sha256": "b9fd5d9a4037339742bc124d0650dca9a32bcfe23317ef1db85298f513f9db05",
+    "bytes": 16418
   },
   {
     "path": "tests/SafetyRegression/SafetyRegression.csproj",

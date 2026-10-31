@@ -104,11 +104,11 @@ var syntheticKeyStore = new ApiKeyStore(settingsRoot, () => "local-mock-key");
 Check(syntheticKeyStore.LoadEnvironment().Key == "local-mock-key", "synthetic auth source evaluated before completion");
 var checkpoint = Path.Combine(root, "checkpoint.json");
 var readCheckpoint = typeof(TranscriptionCoordinator).GetMethod("TryReadCheckpointAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
-async Task ReadCheckpoint() { await (Task)readCheckpoint.Invoke(null, new object[] { checkpoint, 1, CancellationToken.None })!; }
+async Task ReadCheckpoint() { await (Task)readCheckpoint.Invoke(null, new object?[] { checkpoint, 1, CancellationToken.None, false })!; }
 await ReadCheckpoint(); File.WriteAllText(checkpoint, "{bad PRIVATE_DOCUMENT_SENTINEL"); await ReadCheckpoint();
 Check(!File.Exists(checkpoint), "invalid checkpoint removal retains existing behavior and explicit reason");
 var writeCheckpoint = typeof(TranscriptionCoordinator).GetMethod("WriteCheckpointAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
-await (Task)writeCheckpoint.Invoke(null, new object[] { checkpoint, 1, secret, Array.Empty<SpeakerSegment>(), CancellationToken.None })!;
+await (Task)writeCheckpoint.Invoke(null, new object?[] { checkpoint, 1, secret, Array.Empty<SpeakerSegment>(), CancellationToken.None, null })!;
 await ReadCheckpoint();
 var blockedPath = Path.Combine(root, "blocked-output"); File.WriteAllText(blockedPath, "synthetic blocker");
 Check(!OutputDirectoryService.CanWrite(blockedPath), "output probe failure remains false with typed evidence");

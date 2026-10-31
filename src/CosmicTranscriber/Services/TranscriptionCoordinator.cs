@@ -109,9 +109,10 @@ public sealed class TranscriptionCoordinator
                         cancellationToken: cancellationToken),
                     cancellationToken);
 
+                // Preserve existing manifest/evidence when unresolved work blocks this run.
+                await ReconcilePendingIntentsAsync(transcriptDirectory, chunks.Count, cancellationToken);
                 await WriteManifestAsync(workDirectory, item, request, chunks, cancellationToken);
                 log?.Invoke($"{item.FileName}: {chunks.Count} upload chunk(s) ready.");
-
                 var results = new List<ChunkTranscript>(chunks.Count);
                 long transcriptCharacters = 0;
                 var previousMeaningfulText = string.Empty;
@@ -156,7 +157,10 @@ public sealed class TranscriptionCoordinator
                             chunk.Index,
                             chunks.Count));
 
-                        var response = await _client.TranscribeAsync(
+                        PendingTranscriptionIntent? intent = null;
+                        var intentPath = PendingTranscriptionLedger.PathFor(transcriptDirectory, chunk.Index);
+                        OpenAiTranscriptionResult response;
+                        try { response = await _client.TranscribeAsync(
                             request.ApiKey,
                             request.Model,
                             chunk.Path,
@@ -165,7 +169,13 @@ public sealed class TranscriptionCoordinator
                             usesSpeakerDiarization ? null : request.Keywords,
                             request.RetryCount,
                             log,
-                            cancellationToken);
+                            cancellationToken,
+                            (actualClientId, token) => {
+                                intent = PendingTranscriptionLedger.Create(intentPath, chunk.Index, actualClientId, token);
+                                return Task.CompletedTask;
+                            }); }
+                        catch (Exception error) when (intent is not null && error is not OperationCanceledException)
+                        { throw new PendingTranscriptionException(error); }
                         text = response.Text;
                         localSpeakerSegments = response.SpeakerSegments;
 
@@ -177,7 +187,8 @@ public sealed class TranscriptionCoordinator
                             checkpointPath,
                             chunk.Index,
                             text,
-                            localSpeakerSegments);
+                            localSpeakerSegments,
+                            intent ?? throw new PendingTranscriptionException());
                         cancellationToken.ThrowIfCancellationRequested();
                         log?.Invoke($"{item.FileName}: checkpoint saved for chunk {chunk.Index}/{chunks.Count}.");
                     }
@@ -233,6 +244,26 @@ public sealed class TranscriptionCoordinator
         }
         catch (OperationCanceledException) { diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); throw; }
         catch (Exception error) { diagnostic.Fail(error, DiagnosticReason.Other); throw; }
+    }
+
+    // Recovery UI receives identity metadata only; transcript/audio content stays in its checkpoint.
+    internal static async Task<(Guid? Attempt, string? Client, string Hash)?> ReadRecoveryCheckpointAsync(string path, int index, CancellationToken token)
+    {
+        var checkpoint = await TryReadCheckpointAsync(path, index, token, preserveInvalid: true);
+        return checkpoint is null ? null : (checkpoint.AttemptId, checkpoint.ClientRequestId, checkpoint.PayloadSha256);
+    }
+
+    private static async Task ReconcilePendingIntentsAsync(string directory, int chunkCount, CancellationToken token)
+    {
+        foreach (var path in Directory.EnumerateFiles(directory)) {
+            token.ThrowIfCancellationRequested();
+            if (!PendingTranscriptionLedger.TryMarkerIndex(Path.GetFileName(path), out var index)) continue;
+            if (index > chunkCount) throw new PendingTranscriptionException();
+            var intent = PendingTranscriptionLedger.Read(path, index) ?? throw new PendingTranscriptionException();
+            var checkpoint = await TryReadCheckpointAsync(Path.Combine(directory, $"chunk-{index:000}.json"), index, token, preserveInvalid: true);
+            if (checkpoint is null) throw new PendingTranscriptionException();
+            PendingTranscriptionLedger.ReconcileValidatedCheckpoint(path, intent, checkpoint.AttemptId, checkpoint.ClientRequestId);
+        }
     }
 
     private static string BuildPrompt(
@@ -328,7 +359,7 @@ public sealed class TranscriptionCoordinator
     private static async Task<CheckpointEnvelope?> TryReadCheckpointAsync(
         string path,
         int expectedIndex,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, bool preserveInvalid = false)
     {
         using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Checkpoint);
         try
@@ -351,14 +382,16 @@ public sealed class TranscriptionCoordinator
                     || envelope.Index != expectedIndex
                     || envelope.Text is null
                     || envelope.SpeakerSegments is null
+                    || (envelope.AttemptId.HasValue && (envelope.AttemptId == Guid.Empty || envelope.ClientRequestId != "ct-" + envelope.AttemptId.Value.ToString("N")))
+                    || (!envelope.AttemptId.HasValue && envelope.ClientRequestId is not null)
                     || string.IsNullOrWhiteSpace(envelope.PayloadSha256)
                     || !string.Equals(
                         envelope.PayloadSha256,
-                        ComputeCheckpointPayloadSha256(envelope.Text, envelope.SpeakerSegments),
+                        ComputeCheckpointPayloadSha256(envelope.Text, envelope.SpeakerSegments, envelope.AttemptId, envelope.ClientRequestId),
                         StringComparison.OrdinalIgnoreCase))
                 {
                     diagnostic.Stage(DiagnosticStage.Invalidated, DiagnosticReason.Corrupt);
-                    DeleteInvalidCheckpointOrThrow(path);
+                    if (!preserveInvalid) DeleteInvalidCheckpointOrThrow(path);
                     return diagnostic.Complete<CheckpointEnvelope?>(null, DiagnosticReason.Corrupt);
                 }
 
@@ -376,7 +409,7 @@ public sealed class TranscriptionCoordinator
             catch (Exception ex) when (ex is JsonException or DecoderFallbackException or InvalidDataException)
             {
                 diagnostic.Stage(DiagnosticStage.Invalidated, DiagnosticReason.Corrupt);
-                DeleteInvalidCheckpointOrThrow(path);
+                if (!preserveInvalid) DeleteInvalidCheckpointOrThrow(path);
                 return diagnostic.Complete<CheckpointEnvelope?>(null, DiagnosticReason.Corrupt);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
@@ -396,7 +429,8 @@ public sealed class TranscriptionCoordinator
         string path,
         int index,
         string text,
-        IReadOnlyList<SpeakerSegment> speakerSegments)
+        IReadOnlyList<SpeakerSegment> speakerSegments,
+        PendingTranscriptionIntent intent)
     {
         using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Checkpoint);
         try
@@ -404,7 +438,10 @@ public sealed class TranscriptionCoordinator
             using var storageTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             try
             {
-                await WriteCheckpointAsync(path, index, text, speakerSegments, storageTimeout.Token);
+                await WriteCheckpointAsync(path, index, text, speakerSegments, storageTimeout.Token, intent);
+                var verified = await TryReadCheckpointAsync(path, index, storageTimeout.Token, preserveInvalid: true);
+                if (verified is null) throw new PendingTranscriptionException();
+                PendingTranscriptionLedger.ReconcileValidatedCheckpoint(Path.ChangeExtension(path, ".pending"), intent, verified.AttemptId, verified.ClientRequestId);
             }
             catch (OperationCanceledException ex) when (storageTimeout.IsCancellationRequested)
             {
@@ -426,14 +463,15 @@ public sealed class TranscriptionCoordinator
         int index,
         string text,
         IReadOnlyList<SpeakerSegment> speakerSegments,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, PendingTranscriptionIntent? intent = null)
     {
         var envelope = new CheckpointEnvelope(
             CheckpointSchema,
             index,
             text,
             speakerSegments,
-            ComputeCheckpointPayloadSha256(text, speakerSegments));
+            ComputeCheckpointPayloadSha256(text, speakerSegments, intent?.AttemptId, intent?.ClientRequestId),
+            intent?.AttemptId, intent?.ClientRequestId);
         var content = JsonSerializer.Serialize(envelope, JsonOptions);
         if (Encoding.UTF8.GetByteCount(content) > MaximumCheckpointBytes)
         {
@@ -623,13 +661,12 @@ public sealed class TranscriptionCoordinator
 
     private static string ComputeCheckpointPayloadSha256(
         string text,
-        IReadOnlyList<SpeakerSegment> speakerSegments)
+        IReadOnlyList<SpeakerSegment> speakerSegments, Guid? attemptId = null, string? clientRequestId = null)
     {
-        var payload = JsonSerializer.Serialize(new
-        {
-            text,
-            speaker_segments = speakerSegments
-        });
+        // Preserve legacy checksum bytes for legacy checkpoints without an intent identity.
+        var payload = attemptId.HasValue
+            ? JsonSerializer.Serialize(new { text, speaker_segments = speakerSegments, attempt_id = attemptId.Value, client_request_id = clientRequestId })
+            : JsonSerializer.Serialize(new { text, speaker_segments = speakerSegments });
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
     }
 
@@ -742,7 +779,7 @@ public sealed class TranscriptionCoordinator
         int Index,
         string Text,
         IReadOnlyList<SpeakerSegment> SpeakerSegments,
-        string PayloadSha256);
+        string PayloadSha256, Guid? AttemptId = null, string? ClientRequestId = null);
 
     private sealed class CallbackProgress<T>(Action<T> callback) : IProgress<T>
     {

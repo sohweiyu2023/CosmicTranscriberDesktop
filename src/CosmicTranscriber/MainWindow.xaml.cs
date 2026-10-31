@@ -718,6 +718,17 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ReviewUncertain_Click(object sender, RoutedEventArgs e)
+    {
+        if (!IsUiIdle) return;
+        try { new RecoveryWindow(ResolveOutputPath()) { Owner = this }.ShowDialog(); }
+        catch (Exception error) {
+            StartupDiagnostics.WriteException("Checkpoint", error);
+            MessageBox.Show(this, "Recovery review could not open safely. Preserve the cache and inspect local diagnostic coverage.",
+                "Recovery review unavailable", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private async void ClearCheckpoints_Click(object sender, RoutedEventArgs e)
     {
         if (_isRunning || _isImporting || _isTestingKey || _isClosing)
@@ -1263,6 +1274,7 @@ public partial class MainWindow : Window
         var failureCount = 0;
         var skippedCount = 0;
         var stopwatch = Stopwatch.StartNew();
+        var completionEvidence = new RunCompletionEvidence();
 
         foreach (var item in queuedFiles)
         {
@@ -1322,12 +1334,15 @@ public partial class MainWindow : Window
                     FooterDetailText.Text = update.Message;
                 });
 
+                var coordinatorStarted = false;
+                var coordinatorCompleted = false;
                 try
                 {
                     EnsureSourceUnchanged(item);
                     FileTranscriptionResult result;
                     try
                     {
+                        coordinatorStarted = true;
                         result = await _coordinator.ProcessFileAsync(
                             item,
                             outputDirectory,
@@ -1335,6 +1350,8 @@ public partial class MainWindow : Window
                             progress,
                             AppendLog,
                             cancellationToken);
+                        coordinatorCompleted = true;
+                        completionEvidence.Accepted();
                     }
                     finally
                     {
@@ -1379,12 +1396,13 @@ public partial class MainWindow : Window
                 catch (OperationCanceledException)
                 {
                     item.Status = AudioJobStatus.Cancelled;
-                    item.Detail = "Cancelled; checkpoints retained";
+                    item.Detail = "Cancelled; checkpoints and unresolved intents retained";
                     throw;
                 }
                 catch (Exception ex)
                 {
                     StartupDiagnostics.WriteException("TRANSCRIPTION FILE FAILURE", ex);
+                    completionEvidence.Failed(ex, coordinatorStarted, coordinatorCompleted);
                     failureCount++;
                     item.Status = AudioJobStatus.Failed;
                     item.Detail = InputValidation.SingleLineForLog(ex.Message, 500);
@@ -1444,7 +1462,7 @@ public partial class MainWindow : Window
                     }
 
                     AppendLog("Combined export was not created because the queue was incomplete. " +
-                              "Successful transcript checkpoints were retained for a safe retry.");
+                              "Accepted checkpoints were retained. Review failed items and unresolved attempts before another request.");
                 }
             }
 
@@ -1473,7 +1491,8 @@ public partial class MainWindow : Window
                         failureCount,
                         skippedCount,
                         writtenOutputs.Count,
-                        stopwatch.Elapsed)
+                        stopwatch.Elapsed,
+                        completionEvidence.Value)
                     {
                         Owner = this
                     };
@@ -1486,7 +1505,8 @@ public partial class MainWindow : Window
                               InputValidation.SingleLineForLog(completionEx.Message));
                     MessageBox.Show(this,
                         $"Transcription run finished.\n\nSucceeded: {successCount}\nFailed: {failureCount}\n" +
-                        $"Skipped: {skippedCount}\nOutput files: {writtenOutputs.Count}\n\n{outputDirectory}",
+                        $"Skipped: {skippedCount}\nOutput files: {writtenOutputs.Count}\n\n{outputDirectory}\n\n" +
+                        RunPresentation.CompletionGuidance(writtenOutputs.Count, completedWithIssues, completionEvidence.Value).Message,
                         completedWithIssues ? "Completed with issues" : "Transcription complete",
                         MessageBoxButton.OK,
                         completedWithIssues ? MessageBoxImage.Warning : MessageBoxImage.Information);
@@ -1499,21 +1519,22 @@ public partial class MainWindow : Window
             foreach (var item in queuedFiles.Where(item => item.Status is AudioJobStatus.Ready or AudioJobStatus.Preparing or AudioJobStatus.Transcribing))
             {
                 item.Status = AudioJobStatus.Cancelled;
-                item.Detail = "Cancelled; checkpoints retained";
+                item.Detail = "Cancelled; checkpoints and unresolved intents retained";
             }
 
             if (!_isClosing)
             {
                 HeaderStatusText.Text = "Cancelled";
                 FooterTitleText.Text = "Run cancelled";
-                FooterDetailText.Text = "Completed transcript checkpoints were retained and will be reused next time.";
-                CurrentActionText.Text = "Cancelled safely";
-                AppendLog("Run cancelled. Existing checkpoints remain available for resume.");
+                FooterDetailText.Text = "Completed checkpoints were retained. Unresolved paid attempts may block restart and require review.";
+                CurrentActionText.Text = "Cancelled; paid outcomes may need review";
+                AppendLog("Run cancelled. Accepted checkpoints remain available; unresolved paid intents are retained and may block restart.");
             }
         }
         catch (Exception ex)
         {
             StartupDiagnostics.WriteException("TRANSCRIPTION RUN FAILURE", ex);
+            completionEvidence.Failed(ex, coordinatorStarted: true, coordinatorCompleted: false);
             stopwatch.Stop();
             foreach (var item in queuedFiles.Where(item => item.Status is AudioJobStatus.Preparing or AudioJobStatus.Transcribing))
             {
@@ -1537,10 +1558,10 @@ public partial class MainWindow : Window
             {
                 HeaderStatusText.Text = "Run failed";
                 FooterTitleText.Text = "Unexpected run failure";
-                FooterDetailText.Text = "Completed transcript checkpoints were retained for a safe retry.";
+                FooterDetailText.Text = RunPresentation.CompletionGuidance(writtenOutputs.Count, true, completionEvidence.Value).Message;
                 CurrentActionText.Text = InputValidation.SingleLineForLog(ex.Message, 500);
                 MessageBox.Show(this,
-                    "The run stopped because of an unexpected error. Completed transcript checkpoints were retained.\n\n" + ex.Message,
+                    "The run stopped because of an unexpected error.\n\n" + FooterDetailText.Text + "\n\n" + ex.Message,
                     "Transcription run failed", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1598,7 +1619,7 @@ public partial class MainWindow : Window
 
     private static bool IsSystemicRunFailure(Exception exception)
     {
-        if (exception is HttpRequestException or OpenAiProtocolException or CheckpointStorageException
+        if (exception is PendingTranscriptionException or HttpRequestException or OpenAiProtocolException or CheckpointStorageException
             or AudioPreparationStorageException or TranscriptExportException)
         {
             return true;
@@ -1945,6 +1966,7 @@ public partial class MainWindow : Window
     {
         var idle = IsUiIdle;
         StartButton.IsEnabled = idle;
+        ReviewUncertainButton.IsEnabled = idle;
         CancelButton.IsEnabled = _isRunning
             && _runCancellation is { IsCancellationRequested: false };
         TestKeyButton.IsEnabled = idle;

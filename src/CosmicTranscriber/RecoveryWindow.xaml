@@ -1,0 +1,38 @@
+<Window x:Class="CosmicTranscriber.RecoveryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Review unresolved transcription attempts" Width="880" Height="650" MinWidth="360" MinHeight="420"
+        WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackgroundBrush}"
+        Loaded="Window_Loaded" Closing="Window_Closing">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="20">
+            <TextBlock Text="Review unresolved attempts" FontSize="23" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock Margin="0,10,0,12" TextWrapping="Wrap"
+                       Text="This screen makes no provider requests. Inventory may create local coordination lock metadata; it never alters pending evidence. Unknown outcomes stay blocked. Only a validated local checkpoint matching the exact attempt can be reconciled. No charge is refunded and no budget is released." />
+            <WrapPanel Margin="0,0,0,10">
+                <Button x:Name="RefreshRecoveryButton" Content="Refresh local inventory" Click="Refresh_Click" Margin="0,0,10,8" Padding="12,8" />
+                <Button x:Name="RecheckRecoveryButton" Content="Recheck selected local response" Click="Recheck_Click" IsEnabled="False" Margin="0,0,10,8" Padding="12,8"
+                        ToolTip="Reconcile only if a fresh validated checkpoint matches this exact intent; never replay a request" />
+            </WrapPanel>
+            <DataGrid x:Name="AttemptsGrid" Height="180" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                      SelectionChanged="Selection_Changed" CanUserAddRows="False" CanUserDeleteRows="False"
+                      AutomationProperties.Name="Unresolved attempt inventory" HorizontalScrollBarVisibility="Auto">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Chunk" Binding="{Binding Chunk}" Width="70" />
+                    <DataGridTextColumn Header="State" Binding="{Binding State}" Width="280" />
+                    <DataGridTextColumn Header="Created (UTC offset)" Binding="{Binding CreatedUtc}" Width="180" />
+                    <DataGridTextColumn Header="Context ID" Binding="{Binding WorkId}" Width="260" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Margin="0,12,0,5" Text="Selected attempt — identifiers only" FontWeight="SemiBold" />
+            <TextBox x:Name="AttemptIdentityText" IsReadOnly="True" TextWrapping="Wrap" MinHeight="65" VerticalScrollBarVisibility="Auto"
+                     AutomationProperties.Name="Selected attempt identifiers" />
+            <TextBlock x:Name="RecoveryStatusText" Margin="0,12,0,12" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"
+                       Text="Choose an attempt and recheck its local response. Invalid, missing or mismatched evidence cannot unlock it." />
+            <TextBlock TextWrapping="Wrap" Text="Unknown outcome: preserve the cache. Review provider history using the request ID; this app cannot verify external billing evidence or authorize an override. Do not delete markers or switch settings/output to bypass the block." />
+            <TextBlock x:Name="HistoryPathText" Margin="0,10,0,0" TextWrapping="Wrap" />
+            <TextBlock Margin="0,5,0,14" TextWrapping="Wrap" Text="Recovery receipts contain identifiers and checkpoint hashes, never audio, transcript text or keys. Existing receipts are never rewritten or removed by this workflow or by checkpoint clearing. A receipt records validated local evidence, not a refund or a provider billing decision." />
+            <Button x:Name="CloseRecoveryButton" Content="Close" Click="Close_Click" HorizontalAlignment="Right" Padding="18,8" IsCancel="True" />
+        </StackPanel>
+    </ScrollViewer>
+</Window>

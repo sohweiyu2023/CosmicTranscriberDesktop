@@ -8,7 +8,7 @@ Transcription performs one POST only, regardless of a saved legacy retry count. 
 
 The legacy retry setting is retained for profile compatibility but its selector is disabled and its count ignored by the client. A client request ID is correlation, not an idempotency guarantee. A provider response/error does not establish zero billing. Review the existing attempt and possible charges before a later user-initiated request.
 
-**Remaining recovery gap:** there is no durable pending-request ledger across process restart. The single-dispatch guard prevents automatic in-call retries; it cannot establish whether a later manually restarted run would repeat uncertain work. Do not claim exactly-once provider processing or infer free failure. Existing completed-response checkpoint persistence remains authoritative and is not cancelled by the user's post-response cancellation token.
+**Proposed restart guard:** the follow-up in [PENDING-REQUEST-RECOVERY.md](PENDING-REQUEST-RECOVERY.md) records actual attempt intents and requires exact checkpoint binding before reconciliation. It blocks uncertain work only in the same local cache context; conservative pre-send false positives and the lack of an ordinary resolution UI remain. Do not claim global exactly-once provider processing or infer free failure. Existing completed-response checkpoint persistence remains authoritative and is not cancelled by the user's post-response cancellation token.
 
 ## Coverage and privacy boundary
 
