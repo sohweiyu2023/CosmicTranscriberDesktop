@@ -113,6 +113,11 @@ public static class SafeFileSystem
         string targetPath,
         ReadOnlySpan<byte> payload,
         string description)
+        => WriteAllBytesDurableAtomic(targetPath, payload, description, File.Delete);
+
+    private static long _atomicCleanupFailures;
+    internal static long AtomicCleanupFailures => Interlocked.Read(ref _atomicCleanupFailures);
+    internal static void WriteAllBytesDurableAtomic(string targetPath, ReadOnlySpan<byte> payload, string description, Action<string> cleanup)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetPath);
         var directory = Path.GetDirectoryName(targetPath)
@@ -143,11 +148,12 @@ public static class SafeFileSystem
         {
             try
             {
-                File.Delete(temporaryPath);
+                cleanup(temporaryPath);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
             {
                 // Best-effort cleanup only; the primary write result remains authoritative.
+                Interlocked.Increment(ref _atomicCleanupFailures);
             }
         }
     }

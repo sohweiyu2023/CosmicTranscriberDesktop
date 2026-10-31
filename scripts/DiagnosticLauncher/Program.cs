@@ -12,11 +12,13 @@ for(int i=0;i<args.Length;i++){
     else {Console.Error.WriteLine("Use --exe <existing application> [--qa-timeout-seconds 1..3600]. No rebuild is performed.");return 2;}
 }
 if(exe is null || !File.Exists(exe)){Console.Error.WriteLine("The existing executable was not found. Build separately before diagnosing.");return 2;}
-var session=Guid.NewGuid();DiagnosticLogWriter? log=null;Process? app=null;bool cleanup=false;
-void Record(string name,object? data){try{log?.Write("LAUNCHER",name,data);}catch{}}
+var session=Guid.NewGuid();LauncherDiagnosticSink? log=null;Process? app=null;bool cleanup=false;
+void Record(string name,object? data){log?.Record(name,data);}
 try {
     var directory=Path.Combine(Path.GetDirectoryName(exe)!,"logs");
-    log=new DiagnosticLogWriter(directory,session,65536,20,DiagnosticLogFamily.Launcher);
+    var opened=DiagnosticSinkFactory.Open(new[]{(DiagnosticSinkLocation.Executable,(Func<DiagnosticLogWriter>)(()=>new DiagnosticLogWriter(directory,session,65536,20,DiagnosticLogFamily.Launcher)))});
+    log=new LauncherDiagnosticSink(opened.Writer);
+    Record("diagnostic_sink_initialized",new{location=opened.Location.ToString(),attempts=opened.Attempts,failures=opened.Failures,enumerationFailed=opened.EnumerationFailed,failureDetails=opened.FailureDetails.Select(f=>new{location=f.Location.ToString(),reason=f.Reason.ToString(),hresult=f.HResult}).ToArray()});
     string hash="unavailable";var dll=Path.ChangeExtension(exe,".dll");
     try{using var file=File.OpenRead(dll);hash=Convert.ToHexString(SHA256.HashData(file)).ToLowerInvariant();}catch{}
     var requested=new List<object>();var config=Path.ChangeExtension(exe,".runtimeconfig.json");
@@ -30,13 +32,13 @@ try {
             }
         }catch{}
     }
-    Record("launch_requested",new{executablePath=exe.Length<=1024?exe:"path_omitted",assemblySha256=hash,requestedFrameworks=requested,
+    Record("launch_requested",new{assemblySha256=hash,requestedFrameworks=requested,
         qaTimeoutSeconds=qaSeconds,rawOutputPersisted=false,launcherWaitsForChild=true,missingExitRecordIsUnknown=true});
     var info=new ProcessStartInfo(exe){WorkingDirectory=Path.GetDirectoryName(exe)!,UseShellExecute=false,RedirectStandardError=true,RedirectStandardOutput=true};
     info.Environment["COSMIC_DIAGNOSTIC_SESSION"]=session.ToString("N");
     app=new Process{StartInfo=info};if(!app.Start())throw new InvalidOperationException();
     var childClock=Stopwatch.StartNew();Record("process_started",new{childProcessId=app.Id});
-    var stderr=new OutputDrain();var stdout=new OutputDrain();var drains=Task.WhenAll(stderr.Drain(app.StandardError,true),stdout.Drain(app.StandardOutput,false));
+    var stderr=new DiagnosticOutputDrain();var stdout=new DiagnosticOutputDrain();var drains=Task.WhenAll(stderr.Drain(app.StandardError,true),stdout.Drain(app.StandardOutput,false));
     bool window=false;
     while(!app.WaitForExit(200)){
         app.Refresh();if(!window && app.MainWindowHandle!=IntPtr.Zero){window=true;Record("native_window_observed",new{childProcessId=app.Id});}
@@ -46,32 +48,17 @@ try {
     }
     var drained=await Task.WhenAny(drains,Task.Delay(2000))==drains;
     Record("process_exited",new{childProcessId=app.Id,exitCode=app.ExitCode,windowObserved=window,ownedQaCleanup=cleanup,
-        outputDrained=drained,stderrCharacters=stderr.Characters,stdoutCharacters=stdout.Characters,classifiedFailureKind=stderr.FailureKind});
+        outputDrained=drained&&stderr.Complete&&stdout.Complete,outputDrainTasksEnded=drained,stderrCharacters=stderr.Characters,stdoutCharacters=stdout.Characters,classifiedFailureKind=stderr.FailureKind,stdoutFailureKind=stdout.FailureKind});
     Console.WriteLine("Diagnostic session: "+session.ToString("N"));Console.WriteLine("Launch record: "+log.Path);return app.ExitCode;
 }catch(Exception ex){
     if(qaSeconds.HasValue && app is not null){try{if(!app.HasExited){cleanup=true;app.Kill();var confirmed=app.WaitForExit(2000);Record("qa_exception_cleanup",new{confirmed});}}catch{Record("qa_exception_cleanup",new{confirmed=false});}}
-    try{Record("launcher_exception",new{type=ex.GetType().FullName,hresult=$"0x{ex.HResult:X8}",ownedQaCleanup=cleanup});}catch{}
+    try{var type=ex.GetType().FullName;Record("launcher_exception",new{type=type is "System.ComponentModel.Win32Exception" or "System.IO.IOException" or "System.UnauthorizedAccessException" or "System.InvalidOperationException" or "System.ArgumentException" or "System.ObjectDisposedException" ? type : "Other",hresult=$"0x{ex.HResult:X8}",nativeError=ex is System.ComponentModel.Win32Exception native ? (int?)native.NativeErrorCode : null,ownedQaCleanup=cleanup});}catch{}
     Console.Error.WriteLine("Diagnostic launcher failed; inspect the local structured launcher record if available.");return 1;
-}finally{try{app?.Dispose();}catch{}try{log?.Dispose();}catch{}}
-
-internal sealed class OutputDrain {
-    public long Characters;public string? FailureKind;
-    public async Task Drain(StreamReader reader,bool classify){
-        var buffer=new char[512];string tail="";
-        try{int count;while((count=await reader.ReadAsync(buffer.AsMemory()))>0){
-            Characters+=count;
-            if(classify){var sample=tail+new string(buffer,0,count);
-                if(FailureKind is null){
-                    if(sample.Contains("BadImageFormatException",StringComparison.Ordinal))FailureKind="bad_image_format";
-                    else if(sample.Contains("FileNotFoundException",StringComparison.Ordinal))FailureKind="file_not_found";
-                    else if(sample.Contains("DllNotFoundException",StringComparison.Ordinal))FailureKind="dll_not_found";
-                    else if(sample.Contains("TypeInitializationException",StringComparison.Ordinal))FailureKind="type_initialization";
-                    else if(sample.Contains("application to execute does not exist",StringComparison.OrdinalIgnoreCase))FailureKind="primary_assembly_missing";
-                    else if(sample.Contains("You must install or update .NET",StringComparison.OrdinalIgnoreCase))FailureKind="required_runtime_missing";
-                }
-                tail=sample.Length>128?sample[^128..]:sample;
-            }
-        }}catch{FailureKind??="stream_read_error";}finally{tail="";}
-    }
+}finally{
+    try{app?.Dispose();}catch{Record("launcher_cleanup_failed",new{stage="process_dispose"});}
+    Record("diagnostic_health",log?.Health);
+    log?.Dispose();
+    var health=log?.Health;
+    try{Console.Error.WriteLine($"Diagnostic coverage: sinkUnavailable={health?.SinkUnavailable ?? true}; writeFailures={health?.WriteFailures ?? 0}; droppedRecords={health?.DroppedRecords ?? 0}; oversizedRecords={health?.OversizedRecords ?? 0}; pruneFailures={health?.PruneFailures ?? 0}; disposeFailures={health?.DisposeFailures ?? 0}. Missing or dropped evidence is incomplete.");}catch{}
 }
 

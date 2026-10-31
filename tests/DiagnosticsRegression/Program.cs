@@ -40,6 +40,25 @@ StartupDiagnostics.WriteThemeTransition(themeOperation,"requested","Cosmic Paper
 StartupDiagnostics.WriteThemeTransition(themeOperation,"applied","Cosmic Paper","Cosmic Night",3,1,4.1259);
 StartupDiagnostics.WriteThemeTransition(themeOperation,"failed","Cosmic Paper","Cosmic Night",3,1,5,new InvalidDataException(secret));
 StartupDiagnostics.WriteThemeTransition(Guid.Empty,secret,secret,secret,int.MaxValue,int.MinValue,double.PositiveInfinity,new Exception(secret));
+
+Guid parentId, childId, cancelledId, incompleteId, disabledId;
+using(var parent=StartupDiagnostics.Begin(DiagnosticArea.AudioImport)) {
+ parentId=parent.Id;
+ using(var child=StartupDiagnostics.Begin(DiagnosticArea.OutputOpen)) {
+  childId=child.Id; await Task.Yield(); child.Fail(new IOException(secret),DiagnosticReason.StorageFailure);
+ }
+ parent.Stage(DiagnosticStage.Completed,DiagnosticReason.Incomplete);
+}
+using(var cancel=StartupDiagnostics.Begin(DiagnosticArea.CheckpointClear)) {cancelledId=cancel.Id;cancel.Stage(DiagnosticStage.Cancelled,DiagnosticReason.UserCancelled);}
+using(var unfinished=StartupDiagnostics.Begin(DiagnosticArea.OutputBrowse)){incompleteId=unfinished.Id;}
+using(var disabled=StartupDiagnostics.Begin(DiagnosticArea.AudioImport,false)){disabledId=disabled.Id;disabled.Fail(new IOException(secret));}
+var invalidElapsedId=Guid.NewGuid();
+StartupDiagnostics.WriteOperation(DiagnosticArea.AudioImport,DiagnosticStage.Started,invalidElapsedId,operationElapsedMs:double.NaN);
+StartupDiagnostics.WriteOperation(DiagnosticArea.AudioImport,DiagnosticStage.Started,invalidElapsedId,operationElapsedMs:double.PositiveInfinity);
+StartupDiagnostics.WriteOperation(DiagnosticArea.AudioImport,DiagnosticStage.Started,invalidElapsedId,operationElapsedMs:-1);
+foreach(var area in new[]{DiagnosticArea.RecoveryInventory,DiagnosticArea.RecoveryRecheck,DiagnosticArea.RecoveryHistory,DiagnosticArea.RecoveryReconcile})
+ using(var failure=StartupDiagnostics.Begin(area)) failure.Fail(new IOException(secret),DiagnosticReason.StorageFailure);
+
 Parallel.For(0,80,_=>StartupDiagnostics.WriteLifecycle("concurrent_event"));
 StartupDiagnostics.WriteException("NATIVE_TEST",new System.ComponentModel.Win32Exception(5));
 StartupDiagnostics.WriteException("SOCKET_TEST",new System.Net.Sockets.SocketException(10061));
@@ -71,6 +90,19 @@ Check(appliedTheme.GetProperty("requestedTheme").GetString()=="paper" && applied
 Check(themeEvents[2].GetProperty("data").GetProperty("failureType").GetString()=="System.IO.InvalidDataException" && themeEvents[2].GetProperty("data").GetProperty("hresult").GetString()!.StartsWith("0x"),"Theme failure type and HRESULT without exception content");
 var untrustedTheme=themeEvents[3].GetProperty("data");
 Check(themeEvents[3].GetProperty("eventName").GetString()=="other" && untrustedTheme.GetProperty("requestedTheme").GetString()=="other" && untrustedTheme.GetProperty("previousTheme").GetString()=="other" && untrustedTheme.GetProperty("dictionaryCount").ValueKind==JsonValueKind.Null && untrustedTheme.GetProperty("paletteIndex").ValueKind==JsonValueKind.Null && untrustedTheme.GetProperty("elapsedMs").ValueKind==JsonValueKind.Null,"Untrusted Theme names/stages and invalid counts/timing omitted");
+
+var operations=records.Where(d=>d.RootElement.GetProperty("category").GetString()=="OPERATION" && d.RootElement.GetProperty("eventName").GetString()=="stage").Select(d=>d.RootElement.GetProperty("data")).ToArray();
+JsonElement[] For(Guid id)=>operations.Where(d=>d.GetProperty("operationId").GetString()==id.ToString("N")).ToArray();
+var parentEvents=For(parentId); var childEvents=For(childId);
+Check(parentEvents.Length==2 && childEvents.Length==2 && parentEvents[^1].GetProperty("stage").GetString()=="Completed" && childEvents[^1].GetProperty("stage").GetString()=="Failed","nested operations retain one exact terminal stage");
+Check(childEvents.All(d=>d.GetProperty("parentOperationId").GetString()==parentId.ToString("N")),"nested operation parent correlation survives async yield");
+Check(new[]{parentEvents,childEvents,For(cancelledId),For(incompleteId)}.All(group=>group.All(d=>d.GetProperty("operationElapsedMs").GetDouble()>=0) && group[^1].GetProperty("operationElapsedMs").GetDouble()>=group[0].GetProperty("operationElapsedMs").GetDouble()),"each operation has nonnegative monotonic own elapsed duration");
+Check(For(cancelledId)[^1].GetProperty("stage").GetString()=="Cancelled" && For(cancelledId)[^1].GetProperty("reason").GetString()=="UserCancelled","cancellation terminal is distinct from failure");
+Check(For(incompleteId)[^1].GetProperty("stage").GetString()=="Ended" && For(incompleteId)[^1].GetProperty("reason").GetString()=="Incomplete","unwound scope records incomplete terminal duration");
+Check(For(disabledId).Length==0 && !text.Contains(disabledId.ToString("N")),"disabled operation emits no duration or error record");
+Check(For(invalidElapsedId).Length==3 && For(invalidElapsedId).All(d=>d.GetProperty("operationElapsedMs").ValueKind==JsonValueKind.Null),"negative and nonfinite supplied duration omitted");
+Check(new[]{"RecoveryInventory","RecoveryRecheck","RecoveryHistory","RecoveryReconcile","OutputOpen"}.All(area=>records.Any(d=>d.RootElement.GetProperty("category").GetString()==area && d.RootElement.GetProperty("eventName").GetString()=="exception")),"typed recovery and shell failure categories survive without raw messages");
+
 foreach(var d in records)d.Dispose();Console.WriteLine($"DIAGNOSTICS_ASSERTIONS={assertions}");
 
 

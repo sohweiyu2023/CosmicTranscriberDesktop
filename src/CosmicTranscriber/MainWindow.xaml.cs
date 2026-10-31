@@ -115,8 +115,10 @@ public partial class MainWindow : Window
 
     private async void AddFiles_Click(object sender, RoutedEventArgs e)
     {
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.FilePicker);
         if (_isRunning || _isImporting || _isTestingKey || _isClosing)
         {
+            diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.LocalContention);
             return;
         }
 
@@ -133,6 +135,7 @@ public partial class MainWindow : Window
 
             if (dialog.ShowDialog(this) != true)
             {
+                diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
                 return;
             }
 
@@ -140,7 +143,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-                StartupDiagnostics.WriteException("Startup", ex);
+            diagnostic.Fail(ex);
             if (!_isClosing)
             {
                 AppendLog("Could not open the file picker: " + InputValidation.SingleLineForLog(ex.Message));
@@ -151,12 +154,15 @@ public partial class MainWindow : Window
         }
 
         await AddInputPathsAsync(selectedPaths);
+        diagnostic.Stage(DiagnosticStage.Completed);
     }
 
     private async void AddFolder_Click(object sender, RoutedEventArgs e)
     {
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.FolderPicker);
         if (_isRunning || _isImporting || _isTestingKey || _isClosing)
         {
+            diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.LocalContention);
             return;
         }
 
@@ -171,6 +177,7 @@ public partial class MainWindow : Window
 
             if (dialog.ShowDialog(this) != true)
             {
+                diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
                 return;
             }
 
@@ -178,7 +185,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-                StartupDiagnostics.WriteException("Startup", ex);
+            diagnostic.Fail(ex);
             if (!_isClosing)
             {
                 AppendLog("Could not open the folder picker: " + InputValidation.SingleLineForLog(ex.Message));
@@ -189,12 +196,15 @@ public partial class MainWindow : Window
         }
 
         await AddInputPathsAsync([selectedPath]);
+        diagnostic.Stage(DiagnosticStage.Completed);
     }
 
     private async void PastePaths_Click(object sender, RoutedEventArgs e)
     {
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.Clipboard);
         if (!IsUiIdle)
         {
+            diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.LocalContention);
             return;
         }
 
@@ -202,6 +212,7 @@ public partial class MainWindow : Window
         {
             if (!Clipboard.ContainsFileDropList())
             {
+                diagnostic.Stage(DiagnosticStage.Completed, DiagnosticReason.Missing);
                 MessageBox.Show(this,
                     "No copied files or folders were found. In File Explorer, select MP3 files or folders, press Ctrl+C, then choose Paste here.",
                     "Nothing to paste", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -214,15 +225,17 @@ public partial class MainWindow : Window
                 .ToArray();
             if (paths.Length == 0)
             {
+                diagnostic.Stage(DiagnosticStage.Completed, DiagnosticReason.Missing);
                 return;
             }
 
             AppendLog($"Pasting {paths.Length} copied file or folder path(s) into the audio queue.");
             await AddInputPathsAsync(paths);
+            diagnostic.Stage(DiagnosticStage.Completed);
         }
         catch (Exception ex)
         {
-            StartupDiagnostics.WriteException("CLIPBOARD", ex);
+            diagnostic.Fail(ex);
             if (!_isClosing)
             {
                 AppendLog("Could not read copied file paths: " + InputValidation.SingleLineForLog(ex.Message));
@@ -363,15 +376,15 @@ public partial class MainWindow : Window
         AppendLog($"Moved {item.FileName} to queue position {newIndex + 1}.");
     }
 
-    private bool CanAcceptFileDrop(DragEventArgs e, out string[] paths)
+    private bool CanAcceptFileDrop(DragEventArgs e, out string[] paths, bool reportFailure = false)
     {
         paths = [];
         return IsUiIdle
             && (e.AllowedEffects & DragDropEffects.Copy) != 0
-            && TryGetFileDropPaths(e.Data, out paths);
+            && TryGetFileDropPaths(e.Data, out paths, reportFailure);
     }
 
-    private static bool TryGetFileDropPaths(IDataObject dataObject, out string[] paths)
+    private static bool TryGetFileDropPaths(IDataObject dataObject, out string[] paths, bool reportFailure = false)
     {
         paths = [];
         try
@@ -387,8 +400,9 @@ public partial class MainWindow : Window
                 .ToArray();
             return paths.Length > 0;
         }
-        catch
+        catch (Exception error)
         {
+            if (reportFailure) StartupDiagnostics.WriteException("AudioImport", error);
             // Shell/OLE data objects can fail while a drag is in progress. Never let a
             // malformed external drag crash the UI or repeatedly display dialogs.
             return false;
@@ -442,12 +456,14 @@ public partial class MainWindow : Window
 
     private async void Window_PreviewDrop(object sender, DragEventArgs e)
     {
+        using var dropDiagnostic = StartupDiagnostics.Begin(DiagnosticArea.AudioImport);
         e.Handled = true;
-        var accepted = CanAcceptFileDrop(e, out var paths);
+        var accepted = CanAcceptFileDrop(e, out var paths, reportFailure: true);
         e.Effects = accepted ? DragDropEffects.Copy : DragDropEffects.None;
         SetDropZoneFeedback(false);
         if (!accepted)
         {
+            dropDiagnostic.Stage(IsUiIdle ? DiagnosticStage.Failed : DiagnosticStage.Cancelled, IsUiIdle ? DiagnosticReason.Validation : DiagnosticReason.LocalContention);
             return;
         }
 
@@ -455,12 +471,15 @@ public partial class MainWindow : Window
         {
             AppendLog($"Dropped {paths.Length} file or folder path(s) into the application window.");
             await AddInputPathsAsync(paths);
+            dropDiagnostic.Stage(DiagnosticStage.Completed);
         }
         catch (OperationCanceledException) when (_isClosing)
         {
+            dropDiagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
         }
         catch (Exception ex)
         {
+            dropDiagnostic.Fail(ex);
             if (!_isClosing)
             {
                 AppendLog("Could not read dropped file paths: " + InputValidation.SingleLineForLog(ex.Message));
@@ -472,14 +491,17 @@ public partial class MainWindow : Window
 
     private async Task AddInputPathsAsync(IEnumerable<string> inputPaths)
     {
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.AudioImport);
         if (_isRunning || _isImporting || _isTestingKey || _isClosing)
         {
+            diagnostic.Stage(DiagnosticStage.Cancelled, _isClosing ? DiagnosticReason.UserCancelled : DiagnosticReason.LocalContention);
             return;
         }
 
         var remainingCapacity = MaximumQueueFiles - Files.Count;
         if (remainingCapacity <= 0)
         {
+            diagnostic.Stage(DiagnosticStage.Failed, DiagnosticReason.Validation);
             MessageBox.Show(this, $"The queue is limited to {MaximumQueueFiles:N0} files.",
                 "Queue limit reached", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
@@ -500,10 +522,13 @@ public partial class MainWindow : Window
             {
                 excludedCacheRoot = CheckpointCacheService.GetCacheRoot(ResolveOutputPath());
             }
-            catch
+            catch (Exception error)
             {
                 // An invalid output path should not block audio import; run validation reports it later.
+                StartupDiagnostics.WriteException("OutputDirectory", error, diagnostic.Id);
             }
+
+            StartupDiagnostics.WriteImportPolicy(diagnostic.Id, excludedCacheRoot is not null);
 
             var candidates = await Task.Run(() => ExpandMp3Paths(inputPaths, excludedCacheRoot, cancellationToken)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -522,6 +547,7 @@ public partial class MainWindow : Window
 
             if (candidates.Length == 0)
             {
+                diagnostic.Stage(DiagnosticStage.Completed, DiagnosticReason.Missing);
                 MessageBox.Show(this,
                     "No MP3 files were found. This desktop version imports MP3 audio files only. " +
                     "For a video or another audio format, first export or convert its audio to MP3, then add that file.",
@@ -570,6 +596,7 @@ public partial class MainWindow : Window
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    StartupDiagnostics.WriteException("AudioImport", ex, diagnostic.Id);
                     failed.Add($"{Path.GetFileName(path)} — {InputValidation.SingleLineForLog(ex.Message)}");
                 }
             }
@@ -588,13 +615,16 @@ public partial class MainWindow : Window
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
+            diagnostic.Stage(DiagnosticStage.Completed, failed.Count > 0 ? DiagnosticReason.Incomplete : DiagnosticReason.None);
         }
         catch (OperationCanceledException) when (_isClosing)
         {
+            diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
             // The window is closing. Do not show a late dialog.
         }
         catch (Exception ex)
         {
+            diagnostic.Fail(ex, DiagnosticReason.Other);
             if (!_isClosing)
             {
                 MessageBox.Show(this, ex.Message, "Could not scan the selected paths",
@@ -687,6 +717,7 @@ public partial class MainWindow : Window
             return;
         }
 
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.OutputBrowse);
         try
         {
             var candidate = Environment.ExpandEnvironmentVariables(OutputPathTextBox.Text.Trim());
@@ -704,10 +735,13 @@ public partial class MainWindow : Window
             if (dialog.ShowDialog(this) == true)
             {
                 OutputPathTextBox.Text = dialog.FolderName;
+                diagnostic.Stage(DiagnosticStage.Completed);
             }
+            else diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
         }
         catch (Exception ex)
         {
+            diagnostic.Fail(ex, DiagnosticReason.Other);
             if (!_isClosing)
             {
                 AppendLog("Could not open the output-folder picker: " + InputValidation.SingleLineForLog(ex.Message));
@@ -736,11 +770,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.CheckpointClear);
         try
         {
             var outputPath = ResolveOutputPath();
             if (!CheckpointCacheService.CacheExists(outputPath))
             {
+                diagnostic.Stage(DiagnosticStage.Completed, DiagnosticReason.Missing);
                 MessageBox.Show(this, "There are no saved checkpoints in the selected output folder.",
                     "Checkpoint cache", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -753,6 +789,7 @@ public partial class MainWindow : Window
                 .ToArray();
             if (queuedInsideCache.Length > 0)
             {
+                diagnostic.Stage(DiagnosticStage.Failed, DiagnosticReason.Validation);
                 MessageBox.Show(this,
                     "Checkpoint clearing was blocked because queued source audio is inside Cosmic Transcriber's internal cache folder. " +
                     "Move the source files elsewhere, remove and re-add them, then retry.\n\n" +
@@ -770,6 +807,7 @@ public partial class MainWindow : Window
                 MessageBoxImage.Warning);
             if (result != MessageBoxResult.Yes)
             {
+                diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
                 return;
             }
 
@@ -777,13 +815,16 @@ public partial class MainWindow : Window
             UpdateInteractiveState();
             HeaderStatusText.Text = "Clearing checkpoints";
             var deleted = await CheckpointCacheService.ClearAsync(outputPath, _lifetimeCancellation.Token);
+            diagnostic.Stage(DiagnosticStage.Completed);
             AppendLog($"Checkpoint cache cleared ({deleted} item(s) removed).");
         }
         catch (OperationCanceledException) when (_isClosing)
         {
+            diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
         }
         catch (IOException ex)
         {
+            diagnostic.Fail(ex, DiagnosticReason.Other);
             if (!_isClosing)
             {
                 MessageBox.Show(this,
@@ -793,6 +834,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            diagnostic.Fail(ex, DiagnosticReason.Other);
             if (!_isClosing)
             {
                 MessageBox.Show(this, ex.Message, "Could not clear checkpoints",
@@ -813,6 +855,7 @@ public partial class MainWindow : Window
 
     private void OpenOutput_Click(object sender, RoutedEventArgs e)
     {
+        using var diagnostic = StartupDiagnostics.Begin(DiagnosticArea.OutputOpen);
         try
         {
             var path = ResolveOutputPath();
@@ -822,9 +865,11 @@ public partial class MainWindow : Window
                 FileName = path,
                 UseShellExecute = true
             });
+            diagnostic.Stage(DiagnosticStage.Completed);
         }
         catch (Exception ex)
         {
+            diagnostic.Fail(ex, DiagnosticReason.Other);
             MessageBox.Show(this, ex.Message, "Cannot open output folder",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -2251,6 +2296,33 @@ public partial class MainWindow : Window
     }
 
 
+    private bool _supportExportActive;
+    private async void ExportSupport_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isClosing || _supportExportActive) return;
+        using var operation = StartupDiagnostics.Begin(DiagnosticArea.SupportExport);
+        _supportExportActive = true;
+        ExportSupportButton.IsEnabled = false;
+        try
+        {
+            var dialog = new SaveFileDialog { Title = "Export local redacted diagnostics", Filter = "JSON support projection|*.json", OverwritePrompt = false,
+                DefaultExt = ".json", AddExtension = true, FileName = "Cosmic-support-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + ".json" };
+            if (dialog.ShowDialog(this) != true) { operation.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); return; }
+            var source = StartupDiagnostics.LogDirectory;
+            var token = _lifetimeCancellation.Token;
+            var result = await Task.Run(() => DiagnosticSupportExporter.Export(source, dialog.FileName, token), token);
+            operation.Stage(DiagnosticStage.Completed, result.Incomplete ? DiagnosticReason.Incomplete : DiagnosticReason.None);
+            if (!_isClosing) MessageBox.Show(this, "A local redacted projection was created. Review its completeness fields before sharing: historical or omitted evidence may be unavailable. Nothing was uploaded.", "Support export", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (OperationCanceledException) { operation.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled); }
+        catch (Exception error)
+        {
+            operation.Fail(error);
+            if (!_isClosing) MessageBox.Show(this, "Support export could not complete. Existing files are never replaced. Do not share a partial file; inspect local diagnostic coverage.", "Support export incomplete", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally { _supportExportActive = false; if (!_isClosing) ExportSupportButton.IsEnabled = true; TryCompleteDeferredClose(); }
+    }
+
     private void OpenDiagnosticLogs_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -2398,7 +2470,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var workIsActive = _isRunning || _isImporting || _isTestingKey;
+        var workIsActive = _isRunning || _isImporting || _isTestingKey || _supportExportActive;
         if (!_isClosing && workIsActive)
         {
             var result = MessageBox.Show(this,
@@ -2431,7 +2503,7 @@ public partial class MainWindow : Window
 
     private void TryCompleteDeferredClose()
     {
-        if (!_closeRequestedAfterUnwind || _isRunning || _isImporting || _isTestingKey)
+        if (!_closeRequestedAfterUnwind || _isRunning || _isImporting || _isTestingKey || _supportExportActive)
         {
             return;
         }
