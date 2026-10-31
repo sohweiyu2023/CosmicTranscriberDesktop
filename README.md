@@ -10,6 +10,15 @@ Build with the existing supported .NET10 Windows Desktop SDK (`dotnet build Cosm
 
 Cosmic Transcriber is a Windows 10/11 WPF desktop application for transcribing long MP3 recordings with OpenAI speech-to-text models. It supports batch import, full-window drag-and-drop, a copied-file Paste fallback, frame-safe chunking, cancellation, resumable checkpoints, TXT/Markdown export, speaker-labelled transcription, editable cost estimates, optional current-user DPAPI key storage, persistent diagnostics, and dark/light themes.
 
+## Isolated Core-only packaging candidate
+
+The reduced candidate uses NAudio.Core 3.3.0 with unchanged Tensors 10.0.13 and
+net10.0-windows. Windows 10 build 19041 or later remains the product support
+policy. The versionless API target does not promise Windows 7 support; the
+SupportedOSPlatform attribute is analyzer metadata, not runtime OS enforcement.
+See [packaging evidence and gates](docs/CORE-ONLY-PACKAGING.md). This candidate
+has not replaced the installed version or been publicly released.
+
 ## Proposed safe-error follow-up
 
 Automatic paid retries are disabled, including for legacy profiles with a nonzero count. Structured operation stages, privacy-filtered provider correlation and bounded diagnostic completeness status are covered by offline regression tests. See [coverage and remaining recovery limits](docs/LOGGING-SAFE-ERROR-AUDIT.md). This source proposal does not update the installed app or clear binary distribution holds.
@@ -73,7 +82,7 @@ Transcription checkpoints are separate from settings and are written after succe
 Requirements:
 
 - Windows 10 version 2004/build 19041 or later, or Windows 11;
-- .NET 10 SDK; `global.json` requests SDK `10.0.302` and permits a compatible later .NET 10 feature band;
+- .NET 10 SDK; `global.json` requests SDK `10.0.402` and permits a later servicing patch in that feature band;
 - internet access for NuGet restore and OpenAI API use.
 
 Run:

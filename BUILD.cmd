@@ -30,7 +30,7 @@ if errorlevel 1 goto :build_failed
 
 echo.
 echo [3/3] Verifying executable...
-set "EXE=src\CosmicTranscriber\bin\Release\net10.0-windows10.0.19041.0\CosmicTranscriber.exe"
+set "EXE=src\CosmicTranscriber\bin\Release\net10.0-windows\CosmicTranscriber.exe"
 if not exist "%EXE%" goto :missing_executable
 if not exist "scripts\DiagnosticLauncher\bin\Release\net10.0\DiagnosticLauncher.exe" goto :missing_executable
 

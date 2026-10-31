@@ -143,6 +143,7 @@ using (var cancellation = new CancellationTokenSource())
     await Reject<OperationCanceledException>(() => cancelClient.TranscribeAsync("local-mock-key", request.Model, chunks[0].Path, "", null, null, 0, null, cancellation.Token), "in-flight cancellation propagated");
     Check(cancellable.Calls == 1, "cancel does not retry");
 }
+passed += CoreFramePreservation.Verify(audio, chunks);
 Console.WriteLine($"DESKTOP REGRESSION PASSED: {passed} assertions; in-memory HTTP only.");
 
 static OpenAiTranscriptionClient MockClient(HttpMessageHandler handler)

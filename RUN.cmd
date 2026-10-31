@@ -6,7 +6,7 @@ if errorlevel 1 goto :root_error
 call "%~dp0BUILD.cmd"
 if errorlevel 1 exit /b %errorlevel%
 
-set "EXE=%~dp0src\CosmicTranscriber\bin\Release\net10.0-windows10.0.19041.0\CosmicTranscriber.exe"
+set "EXE=%~dp0src\CosmicTranscriber\bin\Release\net10.0-windows\CosmicTranscriber.exe"
 start "Cosmic Transcriber" "%EXE%"
 if errorlevel 1 goto :launch_failed
 exit /b 0
