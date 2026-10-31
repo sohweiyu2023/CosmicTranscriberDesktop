@@ -2483,6 +2483,9 @@ public partial class MainWindow : Window
             }
         }
 
+        // Confirmation runs a nested dispatcher loop: async work can finish while
+        // it is open. Re-read live flags so no close waits for an already-run finally.
+        workIsActive = _isRunning || _isImporting || _isTestingKey || _supportExportActive;
         if (workIsActive)
         {
             // Keep the Window alive until every async finally path runs. Exiting immediately
