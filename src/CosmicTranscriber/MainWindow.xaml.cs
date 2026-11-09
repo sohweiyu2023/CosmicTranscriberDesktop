@@ -19,6 +19,7 @@ public partial class MainWindow : Window
 {
     private const int MaximumLogCharacters = 200_000;
     private const int MaximumQueueFiles = 10_000;
+    private const int MaximumImportScanFiles = 10_000;
     private const int MaximumMergedFiles = 1_000;
     private const long MaximumMergedTranscriptCharacters = TranscriptionCoordinator.MaximumTranscriptCharactersPerFile;
     private static readonly TimeSpan SettingsAutoSaveDelay = TimeSpan.FromMilliseconds(900);
@@ -127,8 +128,8 @@ public partial class MainWindow : Window
         {
             var dialog = new OpenFileDialog
             {
-                Title = "Choose MP3 files",
-                Filter = "MP3 audio (*.mp3)|*.mp3|All files (*.*)|*.*",
+                Title = "Choose audio or video files",
+                Filter = AudioInputService.PickerFilter,
                 Multiselect = true,
                 CheckFileExists = true
             };
@@ -171,7 +172,7 @@ public partial class MainWindow : Window
         {
             var dialog = new OpenFolderDialog
             {
-                Title = "Choose a folder containing MP3 files",
+                Title = "Choose a folder containing audio/video files",
                 Multiselect = false
             };
 
@@ -214,7 +215,7 @@ public partial class MainWindow : Window
             {
                 diagnostic.Stage(DiagnosticStage.Completed, DiagnosticReason.Missing);
                 MessageBox.Show(this,
-                    "No copied files or folders were found. In File Explorer, select MP3 files or folders, press Ctrl+C, then choose Paste here.",
+                    "No copied files or folders were found. In File Explorer, select audio/video files or folders, press Ctrl+C, then choose Paste here.",
                     "Nothing to paste", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -320,7 +321,7 @@ public partial class MainWindow : Window
             "2. Right-click CosmicTranscriber.exe or its shortcut, choose Properties, then Compatibility.\n" +
             "3. Clear 'Run this program as an administrator'.\n" +
             "4. Start the app by double-clicking it in File Explorer.\n\n" +
-            "Fallback: copy MP3 files or folders in File Explorer, then press Ctrl+V or choose Paste.",
+            "Fallback: copy audio/video files or folders in File Explorer, then press Ctrl+V or choose Paste.",
             "Drag-and-drop help", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
@@ -418,7 +419,7 @@ public partial class MainWindow : Window
         if (active)
         {
             DropZoneTitleText.Text = "Release anywhere in this window to add audio";
-            DropZoneHelpText.Text = "MP3 files and folders will be added to the queue";
+            DropZoneHelpText.Text = "Audio/video files and folders will be added to the queue";
             return;
         }
 
@@ -429,7 +430,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        DropZoneTitleText.Text = "Drop MP3 files or folders anywhere in this window";
+        DropZoneTitleText.Text = "Drop audio/video files or folders anywhere in this window";
         DropZoneHelpText.Text = "Or copy them in File Explorer and choose Paste";
     }
 
@@ -508,12 +509,13 @@ public partial class MainWindow : Window
         }
 
         _isImporting = true;
+        _runCancellation = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeCancellation.Token);
         UpdateInteractiveState();
-        HeaderStatusText.Text = "Scanning for MP3 files";
+        HeaderStatusText.Text = "Scanning audio/video files";
         CurrentActionText.Text = "Scanning dropped or selected paths…";
         OverallProgressBar.IsIndeterminate = true;
         Mouse.OverrideCursor = Cursors.Wait;
-        var cancellationToken = _lifetimeCancellation.Token;
+        var cancellationToken = _runCancellation.Token;
 
         try
         {
@@ -530,27 +532,27 @@ public partial class MainWindow : Window
 
             StartupDiagnostics.WriteImportPolicy(diagnostic.Id, excludedCacheRoot is not null);
 
-            var candidates = await Task.Run(() => ExpandMp3Paths(inputPaths, excludedCacheRoot, cancellationToken)
+            var candidates = await Task.Run(() => ExpandAudioPaths(inputPaths, excludedCacheRoot, cancellationToken)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Take(remainingCapacity + 1)
+                .Take(MaximumImportScanFiles + 1)
                 .OrderBy(path => path, NaturalStringComparer.Instance)
                 .ToArray(), cancellationToken);
 
-            if (candidates.Length > remainingCapacity)
+            if (candidates.Length > MaximumImportScanFiles)
             {
                 MessageBox.Show(this,
-                    $"The selection contains more files than the {MaximumQueueFiles:N0}-file queue limit. " +
-                    $"Only the first {remainingCapacity:N0} candidates will be inspected.",
+                    $"The local scan reached its {MaximumImportScanFiles:N0}-file safety limit. " +
+                    "Later files were not inspected; choose a smaller folder or select the intended media files directly.",
                     "Large folder selection", MessageBoxButton.OK, MessageBoxImage.Warning);
-                candidates = candidates.Take(remainingCapacity).ToArray();
+                candidates = candidates.Take(MaximumImportScanFiles).ToArray();
             }
 
             if (candidates.Length == 0)
             {
                 diagnostic.Stage(DiagnosticStage.Completed, DiagnosticReason.Missing);
                 MessageBox.Show(this,
-                    "No MP3 files were found. This desktop version imports MP3 audio files only. " +
-                    "For a video or another audio format, first export or convert its audio to MP3, then add that file.",
+                    "No local files were found outside the checkpoint cache. Choose an audio/video file or folder. " +
+                    "MP3 works directly; other decodable formats require separately installed FFmpeg and ffprobe.",
                     "Cosmic Transcriber",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -568,6 +570,7 @@ public partial class MainWindow : Window
             for (var candidateIndex = 0; candidateIndex < candidates.Length; candidateIndex++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                if (added >= remainingCapacity) { AppendLog("Queue capacity reached; later candidates were not inspected."); break; }
                 var path = candidates[candidateIndex];
                 HeaderStatusText.Text = $"Inspecting {candidateIndex + 1} of {candidates.Length}";
                 var inspectionFraction = (candidateIndex + 1d) / candidates.Length;
@@ -581,7 +584,8 @@ public partial class MainWindow : Window
 
                 try
                 {
-                    var metadata = await Task.Run(() => Mp3MetadataService.Inspect(path), cancellationToken);
+                    var inspection = await new AudioInputService().InspectAsync(path, cancellationToken);
+                    var metadata = inspection.Metadata;
                     Files.Add(new AudioJobItem
                     {
                         SourcePath = Path.GetFullPath(path),
@@ -590,7 +594,8 @@ public partial class MainWindow : Window
                         Duration = metadata.Duration,
                         LastWriteTimeUtc = metadata.LastWriteTimeUtc,
                         SourceSha256 = metadata.Sha256,
-                        Detail = "Ready"
+                        RequiresConversion = inspection.RequiresConversion,
+                        Detail = inspection.RequiresConversion ? "Ready - local conversion on Start (first audio stream)" : "Ready"
                     });
                     added++;
                 }
@@ -603,24 +608,25 @@ public partial class MainWindow : Window
 
             if (added > 0)
             {
-                AppendLog($"Added {added} MP3 file(s) to the queue.");
+                AppendLog($"Added {added} audio/video file(s) to the queue.");
             }
 
             if (failed.Count > 0 && !_isClosing)
             {
                 AppendLog($"Could not inspect {failed.Count} file(s). See the warning dialog.");
                 MessageBox.Show(this,
-                    "Some files could not be opened as MP3 audio:\n\n" + string.Join("\n", failed.Take(8)),
+                    (added == 0 ? "No supported audio was accepted from this selection. " : "Some files were not accepted. ") +
+                    $"{failed.Count:N0} file(s) failed inspection. Non-media, codec, container, converter and storage failures are reported below:\n\n" + string.Join("\n", failed.Take(8)),
                     "Audio import warning",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
             diagnostic.Stage(DiagnosticStage.Completed, failed.Count > 0 ? DiagnosticReason.Incomplete : DiagnosticReason.None);
         }
-        catch (OperationCanceledException) when (_isClosing)
+        catch (OperationCanceledException)
         {
             diagnostic.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
-            // The window is closing. Do not show a late dialog.
+            if (!_isClosing) AppendLog("Local media scan cancelled. No provider request was sent.");
         }
         catch (Exception ex)
         {
@@ -634,6 +640,7 @@ public partial class MainWindow : Window
         finally
         {
             _isImporting = false;
+            _runCancellation?.Dispose(); _runCancellation = null;
             Mouse.OverrideCursor = null;
             if (!_isClosing)
             {
@@ -648,57 +655,8 @@ public partial class MainWindow : Window
         }
     }
 
-    private static IEnumerable<string> ExpandMp3Paths(
-        IEnumerable<string> inputPaths,
-        string? excludedCacheRoot,
-        CancellationToken cancellationToken)
-    {
-        foreach (var rawPath in inputPaths)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (string.IsNullOrWhiteSpace(rawPath))
-            {
-                continue;
-            }
-
-            if (File.Exists(rawPath))
-            {
-                if (string.Equals(Path.GetExtension(rawPath), ".mp3", StringComparison.OrdinalIgnoreCase))
-                {
-                    var fullPath = Path.GetFullPath(rawPath);
-                    if (!IsUnderDirectory(fullPath, excludedCacheRoot))
-                    {
-                        yield return fullPath;
-                    }
-                }
-                continue;
-            }
-
-            if (!Directory.Exists(rawPath))
-            {
-                continue;
-            }
-
-            var options = new EnumerationOptions
-            {
-                RecurseSubdirectories = true,
-                IgnoreInaccessible = true,
-                ReturnSpecialDirectories = false,
-                MatchCasing = MatchCasing.CaseInsensitive,
-                AttributesToSkip = FileAttributes.ReparsePoint
-            };
-
-            foreach (var file in Directory.EnumerateFiles(rawPath, "*.mp3", options))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var fullPath = Path.GetFullPath(file);
-                if (!IsUnderDirectory(fullPath, excludedCacheRoot))
-                {
-                    yield return fullPath;
-                }
-            }
-        }
-    }
+    private static IEnumerable<string> ExpandAudioPaths(IEnumerable<string> inputPaths, string? excludedCacheRoot, CancellationToken token)
+        => AudioInputService.ExpandPaths(inputPaths, excludedCacheRoot, token);
 
     private static bool IsUnderDirectory(string path, string? directory)
     {
@@ -1632,7 +1590,7 @@ public partial class MainWindow : Window
 
         _runCancellation.Cancel();
         UpdateInteractiveState();
-        CurrentActionText.Text = "Cancelling after the current network operation…";
+        CurrentActionText.Text = _isImporting ? "Stopping local media inspection; no provider request has been sent." : RunPresentation.CancelGuidance(true, true);
         AppendLog("Cancellation requested.");
     }
 
@@ -1658,7 +1616,7 @@ public partial class MainWindow : Window
         if (SourceHasChanged(item))
         {
             throw new IOException(
-                "The source MP3 changed or disappeared after it was queued. Remove it, add it again, and retry so duration and checkpoints remain trustworthy.");
+                "The source audio/video changed or disappeared after it was queued. Remove it, add it again, and retry so duration and checkpoints remain trustworthy.");
         }
     }
 
@@ -1715,7 +1673,7 @@ public partial class MainWindow : Window
 
         if (Files.Count == 0)
         {
-            MessageBox.Show(this, "Add at least one MP3 file.", "No audio selected",
+            MessageBox.Show(this, "Add at least one audio/video file.", "No audio selected",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return false;
         }
@@ -1739,7 +1697,7 @@ public partial class MainWindow : Window
         if (!TranscriptionModelCatalog.SupportsFileUploads(CurrentModel))
         {
             MessageBox.Show(this,
-                "The selected model cannot process queued MP3/files. Select one of the supported file-transcription models.",
+                "The selected model cannot process queued audio/video files. Select one of the supported file-transcription models.",
                 "Model cannot process queued files",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -1847,7 +1805,7 @@ public partial class MainWindow : Window
         if (sourcesInsideCache.Length > 0)
         {
             MessageBox.Show(this,
-                "One or more source MP3 files are inside Cosmic Transcriber's internal checkpoint cache for the selected output folder. " +
+                "One or more source audio/video files are inside Cosmic Transcriber's internal checkpoint cache for the selected output folder. " +
                 "Move those files elsewhere, remove and re-add them, then retry.\n\n" +
                 string.Join("\n", sourcesInsideCache),
                 "Unsafe source location",
@@ -1937,10 +1895,7 @@ public partial class MainWindow : Window
         => (ModelComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString()
             ?? TranscriptionModelCatalog.DefaultFileModel;
 
-    private int CurrentRetryCount
-        => int.TryParse((RetryComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString(), out var retries)
-            ? Math.Clamp(retries, 0, 5)
-            : 0;
+    private int CurrentRetryCount => RunPresentation.AutomaticPaidRetryCount;
 
     private void UpdateQueueSummary()
     {
@@ -1954,8 +1909,8 @@ public partial class MainWindow : Window
 
         if (Files.Count == 0)
         {
-            QueueSummaryText.Text = "No MP3 files selected";
-            EstimateText.Text = "Add MP3s to calculate duration and cost";
+            QueueSummaryText.Text = "No audio/video files selected";
+            EstimateText.Text = "Add audio/video files to calculate duration and cost";
             CostBadgeText.Text = "US$0.00 est.";
             return;
         }
@@ -2010,9 +1965,14 @@ public partial class MainWindow : Window
     private void UpdateInteractiveState()
     {
         var idle = IsUiIdle;
+        StartButton.ToolTip = idle ? RunPresentation.StartRequirements : "Wait for the current operation to finish before starting another run.";
+        TestKeyButton.ToolTip = idle ? "Contacts OpenAI to check model access; does not start transcription." : "Model access cannot be tested while another operation is active.";
+        CancelButton.ToolTip = _isImporting ? "Stop local media inspection. No provider request is made during import." : RunPresentation.CancelGuidance(_isRunning,
+            _runCancellation is { IsCancellationRequested: true });
+        QueueActionPanel.ToolTip = idle ? "Add, remove or reorder audio/video files before starting." : "The audio queue is locked while work is active.";
         StartButton.IsEnabled = idle;
         ReviewUncertainButton.IsEnabled = idle;
-        CancelButton.IsEnabled = _isRunning
+        CancelButton.IsEnabled = (_isRunning || _isImporting)
             && _runCancellation is { IsCancellationRequested: false };
         TestKeyButton.IsEnabled = idle;
         QueueActionPanel.IsEnabled = idle;
@@ -2113,17 +2073,8 @@ public partial class MainWindow : Window
 
     private void SelectRetryCount(int retries)
     {
-        var target = Math.Clamp(retries, 0, 5).ToString(CultureInfo.InvariantCulture);
-        foreach (var item in RetryComboBox.Items.OfType<ComboBoxItem>())
-        {
-            if (string.Equals(item.Content?.ToString(), target, StringComparison.Ordinal))
-            {
-                RetryComboBox.SelectedItem = item;
-                return;
-            }
-        }
-
-        RetryComboBox.SelectedIndex = 0;
+        // Saved legacy counts never describe the effective no-replay policy.
+        RetryComboBox.SelectedIndex = RunPresentation.AutomaticPaidRetryCount;
     }
 
     private void RegisterSettingsAutoSaveHandlers()
@@ -2446,7 +2397,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (e.Key == Key.Escape && _isRunning)
+        if (e.Key == Key.Escape && (_isRunning || _isImporting))
         {
             Cancel_Click(this, new RoutedEventArgs());
             e.Handled = true;

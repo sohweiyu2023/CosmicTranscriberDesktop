@@ -137,14 +137,14 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock Text="Audio queue" Style="{StaticResource SectionTitleStyle}" />
-                                <TextBlock x:Name="QueueSummaryText" Text="No MP3 files selected"
+                                <TextBlock x:Name="QueueSummaryText" Text="No audio/video files selected"
                                            Style="{StaticResource MutedTextStyle}" Margin="0,3,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" x:Name="QueueActionPanel" Orientation="Horizontal">
                                 <Button Content="＋ Files" Click="AddFiles_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
                                 <Button Content="▣ Folder" Click="AddFolder_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
                                 <Button Content="Paste" Click="PastePaths_Click" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"
-                                        AutomationProperties.Name="Paste copied files or folders" ToolTip="In File Explorer, copy MP3 files or folders, then paste them here (Ctrl+V)" />
+                                        AutomationProperties.Name="Paste copied files or folders" ToolTip="In File Explorer, copy audio/video files or folders, then paste them here (Ctrl+V)" />
                                 <Button Content="↑" Click="MoveItemUp_Click" Style="{StaticResource QuietButtonStyle}"
                                         AutomationProperties.Name="Move selected file up"
                                         ToolTip="Move the selected file earlier in merge order" />
@@ -163,7 +163,7 @@
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
                                     <TextBlock x:Name="DropZoneIconText" Text="⇩" FontSize="28" Foreground="{DynamicResource AccentBrush}" Margin="0,0,12,0" />
                                     <StackPanel>
-                                        <TextBlock x:Name="DropZoneTitleText" Text="Drop MP3 files or folders anywhere in this window" FontWeight="SemiBold" FontSize="14" />
+                                        <TextBlock x:Name="DropZoneTitleText" Text="Drop audio/video files or folders anywhere in this window" FontWeight="SemiBold" FontSize="14" />
                                         <TextBlock x:Name="DropZoneHelpText" Text="Or copy them in File Explorer and choose Paste"
                                                    Style="{StaticResource MutedTextStyle}" Margin="0,3,0,0" />
                                     </StackPanel>
@@ -264,7 +264,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Tip: add numbered MP3 parts in order, then enable Merge all files."
+                            <TextBlock Text="Add audio/video files in order, choose TXT/Markdown output, configure your API key, then Start. Use Merge all files for one combined transcript."
                                        Style="{StaticResource MutedTextStyle}" VerticalAlignment="Center" />
                             <Button Grid.Column="1" Content="Open output folder" Click="OpenOutput_Click"
                                     Style="{StaticResource QuietButtonStyle}" />
@@ -383,7 +383,7 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <CheckBox x:Name="RememberKeyCheckBox" Content="Remember securely for this Windows user" />
-                                    <Button Grid.Column="1" x:Name="TestKeyButton" Content="Test connection" Click="TestKey_Click"
+                                    <Button Grid.Column="1" x:Name="TestKeyButton" ToolTipService.ShowOnDisabled="True" Content="Test connection" Click="TestKey_Click"
                                             Style="{StaticResource SecondaryButtonStyle}" />
                                 </Grid>
                             </StackPanel>
@@ -522,16 +522,11 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="Automatic paid retries disabled" Style="{StaticResource LabelStyle}" VerticalAlignment="Center" Margin="0"
                                                ToolTip="Uncertain provider outcomes are never retried automatically. Review the existing attempt and possible charges before starting again." />
-                                    <ComboBox Grid.Column="2" x:Name="RetryComboBox" SelectedIndex="0" IsEnabled="False"
+                                    <ComboBox Grid.Column="2" x:Name="RetryComboBox" ToolTipService.ShowOnDisabled="True" SelectedIndex="0" IsEnabled="False"
                                               PreviewMouseWheel="ComboBox_PreviewMouseWheel"
                                               AutomationProperties.Name="Automatic paid retries disabled; saved legacy count is ignored"
                                               ToolTip="Uncertain provider outcomes are never retried automatically. Review the existing attempt and possible charges before starting again.">
                                         <ComboBoxItem Content="0" />
-                                        <ComboBoxItem Content="1" />
-                                        <ComboBoxItem Content="2" />
-                                        <ComboBoxItem Content="3" />
-                                        <ComboBoxItem Content="4" />
-                                        <ComboBoxItem Content="5" />
                                     </ComboBox>
                                 </Grid>
                             </StackPanel>
@@ -546,7 +541,7 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
                                         <TextBlock Text="Run overview" Style="{StaticResource SectionTitleStyle}" />
-                                        <TextBlock x:Name="EstimateText" Text="Add MP3s to calculate duration and cost"
+                                        <TextBlock x:Name="EstimateText" Text="Add audio/video files to calculate duration and cost"
                                                    Style="{StaticResource MutedTextStyle}" Margin="0,3,0,0" />
                                     </StackPanel>
                                     <Border Grid.Column="1" CornerRadius="12" Background="{DynamicResource AccentSoftBrush}" Padding="10,6">
@@ -600,7 +595,7 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock x:Name="FooterTitleText" Text="Ready to transcribe" FontWeight="SemiBold" />
-                        <TextBlock Grid.Row="1" x:Name="FooterDetailText" Text="Select one or more MP3 files. Completed chunks are checkpointed automatically." AutomationProperties.LiveSetting="Polite"
+                        <TextBlock Grid.Row="1" x:Name="FooterDetailText" Text="Add audio/video files (MP3 directly; other formats need FFmpeg), choose TXT/Markdown output and configure your API key. Starting may incur provider charges." AutomationProperties.LiveSetting="Polite"
                                    Style="{StaticResource MutedTextStyle}" Margin="0,2,0,0" />
                         <ProgressBar Grid.Row="2" x:Name="FooterProgressBar" Height="9" Margin="0,9,0,0"
                                      Minimum="0" Maximum="100"
@@ -619,9 +614,9 @@
                         </Grid>
                     </Grid>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Button x:Name="CancelButton" Content="Cancel" Click="Cancel_Click"
+                        <Button x:Name="CancelButton" ToolTipService.ShowOnDisabled="True" Content="Cancel" Click="Cancel_Click"
                                 Style="{StaticResource DangerButtonStyle}" IsEnabled="False" Margin="0,0,10,0" MinWidth="90" />
-                        <Button x:Name="StartButton" Content="✦  Start transcription" Click="Start_Click"
+                        <Button x:Name="StartButton" ToolTipService.ShowOnDisabled="True" Content="✦  Start transcription" Click="Start_Click"
                                 Style="{StaticResource PrimaryButtonStyle}" MinWidth="205" FontSize="15"
                                 AutomationProperties.Name="Start transcription" />
                     </StackPanel>

@@ -1,0 +1,43 @@
+name: Final source verification
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: cosmic-final-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+jobs:
+  windows-offline:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: 'false'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - name: Source privacy, static contracts and deterministic inventory
+        run: |
+          python scripts/verify_source_export.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/static_verify.py --source-only
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build normal app and diagnostic helper
+        run: dotnet build CosmicTranscriber.sln -c Release
+      - name: Offline synthetic safety, logging and settings checks
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($suite in @('SafetyRegression', 'DiagnosticsRegression', 'LoggingCoverageRegression', 'NormalSettingsRegression')) {
+            $testRoot = Join-Path $env:RUNNER_TEMP ("cosmic-" + $suite)
+            dotnet run --project ("tests/" + $suite + "/" + $suite + ".csproj") -c Release -- $testRoot
+            if ($LASTEXITCODE -ne 0) { throw ("Offline regression failed: " + $suite) }
+          }
+# No deployment, provider request, artifact upload, secrets or production settings.
+# Real codecs and visible WPF journeys are separately recorded local checks.

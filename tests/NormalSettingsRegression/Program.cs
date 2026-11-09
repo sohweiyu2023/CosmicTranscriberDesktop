@@ -24,6 +24,12 @@ var custom=new AppSettings{SettingsSchemaVersion=1,Model="gpt-4o-transcribe",Cus
 Check(customLoaded.Model==custom.Model&&customLoaded.CustomPricePerMinute==.123,"custom legacy model/price preserved");
 File.WriteAllText(service.SettingsPath,"{invalid");Check(service.Load().Model=="gpt-transcribe","malformed settings fall back safely");
 File.WriteAllText(service.SettingsPath,new string('x',1024*1024+1));Check(service.Load().Model=="gpt-transcribe","oversize settings bounded and rejected");
+// This exercises the storage policy only; real window capture/autosave needs native acceptance.
+var legacyRetry=new AppSettings{SettingsSchemaVersion=4,RetryCount=3,CombinedTitle="Synthetic user title",OutputDirectory=Path.Combine(root,"kept-output"),Prompt="Synthetic context",Theme="Cosmic Paper",CustomPricePerMinute=.123};
+service.Save(legacyRetry,false);var before=service.Load();var unrelated=JsonSerializer.Serialize(before);
+before.RetryCount=CosmicTranscriber.Utilities.RunPresentation.AutomaticPaidRetryCount;service.Save(before,false);var migrated=service.Load();
+Check(migrated.RetryCount==0,"legacy retry count migrates to effective zero in synthetic profile");
+migrated.RetryCount=3;Check(JsonSerializer.Serialize(migrated)==unrelated,"retry migration preserves every unrelated normalized setting");
 var vault=new ApiKeyStore(root);const string synthetic="test-vault-sentinel";
 vault.SaveProtected(synthetic);Check(vault.HasProtectedKey&&vault.LoadProtected()==synthetic,"synthetic DPAPI CurrentUser key roundtrip");
 Check(!Encoding.UTF8.GetString(File.ReadAllBytes(Path.Combine(root,"openai-key.protected"))).Contains(synthetic),"vault bytes do not contain plaintext sentinel");

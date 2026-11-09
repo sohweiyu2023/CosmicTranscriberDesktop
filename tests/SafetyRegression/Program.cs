@@ -69,6 +69,40 @@ foreach (var bytes in new[] { Encoding.UTF8.GetBytes("<html>PRIVATE_PROVIDER_BOD
     using var client = new OpenAiTranscriptionClient(h);
     Check(await Failure(() => client.TestConnectionAsync("local-mock-key", "gpt-transcribe", TimeSpan.FromSeconds(1), stop.Token), "connection-test cancellation") is OperationCanceledException && h.Calls == 1, "nonpaid cancellation terminal retained");
 }
+
+
+// Routine evidence never copies arbitrary prose, including unlabelled audio-derived/Unicode text.
+var proseCanary="unlabelled private fragment \u8bca\u65ad\u9690\u79c1 " + Guid.NewGuid().ToString("N");
+var privateBody=JsonSerializer.Serialize(new{error=new{message=proseCanary,code="invalid_value",type="invalid_request_error",param="model",details=new[]{new{reason="nested " + proseCanary}},transcript="PAYLOAD_FIELD_CANARY"}});
+var reject=new FakeHandler((_,_)=>Task.FromResult(new HttpResponseMessage(HttpStatusCode.Forbidden){Content=new StringContent(privateBody)}));
+using(var c=new OpenAiTranscriptionClient(reject))await Failure(()=>Call(c),"provider rejection persisted safely");
+var persistedSafe=ReadShared(logPath);
+Check(!persistedSafe.Contains(proseCanary)&&!persistedSafe.Contains("PAYLOAD_FIELD_CANARY")&&!persistedSafe.Contains("unlabelled private fragment"),"arbitrary provider prose absent from actual persisted bytes");
+using(var record=ReadShared(logPath).Split('\n',StringSplitOptions.RemoveEmptyEntries).Where(x=>x.Contains("provider_failure")).Select(x=>JsonDocument.Parse(x)).Last()){
+ var d=record.RootElement.GetProperty("data");var e=d.GetProperty("evidence");
+ Check(e.GetProperty("ExplanationSource").GetString()=="FixedCodeClassification"&&e.GetProperty("OriginalExplanationOmitted").GetBoolean()&&e.GetProperty("ProviderProseObserved").GetBoolean(),"fixed classification and omission provenance explicit");
+ Check(e.GetProperty("Explanations")[0].GetString()=="The provider classified a request value as invalid.","classification uses fixed local text, never a claimed provider quote");
+ Check(e.GetProperty("ExplanationFieldsObserved").GetInt32()==2&&e.GetProperty("Coverage").GetString()=="AllowlistedFieldsOnly","nested observations retained without content or full-coverage claim");
+ Check(d.GetProperty("status").GetInt32()==403&&d.GetProperty("endpoint").GetString()=="audio-transcription"&&d.GetProperty("elapsedMs").GetDouble()>=0&&reject.Calls==1,"outcome timing endpoint and no replay preserved");
+}
+foreach(var (body,state,format) in new[]{(proseCanary,"Received","PlainText"),("<html>"+proseCanary+"</html>","Received","HtmlOmitted"),("{\"error\":","MalformedOrDepthLimited","Json"),("","Empty","Unavailable"),(new string('x',ProviderFailureEvidence.MaximumBodyCharacters+1),"Oversized","Unavailable")}){
+ var h=new FakeHandler((_,_)=>Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadGateway){Content=new StringContent(body)}));using var c=new OpenAiTranscriptionClient(h);await Failure(()=>Call(c),"body state "+state+"/"+format);
+ using var record=ReadShared(logPath).Split('\n',StringSplitOptions.RemoveEmptyEntries).Where(x=>x.Contains("provider_failure")).Select(x=>JsonDocument.Parse(x)).Last();var e=record.RootElement.GetProperty("data").GetProperty("evidence");
+ Check(e.GetProperty("BodyState").GetString()==state&&e.GetProperty("Format").GetString()==format&&h.Calls==1,"actual body availability "+state+"/"+format);
+ Check(!ReadShared(logPath).Contains("unlabelled private fragment"),"nonJSON or HTML never copied into local logs");
+}
+{
+ var h=new FakeHandler((_,_)=>Task.FromResult(new HttpResponseMessage(HttpStatusCode.Forbidden){Content=new StringContent(JsonSerializer.Serialize(new{error=new{message=proseCanary,code="customersecret123",param="patient diagnosis",type="credential-canary"}}))}));using var c=new OpenAiTranscriptionClient(h);var safeUiError=await Failure(()=>c.TestConnectionAsync("local-mock-key","gpt-transcribe",TimeSpan.FromSeconds(1),CancellationToken.None),"model-access unknown-field failure");
+ Check(!safeUiError.Message.Contains("customersecret123")&&!safeUiError.Message.Contains("patient diagnosis")&&!safeUiError.Message.Contains("credential-canary")&&!safeUiError.Message.Contains("unlabelled private fragment"),"provider exception UI message also excludes raw structured fields and prose");
+ var text=ReadShared(logPath);Check(!text.Contains("customersecret123")&&!text.Contains("patient diagnosis")&&!text.Contains("credential-canary")&&!text.Contains("unlabelled private fragment")&&h.Calls==1,"actual model-access structured and prose canaries absent");
+ var e=ProviderFailureEvidence.Capture("{\"error\":{\"code\":\"secret-code\",\"message\":\"private prose\"}}");Check(e.Fields["code"]=="Other"&&e.UnrecognizedFields.Contains("code")&&e.Explanations.Count==0&&e.OriginalExplanationOmitted,"unknown codes marked without fabricating explanation");
+ Check(e.OriginalExplanationState=="OmittedByPolicy","observed prose omission state explicit");
+ var absent=ProviderFailureEvidence.Capture("{\"error\":{\"code\":\"invalid_value\"}}");Check(absent.MissingExplanation&&!absent.ProviderProseObserved&&!absent.OriginalExplanationOmitted,"missing and deliberately omitted explanations distinct");
+ Check(ProviderFailureEvidence.Unavailable("Oversized").OriginalExplanationState=="UnavailableOrUninspected"&&absent.OriginalExplanationState=="NotObservedInAllowlistedFields","uninspected bodies never claimed to lack original prose");
+ var many=ProviderFailureEvidence.Capture(JsonSerializer.Serialize(new{error=new{details=Enumerable.Repeat(proseCanary,20).ToArray()}}));Check(many.Truncated&&many.ExplanationFieldsObserved==ProviderFailureEvidence.MaximumExplanations,"observation count bounded and truncation marked");
+ Check(typeof(ProviderFailureEvidence).GetConstructors().Length==0,"immutable evidence factory prevents raw metadata forgery");
+ var support=Path.Combine(root,"safe-provider-support.json");DiagnosticSupportExporter.Export(Path.GetDirectoryName(logPath),support,CancellationToken.None);var supportText=File.ReadAllText(support);Check(!supportText.Contains("unlabelled private fragment")&&supportText.Contains("RedactedForSupportExport")&&supportText.Contains("AllowlistedFieldsOnly"),"support export retains safe omission marker without prose");
+}
 const string secret = "PRIVATE_DOCUMENT_SENTINEL Bearer private-credential";
 StartupDiagnostics.Write(secret, secret); StartupDiagnostics.WriteLifecycle(secret); StartupDiagnostics.WriteWindow(secret, true, true, secret, 1, 2, 96, 96);
 StartupDiagnostics.WriteFocus(secret, secret);
@@ -149,6 +183,8 @@ using (var client = new OpenAiTranscriptionClient(accepted)) {
     var result = await client.TranscribeAsync("local-mock-key", "gpt-transcribe", audio, "", null, null, 5, null, CancellationToken.None);
     Check(result.Text == "accepted synthetic result" && accepted.Calls == 1, "sink failure cannot discard provider success or cause replay");
 }
+var failedSinkHandler=new FakeHandler((_,_)=>Task.FromResult(new HttpResponseMessage(HttpStatusCode.Forbidden){Content=new StringContent("{\"error\":{\"message\":\"Organization verification is required\"}} ")}));
+using(var failedSinkClient=new OpenAiTranscriptionClient(failedSinkHandler)) { Check(await Failure(()=>Call(failedSinkClient),"failed logger still surfaces provider rejection") is OpenAiApiException && failedSinkHandler.Calls==1,"provider evidence logger failure cannot change rejection or replay"); }
 for (var i = 0; i < 200; i++) StartupDiagnostics.Write("ACTIVITY", secret);
 var health = StartupDiagnostics.Health;
 Check(health.SinkUnavailable && health.SinkFailures == 1, "sink disabled after first failure, no repeated filesystem retry");
@@ -177,3 +213,6 @@ sealed class InterruptedContent : HttpContent {
 sealed class InterruptedStream : MemoryStream {
     public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token = default) => throw new IOException("PRIVATE_BODY_READ");
 }
+
+
+

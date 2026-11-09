@@ -11,5 +11,5 @@
   <Compile Include="../../src/CosmicTranscriber/Utilities/AppVersion.cs" />
   <Compile Include="../../src/CosmicTranscriber/Utilities/FocusViewportTrace.cs" />
   <Compile Include="../../src/CosmicTranscriber/Utilities/DiagnosticVocabulary.cs" />
- <Compile Include="../../src/CosmicTranscriber/Utilities/DiagnosticOutputDrain.cs" /></ItemGroup>
+ <Compile Include="../../src/CosmicTranscriber/Utilities/DiagnosticOutputDrain.cs" /><Compile Include="../../src/CosmicTranscriber/Utilities/ProviderFailureEvidence.cs" Link="Production/ProviderFailureEvidence.cs" /></ItemGroup>
 </Project>

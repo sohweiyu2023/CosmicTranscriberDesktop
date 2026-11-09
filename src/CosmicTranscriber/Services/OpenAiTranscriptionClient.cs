@@ -10,8 +10,10 @@ namespace CosmicTranscriber.Services;
 
 public sealed class OpenAiProtocolException : Exception
 {
+    public string DiagnosticBodyState { get; } = "Malformed";
     public OpenAiProtocolException(string message) : base(message) { }
-    public OpenAiProtocolException(string message, Exception innerException) : base(message, innerException) { }
+    public OpenAiProtocolException(string message, string bodyState) : base(message) { DiagnosticBodyState = bodyState; }
+    public OpenAiProtocolException(string message, Exception innerException, string bodyState = "Malformed") : base(message, innerException) { DiagnosticBodyState = bodyState; }
 }
 
 public sealed class OpenAiApiException : Exception, IProviderDiagnosticFailure
@@ -167,7 +169,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
             if (!response.IsSuccessStatusCode)
             {
                 var body = await ReadResponseBodyAsync(response.Content, attemptCancellation.Token);
-                var failure = CreateException(response, body, clientRequestId);
+                var failure = CreateException(response, body, clientRequestId, "model-access-test", requestTimer.Elapsed);
                 operation.Fail(failure, DiagnosticReason.ProviderRejected);
                 throw failure;
             }
@@ -175,6 +177,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
         }
         catch (HttpRequestException ex)
         {
+            StartupDiagnostics.WriteProviderFailure(ProviderFailureEvidence.Unavailable(responseStatusCode.HasValue ? "BodyReadFailed" : "TransportUnavailable"), "model-access-test", (int?)responseStatusCode, clientRequestId, serverRequestId, requestTimer.Elapsed.TotalMilliseconds);
             var diagnostic = CreateNetworkException(
                 "connection test",
                 attempt: 1,
@@ -189,6 +192,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
+            StartupDiagnostics.WriteProviderFailure(ProviderFailureEvidence.Unavailable("Timeout"), "model-access-test", (int?)responseStatusCode, clientRequestId, serverRequestId, requestTimer.Elapsed.TotalMilliseconds);
             var diagnostic = CreateTimeoutException(
                 "connection test",
                 attempt: 1,
@@ -203,11 +207,13 @@ public sealed class OpenAiTranscriptionClient : IDisposable
         }
         catch (OperationCanceledException)
         {
+            StartupDiagnostics.WriteProviderFailure(ProviderFailureEvidence.Unavailable("Cancelled"), "model-access-test", (int?)responseStatusCode, clientRequestId, serverRequestId, requestTimer.Elapsed.TotalMilliseconds);
             operation.Stage(DiagnosticStage.Cancelled, DiagnosticReason.UserCancelled);
             throw;
         }
         catch (OpenAiProtocolException ex)
         {
+            StartupDiagnostics.WriteProviderFailure(ProviderFailureEvidence.Unavailable(ex.DiagnosticBodyState), "model-access-test", (int?)responseStatusCode, clientRequestId, serverRequestId, requestTimer.Elapsed.TotalMilliseconds);
             operation.Fail(ex, DiagnosticReason.MalformedResponse);
             StartupDiagnostics.WriteHttpResponse("model-access-test", clientRequestId, (int?)responseStatusCode ?? 0,
                 serverRequestId, requestTimer.Elapsed.TotalMilliseconds, null);
@@ -368,12 +374,13 @@ public sealed class OpenAiTranscriptionClient : IDisposable
                     return result;
                 }
 
-                var exception = CreateException(response, body, clientRequestId);
+                var exception = CreateException(response, body, clientRequestId, "audio-transcription", requestTimer.Elapsed);
                 operation.Fail(exception, DiagnosticReason.ProviderRejected);
                 throw exception;
             }
             catch (HttpRequestException ex)
             {
+                StartupDiagnostics.WriteProviderFailure(ProviderFailureEvidence.Unavailable(responseStatusCode.HasValue ? "BodyReadFailed" : "TransportUnavailable"), "audio-transcription", (int?)responseStatusCode, clientRequestId, serverRequestId, requestTimer.Elapsed.TotalMilliseconds);
                 var diagnostic = CreateNetworkException(
                     "transcription upload",
                     attempt,
@@ -388,6 +395,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
             }
             catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
             {
+                StartupDiagnostics.WriteProviderFailure(ProviderFailureEvidence.Unavailable("Timeout"), "audio-transcription", (int?)responseStatusCode, clientRequestId, serverRequestId, requestTimer.Elapsed.TotalMilliseconds);
                 var diagnostic = CreateTimeoutException(
                     "transcription upload",
                     attempt,
@@ -402,12 +410,14 @@ public sealed class OpenAiTranscriptionClient : IDisposable
             }
             catch (OperationCanceledException)
             {
+                StartupDiagnostics.WriteProviderFailure(ProviderFailureEvidence.Unavailable("Cancelled"), "audio-transcription", (int?)responseStatusCode, clientRequestId, serverRequestId, requestTimer.Elapsed.TotalMilliseconds);
                 // User cancellation after dispatch also does not establish zero charge.
                 operation.Stage(DiagnosticStage.Cancelled, DiagnosticReason.ProviderOutcomeUnknown);
                 throw;
             }
             catch (OpenAiProtocolException ex)
             {
+                StartupDiagnostics.WriteProviderFailure(ProviderFailureEvidence.Unavailable(ex.DiagnosticBodyState), "audio-transcription", (int?)responseStatusCode, clientRequestId, serverRequestId, requestTimer.Elapsed.TotalMilliseconds);
                 operation.Fail(ex, DiagnosticReason.MalformedResponse);
                 StartupDiagnostics.WriteHttpResponse("audio-transcription", clientRequestId, (int?)responseStatusCode ?? 0,
                     serverRequestId, requestTimer.Elapsed.TotalMilliseconds, null);
@@ -621,7 +631,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
 
                 if (buffer.Length + read > MaximumResponseBytes)
                 {
-                    throw new OpenAiProtocolException("OpenAI returned an unexpectedly large response body.");
+                    throw new OpenAiProtocolException("OpenAI returned an unexpectedly large response body.", "Oversized");
                 }
 
                 await buffer.WriteAsync(block.AsMemory(0, read), cancellationToken);
@@ -632,7 +642,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
             // ResponseHeadersRead leaves the body on the network stream. A connection reset or
             // truncated TLS stream can therefore surface as IOException rather than
             // HttpRequestException. Convert only response-body I/O failures so the existing
-            // bounded retry policy handles them; local MP3 read failures remain file-specific.
+            // uncertain-outcome classification handles them without replay; local MP3 read failures remain file-specific.
             throw new HttpRequestException("The OpenAI response stream failed while being read.", ex);
         }
 
@@ -642,7 +652,7 @@ public sealed class OpenAiTranscriptionClient : IDisposable
         }
         catch (DecoderFallbackException ex)
         {
-            throw new OpenAiProtocolException("OpenAI returned a response that is not valid UTF-8.", ex);
+            throw new OpenAiProtocolException("OpenAI returned a response that is not valid UTF-8.", ex, "InvalidUtf8");
         }
     }
 
@@ -751,23 +761,28 @@ public sealed class OpenAiTranscriptionClient : IDisposable
     private static OpenAiApiException CreateException(
         HttpResponseMessage response,
         string body,
-        string clientRequestId)
+        string clientRequestId, string endpoint, TimeSpan elapsed)
     {
+        var evidence = ProviderFailureEvidence.Capture(body);
+        StartupDiagnostics.WriteProviderFailure(evidence, endpoint, (int)response.StatusCode, clientRequestId, ReadHeader(response, "x-request-id"), elapsed.TotalMilliseconds);
         var statusCode = response.StatusCode;
         var requestId = ReadHeader(response, "x-request-id");
         var details = TryReadErrorDetails(body);
-        var message = details.Message;
+        var message = evidence.Explanations.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(message))
         {
             message = $"OpenAI request failed with HTTP {(int)statusCode} ({statusCode}).";
         }
 
         var diagnosticParts = new List<string>();
-        AddDiagnosticPart(diagnosticParts, "type", details.Type);
-        AddDiagnosticPart(diagnosticParts, "param", details.Param);
-        AddDiagnosticPart(diagnosticParts, "code", details.Code);
-        AddDiagnosticPart(diagnosticParts, "request_id", requestId);
-        AddDiagnosticPart(diagnosticParts, "client_request_id", clientRequestId);
+        string? SafeField(string key) => evidence.Fields.TryGetValue(key, out var value) ? value : null;
+        AddDiagnosticPart(diagnosticParts, "type", SafeField("type"));
+        AddDiagnosticPart(diagnosticParts, "param", SafeField("param"));
+        AddDiagnosticPart(diagnosticParts, "code", SafeField("code"));
+        AddDiagnosticPart(diagnosticParts, "request_id_sha256", requestId is { Length: > 0 and <= 256 }
+            ? Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(requestId))).ToLowerInvariant() : null);
+        AddDiagnosticPart(diagnosticParts, "client_request_id", clientRequestId.Length == 35
+            && clientRequestId.StartsWith("ct-", StringComparison.Ordinal) && Guid.TryParseExact(clientRequestId[3..], "N", out _) ? clientRequestId : null);
         if (diagnosticParts.Count > 0)
         {
             message += " [" + string.Join(", ", diagnosticParts) + "]";
@@ -850,3 +865,4 @@ public sealed class OpenAiTranscriptionClient : IDisposable
 
     public void Dispose() => _httpClient.Dispose();
 }
+

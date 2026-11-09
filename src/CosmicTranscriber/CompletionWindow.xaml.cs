@@ -43,6 +43,7 @@ public partial class CompletionWindow : Window
             $"{successCount} succeeded  •  {failureCount} failed  •  {skippedCount} skipped\n" +
             $"{outputFileCount} output file(s)  •  {elapsedText} elapsed";
         OutputPathTextBox.Text = _outputDirectory;
+        ExternalEditingText.Text = RunPresentation.ExternalEditingGuidance;
         OpenFolderButton.IsEnabled = Directory.Exists(_outputDirectory);
     }
 
