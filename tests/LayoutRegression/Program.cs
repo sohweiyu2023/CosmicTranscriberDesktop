@@ -26,6 +26,7 @@ internal static class Program
         var theme = args.Length > 2 && !args[2].StartsWith("--", StringComparison.Ordinal) ? args[2] : "CosmicNight";
         var assertReachable = args.Contains("--assert-reachable");
         var quick = args.Contains("--quick");
+        var journeyCase = args.Contains("--journey-case");
         var diagnosticCase = args.Contains("--diagnostic-case");
         var singleReveal = args.Contains("--single-reveal");
         var seedDiagnosticScroll = args.Contains("--seed-diagnostic-scroll");
@@ -58,8 +59,8 @@ internal static class Program
         File.WriteAllText(Path.Combine(output, "isolated-layout.xaml"), document.ToString());
         var results = new List<object>();
         for (var repetition = 1; repetition <= repeats; repetition++)
-        foreach (var (width, height) in diagnosticCase ? new[] { (780, 500) } : quick ? new[] { (960, 620), (640, 420) } : new[] { (1060, 700), (1044, 660), (960, 620), (944, 600), (780, 500), (640, 420) })
-        foreach (var dpi in quick || diagnosticCase ? new[] { 96 } : new[] { 96, 144, 192 })
+        foreach (var (width, height) in journeyCase ? new[] { (1060, 568), (616, 700) } : diagnosticCase ? new[] { (780, 500) } : quick ? new[] { (960, 620), (640, 420) } : new[] { (1060, 700), (1044, 660), (960, 620), (944, 600), (780, 500), (640, 420) })
+        foreach (var dpi in journeyCase ? new[] { 216 } : quick || diagnosticCase ? new[] { 96 } : new[] { 96, 144, 192 })
         foreach (var expanded in new[] { false, true })
         {
             var window = (Window)XamlReader.Parse(document.ToString());

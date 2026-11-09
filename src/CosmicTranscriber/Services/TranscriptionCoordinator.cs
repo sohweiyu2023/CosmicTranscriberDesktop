@@ -33,11 +33,13 @@ public sealed class TranscriptionCoordinator
     };
     private readonly Mp3Chunker _chunker;
     private readonly OpenAiTranscriptionClient _client;
+    private readonly AudioInputService _audioInput;
 
-    public TranscriptionCoordinator(Mp3Chunker chunker, OpenAiTranscriptionClient client)
+    public TranscriptionCoordinator(Mp3Chunker chunker, OpenAiTranscriptionClient client, AudioInputService? audioInput = null)
     {
         _chunker = chunker;
         _client = client;
+        _audioInput = audioInput ?? new AudioInputService();
     }
 
     public async Task<FileTranscriptionResult> ProcessFileAsync(
@@ -64,7 +66,7 @@ public sealed class TranscriptionCoordinator
             if (!string.Equals(currentHash, item.SourceSha256, StringComparison.OrdinalIgnoreCase))
             {
                 throw new IOException(
-                    "The source MP3 content changed after it was queued. Remove it, add it again, and retry.");
+                    "The source audio/video content changed after it was queued. Remove it, add it again, and review before starting.");
             }
 
             sourceLease.Position = 0;
@@ -79,11 +81,12 @@ public sealed class TranscriptionCoordinator
             CreateCheckpointDirectory(transcriptDirectory);
 
             IReadOnlyList<AudioChunk>? chunks = null;
+            string? conversionDirectory = null;
             try
             {
                 progress?.Report(new CoordinatorProgress(
                     "Preparing",
-                    "Inspecting and safely chunking the MP3…",
+                    item.RequiresConversion ? "Converting the first audio stream locally, then chunking MP3. No upload yet." : "Inspecting and safely chunking the MP3…",
                     0,
                     0,
                     0));
@@ -96,13 +99,23 @@ public sealed class TranscriptionCoordinator
                         0,
                         0)));
 
+                var preparedPath = item.SourcePath; var preparedDuration = item.Duration; string? preparedHash = null;
+                if (item.RequiresConversion) {
+                    var newDirectory = Path.Combine(workDirectory, "chunks-" + RandomNumberGenerator.GetInt32(1, int.MaxValue).ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    if (Directory.Exists(newDirectory)) throw new IOException("An unexpected preparation folder already exists; it was preserved.");
+                    SafeFileSystem.CreateDirectoryWithoutReparsePoint(newDirectory, "The converted audio folder"); conversionDirectory = newDirectory;
+                    preparedPath = Path.Combine(conversionDirectory, "chunk-000.mp3");
+                    var normalized = await _audioInput.ConvertAsync(item.SourcePath, preparedPath, cancellationToken);
+                    preparedDuration = normalized.Duration; preparedHash = normalized.Sha256;
+                    await ValidatePreparedIdentityAsync(workDirectory, transcriptDirectory, preparedHash, cancellationToken);
+                }
                 chunks = await Task.Run(
                     () => _chunker.CreateChunksAsync(
-                        item.SourcePath,
+                        preparedPath,
                         chunkDirectory,
                         request.ChunkMegabytes,
                         request.MaximumChunkMinutes,
-                        item.Duration,
+                        preparedDuration,
                         enforceDurationLimit: true,
                         includePreroll: !usesSpeakerDiarization,
                         progress: chunkProgress,
@@ -111,7 +124,7 @@ public sealed class TranscriptionCoordinator
 
                 // Preserve existing manifest/evidence when unresolved work blocks this run.
                 await ReconcilePendingIntentsAsync(transcriptDirectory, chunks.Count, cancellationToken);
-                await WriteManifestAsync(workDirectory, item, request, chunks, cancellationToken);
+                await WriteManifestAsync(workDirectory, item, request, chunks, cancellationToken, preparedHash);
                 log?.Invoke($"{item.FileName}: {chunks.Count} upload chunk(s) ready.");
                 var results = new List<ChunkTranscript>(chunks.Count);
                 long transcriptCharacters = 0;
@@ -239,6 +252,7 @@ public sealed class TranscriptionCoordinator
                 // Prepared MP3 audio is temporary. Remove it after success, failure, or cancellation;
                 // only the small transcript checkpoints are retained for resume.
                 TryDeleteDirectory(chunkDirectory, log);
+                if (conversionDirectory is not null) TryDeleteDirectory(conversionDirectory, log);
             }
     
         }
@@ -302,7 +316,9 @@ public sealed class TranscriptionCoordinator
             source_path = Path.GetFullPath(item.SourcePath),
             source_sha256 = item.SourceSha256,
             source_size = item.SizeBytes,
-            source_duration_ticks = item.Duration.Ticks,
+            // Probe duration can round differently across tool versions. Do not let this
+            // bypass accepted/uncertain conversion work; validate prepared bytes below.
+            source_duration_ticks = item.RequiresConversion ? 0L : item.Duration.Ticks,
             model = request.Model.Trim(),
             languages = InputValidation.NormalizeLanguages(request.Language),
             keywords = InputValidation.NormalizeKeywords(request.Keywords),
@@ -316,8 +332,26 @@ public sealed class TranscriptionCoordinator
                 : "mp3-frame-preroll-vbrmeta-1.6"
         };
         var canonicalJson = JsonSerializer.Serialize(fingerprint);
+        // Preserve the legacy MP3 fingerprint; conversion has a separate policy identity.
+        if (item.RequiresConversion) canonicalJson += "\n" + AudioInputService.NormalizationPolicy;
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalJson)))[..32];
         return Path.Combine(CheckpointCacheService.GetCacheRoot(outputDirectory), hash);
+    }
+
+    private static async Task ValidatePreparedIdentityAsync(string workDirectory, string transcripts, string preparedHash, CancellationToken token)
+    {
+        var path = Path.Combine(workDirectory, "manifest.json");
+        try {
+            var bytes = await BoundedFileReader.ReadAllBytesAsync(path, MaximumCheckpointBytes, token);
+            using var doc = JsonDocument.Parse(bytes);
+            var hashes = doc.RootElement.EnumerateObject().Where(p => p.Name == "prepared_audio_sha256").ToArray();
+            var policies = doc.RootElement.EnumerateObject().Where(p => p.Name == "normalization_policy").ToArray();
+            if (hashes.Length != 1 || policies.Length != 1 || hashes[0].Value.ValueKind != JsonValueKind.String || policies[0].Value.ValueKind != JsonValueKind.String ||
+                hashes[0].Value.GetString() != preparedHash || policies[0].Value.GetString() != AudioInputService.NormalizationPolicy)
+                throw new IOException("Prepared audio differs from the saved conversion identity. Accepted/uncertain work was preserved; review it before another request.");
+        } catch (FileNotFoundException) {
+            if (Directory.EnumerateFileSystemEntries(transcripts).Any()) throw new IOException("Conversion identity is missing while transcript evidence exists. Preserve and review it; no new request was sent.");
+        } catch (JsonException) { throw new IOException("Saved conversion identity is malformed. Preserve and review it; no new request was sent."); }
     }
 
     private static async Task WriteManifestAsync(
@@ -325,13 +359,15 @@ public sealed class TranscriptionCoordinator
         AudioJobItem item,
         TranscriptionRequest request,
         IReadOnlyList<AudioChunk> chunks,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, string? preparedHash = null)
     {
         var manifest = new
         {
             schema = CheckpointSchema,
             source = item.SourcePath,
             source_sha256 = item.SourceSha256,
+            prepared_audio_sha256 = preparedHash,
+            normalization_policy = preparedHash is null ? null : AudioInputService.NormalizationPolicy,
             item.SizeBytes,
             duration_seconds = item.Duration.TotalSeconds,
             request.Model,

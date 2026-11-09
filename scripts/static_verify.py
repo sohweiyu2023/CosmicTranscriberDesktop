@@ -342,7 +342,7 @@ require("BuildTechnicalDetail" in client
         and "NativeError=" in client,
         "Nested network/socket diagnostics are missing or are not propagated into network errors")
 require("attemptCancellation.CancelAfter(timeout);" in client
-        and 'catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)\n        {\n            var diagnostic = CreateTimeoutException(\n                "connection test",' in client
+        and re.search(r'catch \(OperationCanceledException ex\) when \(!cancellationToken\.IsCancellationRequested\)\s*\{\s*(?:StartupDiagnostics\.WriteProviderFailure\([^\n]+\);\s*)?var diagnostic = CreateTimeoutException\(\s*"connection test",', client) is not None
         and client.count('"connection test"') >= 2
         and "TimeSpan.FromSeconds(45)" in main_cs,
         "Connection-test timeout is not classified with request diagnostics")

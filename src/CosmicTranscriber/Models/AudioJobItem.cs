@@ -25,6 +25,7 @@ public sealed class AudioJobItem : ObservableObject
     public required TimeSpan Duration { get; init; }
     public required DateTime LastWriteTimeUtc { get; init; }
     public required string SourceSha256 { get; init; }
+    public bool RequiresConversion { get; init; }
 
     public string SizeText => Formatters.FileSize(SizeBytes);
     public string DurationText => Formatters.Duration(Duration);

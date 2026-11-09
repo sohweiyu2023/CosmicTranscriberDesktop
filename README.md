@@ -1,3 +1,7 @@
+# Multi-format source candidate — integration pending
+
+This local November9 feature adds optional safe local audio/video normalization through separately installed FFmpeg/ffprobe. The installed/main/public package has not been updated by this work. See [MEDIA-INPUT-SUPPORT.md](docs/MEDIA-INPUT-SUPPORT.md) for tested codecs, lossy conversion, first-audio-stream behavior, limits and scoped native acceptance.
+
 # Cosmic Transcriber 1.0.27
 
 This is the reviewed **source-only** Desktop repository. It is separate from CosmicTranscriberWeb and CloudScribe-Pro. No application binaries, runtime/SDK DLLs, profiles, API credentials, user recordings or transcripts are published here. Public binary redistribution remains held; see [source provenance](docs/SOURCE-PROVENANCE.md) and [withheld assets](WITHHELD-ASSETS.json).
@@ -37,7 +41,7 @@ Automatic paid retries are disabled, including for legacy profiles with a nonzer
 
 1. Build or launch Cosmic Transcriber normally. Do not choose **Run as administrator**.
 2. Open **API key**, enter your key, and choose **Test connection**.
-3. Add MP3s with **+ Files**, **Folder**, drag-and-drop anywhere in the window, or copy files/folders in File Explorer and choose **Paste**.
+3. In this candidate, add audio/video files with **+ Files**, **Folder**, drag-and-drop anywhere in the window, or copy files/folders in File Explorer and choose **Paste**.
 4. Configure the output folder, model, optional languages, one-per-line keywords, prompt/context, chunk limits and export formats. The legacy automatic retry selector is disabled.
 5. Watch the **Settings autosave** card. Valid changes save after a short pause.
 6. Choose **Start transcription**. Completed chunks are checkpointed for safe resume.

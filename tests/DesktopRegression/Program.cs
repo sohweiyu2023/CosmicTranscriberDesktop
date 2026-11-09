@@ -82,6 +82,15 @@ XNamespace names = "http://schemas.microsoft.com/winfx/2006/xaml";
 foreach (var field in new[] { "OutputPathTextBox", "CombinedTitleTextBox", "PricePerMinuteTextBox" })
     Check(xaml.Descendants().Single(e => (string?)e.Attribute(names + "Name") == field).Attribute("AutomationProperties.Name")?.Value.Length > 0, "accessible name: " + field);
 
+// Visible workflow contracts are only source/headless evidence, not real handler interaction.
+Check(RunPresentation.AutomaticPaidRetryCount==0,"effective automatic paid retry count is zero");
+var retryControl=xaml.Descendants().Single(e=>(string?)e.Attribute(names+"Name")=="RetryComboBox");
+Check((string?)retryControl.Attribute("IsEnabled")=="False"&&retryControl.Elements().Count()==1&&(string?)retryControl.Elements().Single().Attribute("Content")=="0","disabled retry control displays only zero even for saved legacy counts");
+Check(mainSource.Contains("CurrentRetryCount => RunPresentation.AutomaticPaidRetryCount")&&mainSource.Contains("RetryComboBox.SelectedIndex = RunPresentation.AutomaticPaidRetryCount"),"actual settings load and request capture share no-retry presentation policy");
+foreach(var required in new[]{"MP3","TXT","Markdown","API key","charges"})Check(RunPresentation.StartRequirements.Contains(required),"first-run requirements explain "+required);
+Check(RunPresentation.CancelGuidance(false,false).Contains("Nothing")&&RunPresentation.CancelGuidance(true,false).Contains("charges")&&RunPresentation.CancelGuidance(true,true).Contains("review unresolved"),"idle, running and pending cancellation guidance distinct and billing conservative");
+foreach(var control in new[]{"StartButton","CancelButton","TestKeyButton","RetryComboBox"})Check((string?)xaml.Descendants().Single(e=>(string?)e.Attribute(names+"Name")==control).Attribute("ToolTipService.ShowOnDisabled")=="True","disabled explanation discoverable: "+control);
+Check(completionXaml.Descendants().Any(e=>(string?)e.Attribute(names+"Name")=="ExternalEditingText")&&completionSource.Contains("ExternalEditingText.Text = RunPresentation.ExternalEditingGuidance")&&RunPresentation.ExternalEditingGuidance.Contains("does not edit existing transcripts"),"completion explains external read/edit/reopen instead of implying an in-app editor");
 var metadata = Mp3MetadataService.Inspect(audio);
 Check(metadata.Duration.TotalSeconds > 610 && metadata.Duration.TotalSeconds < 700, "synthetic long MP3 metadata");
 var empty = Path.Combine(output, "empty.mp3");
@@ -117,8 +126,12 @@ var writer = new TranscriptOutputWriter();
 var exports = writer.WriteIndividual(result, Path.Combine(output, "exports"), true, true, true);
 Check(exports.Count == 2 && exports.All(File.Exists), "TXT and Markdown output location");
 Check(exports.All(p => File.ReadAllText(p).Contains("Synthetic mocked transcript")), "export transcript contents");
+var editedText=File.ReadAllText(exports[0])+Environment.NewLine+"Synthetic user edit retained.";
+File.WriteAllText(exports[0],editedText,Encoding.UTF8);
+Check(File.ReadAllText(exports[0])==editedText,"export can be edited and reopened externally");
 var repeatedExports = writer.WriteIndividual(result, Path.Combine(output, "exports"), true, false, true);
 Check(repeatedExports[0] != exports[0] && File.Exists(exports[0]), "export collision preserves original");
+Check(File.ReadAllText(exports[0])==editedText&&File.ReadAllText(repeatedExports[0]).Contains("Synthetic mocked transcript"),"repeated export preserves edited original while producing a fresh transcript");
 var combined = writer.WriteCombined([result, resumed], "CON", Path.Combine(output, "combined"), true, true, false);
 Check(combined.Count == 2 && combined.All(File.Exists), "combined export and Windows reserved filename");
 

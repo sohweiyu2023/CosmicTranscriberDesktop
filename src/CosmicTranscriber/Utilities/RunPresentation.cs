@@ -4,6 +4,14 @@ namespace CosmicTranscriber.Utilities;
 
 public static class RunPresentation
 {
+    public const int AutomaticPaidRetryCount = 0;
+    public const string StartRequirements = "Add audio/video files (MP3 directly; other formats need FFmpeg), choose TXT or Markdown output, and configure your OpenAI API key. Starting transcription may incur provider charges.";
+    public const string ExternalEditingGuidance = "Open the output folder to read or edit TXT/Markdown in your usual editor. This app does not edit existing transcripts.";
+    public static string CancelGuidance(bool running, bool cancellationRequested)
+        => !running ? "Nothing is running to cancel."
+            : cancellationRequested ? "Cancellation requested. Sent requests may still incur charges; preserve checkpoints and review unresolved attempts before restarting."
+            : "Stop the current run. Sent requests may still incur charges; accepted checkpoints and unresolved attempts are retained.";
+
     public static string EstimatedCost(string? priceText, TimeSpan duration)
     {
         if (!double.TryParse(priceText, NumberStyles.Float, CultureInfo.InvariantCulture, out var price)

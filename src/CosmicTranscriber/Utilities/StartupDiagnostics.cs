@@ -20,6 +20,13 @@ public static class StartupDiagnostics
     private static readonly AsyncLocal<Guid?> Active = new();
     internal static Guid? ActiveOperationId { get => Active.Value; set => Active.Value = value; }
     public static DiagnosticOperation Begin(DiagnosticArea area, bool enabled = true) => new(area, enabled);
+    public static void WriteMediaToolResult(MediaToolKind tool, int? exitCode, MediaToolFailure failure, double elapsedMs, bool cancelled = false, bool timedOut = false, bool detailsTruncated = false)
+    {
+        try { Initialize(); lock (Sync) WriteCore("OPERATION", "media_tool_result", new {
+            operationId = ActiveOperationId?.ToString("N"), tool = Enum.IsDefined(tool) ? tool.ToString() : "Other", exitCode,
+            failure = Enum.IsDefined(failure) ? failure.ToString() : "Unknown", elapsedMs = Finite(elapsedMs), cancelled, timedOut,
+            detailsOmitted = true, detailsTruncated }); } catch { }
+    }
     public static void WriteImportPolicy(Guid operationId, bool cacheExclusionResolved)
     {
         try { Initialize(); lock (Sync) WriteCore("OPERATION", "scan_policy", new { area="AudioImport", operationId=operationId.ToString("N"), recursive=true, skipInaccessible=true, skipReparse=true, cacheExclusionResolved, boundedQueue=true }); } catch { }
@@ -169,6 +176,21 @@ public static class StartupDiagnostics
             operationId = ActiveOperationId?.ToString("N"), clientRequestId = client, status = status is >= 100 and <= 599 ? status : 0, serverRequestIdSha256 = hash, elapsedMs = Finite(elapsedMs), processingMs = processing });
     }
 
+    public static void WriteProviderFailure(ProviderFailureEvidence evidence, string endpoint, int? status,
+        string clientId, string? serverId, double elapsedMs)
+    {
+        try {
+            Initialize(); lock (Sync) WriteCore("OPENAI_HTTP", "provider_failure", new {
+                operationId = ActiveOperationId?.ToString("N"),
+                endpoint = endpoint is "model-access-test" or "audio-transcription" ? endpoint : "other",
+                componentVersion = AppVersion.DisplayVersion,
+                status = status is >= 100 and <= 599 ? status : null,
+                clientRequestId = clientId.Length == 35 && clientId.StartsWith("ct-", StringComparison.Ordinal) && Guid.TryParseExact(clientId[3..], "N", out _) ? clientId : null,
+                serverRequestIdSha256 = serverId is { Length: > 0 and <= 256 } ? Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(serverId))).ToLowerInvariant() : null,
+                elapsedMs = Finite(elapsedMs), evidence });
+        } catch { /* A failed diagnostic must never change provider outcome or trigger a replay. */ }
+    }
+
     public static void WriteException(string category, Exception exception, Guid? operationId = null)
     {
         ArgumentNullException.ThrowIfNull(exception);
@@ -252,4 +274,5 @@ public static class StartupDiagnostics
     private static string Identifier(string value, int limit = 80)
         => new(value.Take(limit).Select(c => char.IsAsciiLetterOrDigit(c) || c is '_' or '.' or '-' ? c : '_').ToArray());
 }
+
 
