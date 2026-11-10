@@ -62,6 +62,8 @@ public partial class MainWindow : Window
         _focusRevealer = new FocusedViewportRevealer(SettingsViewport, WorkspaceViewport, StartupDiagnostics.WriteViewportFocus);
         _focusRevealer.Attach(this);
         Closed += (_, _) => _focusRevealer.Dispose();
+        SelectorDiagnostics.Attach(ModelComboBox);
+        SelectorDiagnostics.Attach(RetryComboBox);
         _settingsAutoSaveTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
             Interval = SettingsAutoSaveDelay
@@ -1187,6 +1189,7 @@ public partial class MainWindow : Window
         var nextTheme = app.CurrentTheme == "Cosmic Night" ? "Cosmic Paper" : "Cosmic Night";
         app.ApplyTheme(nextTheme);
         ThemeToggleButton.Content = nextTheme == "Cosmic Night" ? "☾  Cosmic Night" : "☀  Cosmic Paper";
+        SelectorDiagnostics.ScheduleInspection(ModelComboBox);
         _settings.Theme = nextTheme;
         ScheduleSettingsAutoSave();
     }
@@ -2399,8 +2402,21 @@ public partial class MainWindow : Window
 
         if (e.Key == Key.Escape && (_isRunning || _isImporting))
         {
-            Cancel_Click(this, new RoutedEventArgs());
             e.Handled = true;
+            // Escape is also the everyday "dismiss" key. Stopping local import costs nothing,
+            // but stopping a transcription can leave a sent request with an uncertain, possibly
+            // charged outcome, so a stray keypress must not do that without confirmation.
+            if (_isRunning && _runCancellation is { IsCancellationRequested: false }
+                && MessageBox.Show(this,
+                    "Stop the current transcription run?\n\nRequests already sent may still be charged. Accepted checkpoints and unresolved attempts are kept for review.",
+                    "Stop transcription?", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
+            {
+                StartupDiagnostics.Write("MAINWINDOW", "Escape stop request declined; the run continues.");
+                return;
+            }
+
+            // The confirmation runs a nested message loop; the run may have finished meanwhile.
+            if (_isRunning || _isImporting) Cancel_Click(this, new RoutedEventArgs());
         }
     }
 

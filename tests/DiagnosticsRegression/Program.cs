@@ -63,6 +63,9 @@ Parallel.For(0,80,_=>StartupDiagnostics.WriteLifecycle("concurrent_event"));
 StartupDiagnostics.WriteException("NATIVE_TEST",new System.ComponentModel.Win32Exception(5));
 StartupDiagnostics.WriteException("SOCKET_TEST",new System.Net.Sockets.SocketException(10061));
 StartupDiagnostics.WriteViewportFocus(new FocusViewportTrace("before", "OpenDiagnosticLogsButton", "SettingsViewport", 7, true) { TargetTop=double.NaN, TargetHeight=38, ViewportHeight=400, OffsetY=200, ExpansionFactorResolved=true, ExpansionFactor=.25, ObservationElapsedMs=double.PositiveInfinity, StabilityAgeMs=80 });
+StartupDiagnostics.WriteDropDown("ModelComboBox","hit_target_collapsed",1,0,38,190,38);
+StartupDiagnostics.WriteDropDown("ModelComboBox","opened",3,190,38,190,38);
+StartupDiagnostics.WriteDropDown(secret,secret,int.MaxValue,double.NaN,double.PositiveInfinity,-0.0,38);
 StartupDiagnostics.Shutdown(0);
 var text=File.ReadAllText(log);
 Check(!text.Contains("PRIVATE_")&&!text.Contains("sk-private")&&!text.Contains("Bearer")&&!text.Contains("private-token"),"no raw message/header/exception/user content");
@@ -103,6 +106,11 @@ Check(For(disabledId).Length==0 && !text.Contains(disabledId.ToString("N")),"dis
 Check(For(invalidElapsedId).Length==3 && For(invalidElapsedId).All(d=>d.GetProperty("operationElapsedMs").ValueKind==JsonValueKind.Null),"negative and nonfinite supplied duration omitted");
 Check(new[]{"RecoveryInventory","RecoveryRecheck","RecoveryHistory","RecoveryReconcile","OutputOpen"}.All(area=>records.Any(d=>d.RootElement.GetProperty("category").GetString()==area && d.RootElement.GetProperty("eventName").GetString()=="exception")),"typed recovery and shell failure categories survive without raw messages");
 
+var dropDowns=records.Where(d=>d.RootElement.GetProperty("category").GetString()=="UI_DROPDOWN").Select(d=>d.RootElement).ToArray();
+Check(dropDowns.Length==3 && dropDowns[0].GetProperty("eventName").GetString()=="hit_target_collapsed" && dropDowns[0].GetProperty("data").GetProperty("hitTargetWidth").GetDouble()==0 && dropDowns[0].GetProperty("data").GetProperty("fieldWidth").GetDouble()==190,"collapsed selector hit target recorded with geometry");
+Check(dropDowns[1].GetProperty("eventName").GetString()=="opened" && dropDowns[1].GetProperty("data").GetProperty("controlId").GetString()=="ModelComboBox" && dropDowns[1].GetProperty("data").GetProperty("selectedIndex").GetInt32()==3,"selector open records control and index, not model text");
+var untrustedDropDown=dropDowns[2].GetProperty("data");
+Check(dropDowns[2].GetProperty("eventName").GetString()=="other" && untrustedDropDown.GetProperty("controlId").GetString()=="other" && untrustedDropDown.GetProperty("selectedIndex").ValueKind==JsonValueKind.Null && untrustedDropDown.GetProperty("hitTargetWidth").ValueKind==JsonValueKind.Null && untrustedDropDown.GetProperty("hitTargetHeight").ValueKind==JsonValueKind.Null,"untrusted selector diagnostics bounded");
 foreach(var d in records)d.Dispose();Console.WriteLine($"DIAGNOSTICS_ASSERTIONS={assertions}");
 
 

@@ -170,7 +170,7 @@ Progress appears in:
 
 Unknown-duration work is shown with an indeterminate bar. Known inspection/transcription work uses a percentage.
 
-Choose **Cancel** or press `Esc` during transcription. The current request is cancelled, temporary chunk files are cleaned, and valid completed checkpoints are retained. Closing while background work is active asks for confirmation.
+Choose **Cancel**, or press `Esc` and confirm, during transcription. The current request is cancelled, temporary chunk files are cleaned, and valid completed checkpoints are retained. Closing while background work is active asks for confirmation.
 
 When a run finishes, a themed completion window shows succeeded, failed, and skipped counts, the number of output files, elapsed time, and the full output path. Choose **Open output folder** to open the folder directly in Windows Explorer, or **Close** to return to the queue. A run with failures or skipped items is labelled **completed with issues** rather than a clean success.
 
@@ -192,11 +192,12 @@ Logs are designed to redact key/bearer patterns, but review any file before shar
 
 ## 13. Keyboard shortcuts
 
-- `Ctrl+O`: choose MP3 files.
+- `Ctrl+O`: choose audio/video files (formats other than MP3 need FFmpeg).
 - `Ctrl+Shift+O`: choose a folder.
 - `Ctrl+V`: paste a copied File Explorer file list when a text/key field is not focused.
 - `Ctrl+Enter`: start transcription.
-- `Esc`: cancel an active transcription.
+- `Esc`: stop local import immediately; during a transcription run it first asks for confirmation, because requests already sent may still be charged.
+- Model selector: click the field or arrow, or focus it and press `F4` or `Alt+Down`; the mouse wheel never changes a closed selector.
 
 ## Build verification and clean sharing
 

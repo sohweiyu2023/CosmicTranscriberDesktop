@@ -429,6 +429,16 @@ if len(combo_style) == 2:
     require('Background="{DynamicResource SurfaceElevatedBrush}"' in combo_style_body
             and 'TextElement.Foreground="{TemplateBinding Foreground}"' in combo_style_body,
             "The closed selection field does not explicitly pair its themed surface and foreground")
+    toggle = combo_style_body.split('<ToggleButton x:Name="DropDownToggle"', 1)
+    toggle_attributes = toggle[1].split(">", 1)[0] if len(toggle) == 2 else ""
+    require('Style="{x:Null}"' in toggle_attributes
+            and 'HorizontalAlignment="Stretch"' in toggle_attributes
+            and 'VerticalAlignment="Stretch"' in toggle_attributes
+            and 'MinWidth="0"' in toggle_attributes,
+            "The ComboBox mouse hit target can inherit an implicit theme style and collapse (mouse clicks would not open the list)")
+    require('IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"' in combo_style_body
+            and 'IsOpen="{TemplateBinding IsDropDownOpen}"' not in combo_style_body,
+            "The ComboBox popup is not two-way bound to IsDropDownOpen")
     require('<ScrollViewer x:Name="DropDownScrollViewer"' in combo_style_body
             and '<ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"' in combo_style_body,
             "The dropdown does not provide a bounded scroll viewer with an ItemsPresenter")
