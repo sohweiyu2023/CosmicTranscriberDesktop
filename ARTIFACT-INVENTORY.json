@@ -36,8 +36,8 @@
   },
   {
     "path": "BUILD.cmd",
-    "sha256": "c4974f632404993308195d7c16914f00293009da2cbf53e048c9d623f107acf1",
-    "bytes": 1912
+    "sha256": "506050ae072f5d7e7d90ec98f7678c5b30d1d2e080ba16e8b4f2a4b2e5487aa7",
+    "bytes": 1986
   },
   {
     "path": "CHANGELOG.md",
@@ -141,8 +141,8 @@
   },
   {
     "path": "README.md",
-    "sha256": "b3e344533081e77c91b964596125d1899dad67ba0d9ce4ad3b1b4fa9e8c9c4a0",
-    "bytes": 12276
+    "sha256": "98db588f4e73029238d4f172188ace810d6b818085df23a254b552da4f1ba011",
+    "bytes": 12424
   },
   {
     "path": "RUN-DIAGNOSTIC.cmd",
@@ -221,8 +221,8 @@
   },
   {
     "path": "docs/MEDIA-INPUT-SUPPORT.md",
-    "sha256": "542f1bc9d6b0ecaa285bac7f7076ef4fd41252c38f8599488cc9fc735bafcc08",
-    "bytes": 9293
+    "sha256": "a0385e0bfb0b3e3415c66eb94c2d17cc07518ea5b3959d1e19b05759ac24f810",
+    "bytes": 9353
   },
   {
     "path": "docs/MEDIA-SMOKE-REPORT.json",
@@ -296,8 +296,8 @@
   },
   {
     "path": "docs/TROUBLESHOOTING.md",
-    "sha256": "c1cef12b0dc909562caad8876991dc7485578db95d825e603a40610683272040",
-    "bytes": 14297
+    "sha256": "361edd1e4629406d38ababdfc0cd28d2834bb361b0e633e450f4ed3b0f0b0f58",
+    "bytes": 14491
   },
   {
     "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",
@@ -381,8 +381,8 @@
   },
   {
     "path": "scripts/static_verify.py",
-    "sha256": "c1a5107ae9fcd152b8893e8c35136a7e407773a4be4f91d1377a1ea9b952bb27",
-    "bytes": 38421
+    "sha256": "f1df00b9dbfb8f41f5f3d0e164f6578763d99cd74351afd9e0d3a2f51d5b6225",
+    "bytes": 39063
   },
   {
     "path": "scripts/test_release_verifier.py",
@@ -426,8 +426,8 @@
   },
   {
     "path": "src/CosmicTranscriber/CosmicTranscriber.csproj",
-    "sha256": "5090e0d0b7203884ac869dfa703e2df5e4d95dfae90dfe37d45bbe09e1484535",
-    "bytes": 2270
+    "sha256": "df831b0e94a90eed9898b34a0242e1f2ef11efc29300bf2eddc3076e561a1dcf",
+    "bytes": 2305
   },
   {
     "path": "src/CosmicTranscriber/GlobalUsings.cs",
@@ -436,13 +436,13 @@
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml",
-    "sha256": "47d5bb01724907335cc20a4f134409f9655f186a1af24a41404d04d4547253f8",
-    "bytes": 50376
+    "sha256": "d9228049a65e5a1e7a132b6d925b2787e325bcc10a41ffd6fc31ac7a26bb46d0",
+    "bytes": 51007
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml.cs",
-    "sha256": "3580f15d426d245c9c1132fb01e495e8decc7824c20340c79d4af934328b718d",
-    "bytes": 105056
+    "sha256": "d4c6305e24bc1d5bb7f7fcb2c4e655296d9c54f6df928904c5de2800a3cd4829",
+    "bytes": 107573
   },
   {
     "path": "src/CosmicTranscriber/Models/AppSettings.cs",
@@ -656,8 +656,8 @@
   },
   {
     "path": "src/CosmicTranscriber/Utilities/StartupDiagnostics.cs",
-    "sha256": "6a084adfa479525d7d9b930fa83cbbad80c7acc3f79f9841c8244aa941c28361",
-    "bytes": 21660
+    "sha256": "270ed5fa15d4f53459b4f5145df30f3447431348a8154fd37b5ccc92e4522653",
+    "bytes": 21942
   },
   {
     "path": "src/CosmicTranscriber/Utilities/WindowsSecurity.cs",
