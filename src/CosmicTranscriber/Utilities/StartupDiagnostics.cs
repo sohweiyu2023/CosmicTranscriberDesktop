@@ -135,6 +135,10 @@ public static class StartupDiagnostics
     public static void WriteFocus(string controlId, string controlType)
     { Initialize(); lock (Sync) WriteCore("UI_FOCUS", "keyboard_focus", new { controlId = DiagnosticVocabulary.Control(controlId), controlType = DiagnosticVocabulary.Type(controlType) }); }
 
+    /// <summary>Selector open/close and template hit-target health. Model IDs and values are never written.</summary>
+    public static void WriteDropDown(string controlId, string stage, int selectedIndex, double hitTargetWidth, double hitTargetHeight, double fieldWidth, double fieldHeight)
+    { Initialize(); lock (Sync) WriteCore("UI_DROPDOWN", DiagnosticVocabulary.DropDownStage(stage), new { controlId = DiagnosticVocabulary.Control(controlId), selectedIndex = selectedIndex is >= -1 and < 64 ? selectedIndex : (int?)null, hitTargetWidth = Finite(hitTargetWidth), hitTargetHeight = Finite(hitTargetHeight), fieldWidth = Finite(fieldWidth), fieldHeight = Finite(fieldHeight) }); }
+
     public static void WriteThemeTransition(Guid operationId, string stage, string? requestedTheme, string? previousTheme,
         int dictionaryCount, int paletteIndex, double elapsedMs, Exception? failure = null)
     {

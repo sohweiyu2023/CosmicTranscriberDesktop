@@ -261,11 +261,28 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBox}">
                     <Grid x:Name="ComboRoot" SnapsToDevicePixels="True">
+                        <!--
+                          The toggle is the only hit-testable surface of the closed field. Style="{x:Null}"
+                          keeps the application's Fluent ThemeMode from applying its implicit ToggleButton
+                          style, which left-aligns buttons: with this content-free template that collapsed
+                          the toggle to zero width, so mouse clicks fell through to the settings page and
+                          the list never opened (keyboard F4/Alt+Down still worked). Explicit Stretch and
+                          zero minimums keep it covering the whole field. UI acceptance checks this with
+                          real mouse input.
+                        -->
                         <ToggleButton x:Name="DropDownToggle"
+                                      Style="{x:Null}"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch"
+                                      MinWidth="0"
+                                      MinHeight="0"
+                                      Margin="0"
+                                      Padding="0"
                                       Background="Transparent"
                                       BorderThickness="0"
                                       ClickMode="Press"
                                       Focusable="False"
+                                      IsTabStop="False"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="{x:Type ToggleButton}">
@@ -307,10 +324,12 @@
                             </Grid>
                         </Border>
 
+                        <!-- Two-way, as in the platform templates: when the popup closes itself (lost
+                             capture, app deactivation) IsDropDownOpen must follow instead of staying true. -->
                         <Popup x:Name="PART_Popup"
                                Placement="Bottom"
                                PlacementTarget="{Binding ElementName=ComboRoot}"
-                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                AllowsTransparency="False"
                                PopupAnimation="None"
                                StaysOpen="False"

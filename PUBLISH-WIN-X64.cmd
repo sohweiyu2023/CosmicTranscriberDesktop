@@ -9,7 +9,7 @@ echo See docs\CORE-ONLY-PACKAGING.md. SDK terms apply if SDK components are rein
 exit /b 1
 
 echo ================================================================
-echo  Cosmic Transcriber 1.0.27 - self-contained Windows x64 publish
+echo  Cosmic Transcriber 1.0.28 - self-contained Windows x64 publish
 echo ================================================================
 
 where dotnet >nul 2>&1

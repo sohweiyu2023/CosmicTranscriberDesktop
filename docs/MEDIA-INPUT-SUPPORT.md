@@ -1,7 +1,8 @@
-# Local media input support - isolated candidate, 9 November 2026
+# Local media input support
 
-This is source-only feature documentation, not a released capability. The recorded installed Core-only app remains MP3-only. The separate November4 journey and November9 streaming-export candidates are preserved; the streaming-export follow-up has not silently been merged into this feature.
+**Status (10 November 2026):** merged into `main` by PR #6 on 9 November 2026. Several builds report version 1.0.27; an installed copy or ZIP includes this feature only if it was built from a revision containing PR #6, so check its build hash rather than its version number. MP3 needs no converter; other formats need separately installed FFmpeg and ffprobe.
 
+History: this document was written for the isolated 9 November candidate. At that time the recorded installed Core-only app was MP3-only, and the separate November 4 journey and November 9 streaming-export candidates were kept apart from this feature. The test evidence below is that candidate's evidence.
 ## Import and actual media processing
 
 Files, Folder, Paste and Drop reach the same importer. The picker offers common audio/video filename hints plus All files. Folder scanning and direct input do not treat an extension as proof of usable audio; unknown/misnamed files may be probed. The local scan stops at10,000 distinct candidates and reports the limit. This is separate from accepted queue capacity, so unsupported files do not consume the remaining accepted slots. Cancel/Escape can stop local inspection; close also cancels it. Files and Folder were exercised through the actual latest-source window using pinned synthetic inputs and an in-memory non-forwarding provider. Paste used a fixed synthetic surrogate. Real OS clipboard and cross-window drag remain unverified; all four handlers share the reviewed importer.

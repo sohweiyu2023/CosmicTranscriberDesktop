@@ -1,0 +1,75 @@
+name: Offline regression and media suites
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cosmic-suites-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  windows-suites:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: 'false'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - name: FFmpeg for synthetic fixtures (test-only, never packaged)
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue) -or -not (Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'ffmpeg install failed' }
+            $env:PATH = [Environment]::GetEnvironmentVariable('PATH','Machine') + ';' + $env:PATH
+            "C:\ProgramData\chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          }
+          ffmpeg -hide_banner -version | Select-Object -First 1
+      - name: Generate synthetic fixtures
+        shell: pwsh
+        run: |
+          python scripts/generate_media_fixtures.py (Join-Path $env:RUNNER_TEMP 'fixtures')
+          if ($LASTEXITCODE -ne 0) { throw 'fixture generation failed' }
+      - name: Run suites
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $t = $env:RUNNER_TEMP; $fx = Join-Path $t 'fixtures'
+          $junctionTarget = Join-Path $t 'junction-target'; New-Item -ItemType Directory -Force $junctionTarget | Out-Null
+          $junction = Join-Path $t 'junction-output'; New-Item -ItemType Junction -Path $junction -Target $junctionTarget | Out-Null
+          $suites = [ordered]@{
+            'DesktopRegression'         = @('.', "$fx/mp3/synthetic-long.mp3", "$t/desktop-out")
+            'MediaInputRegression'      = @("$fx/media", "$t/media-out")
+            'PendingRecoveryRegression' = @("$t/pending-out", "$fx/mp3/synthetic-short.mp3", "$fx/mp3/synthetic-long.mp3", $junction)
+            'FocusViewportRegression'   = @()
+            'NestedFocusRegression'     = @('.', "$t/nested-out")
+            'ThemeRegression'           = @()
+            'LayoutRegression'          = @('.', "$t/layout-night", 'CosmicNight', '--quick', '--assert-reachable')
+          }
+          $failed = @()
+          foreach ($suite in $suites.Keys) {
+            Write-Host "::group::$suite"
+            $runArgs = $suites[$suite]
+            dotnet run --project "tests/$suite/$suite.csproj" -c Release -- @runArgs
+            $code = $LASTEXITCODE
+            Write-Host "::endgroup::"
+            Write-Host "SUITE $suite exit=$code"
+            if ($code -ne 0) { $failed += $suite }
+          }
+          dotnet run --project tests/LayoutRegression/LayoutRegression.csproj -c Release -- . "$t/layout-paper" CosmicPaper --quick --assert-reachable
+          Write-Host "SUITE LayoutRegression(Paper) exit=$LASTEXITCODE"; if ($LASTEXITCODE -ne 0) { $failed += 'LayoutRegression(Paper)' }
+          & ./tests/CloseRaceRegression/Run.ps1
+          Write-Host "SUITE CloseRaceRegression exit=$LASTEXITCODE"; if ($LASTEXITCODE -ne 0) { $failed += 'CloseRaceRegression' }
+          python scripts/media_smoke.py --output "$t/media-smoke.json" | Out-Null
+          Write-Host "SUITE media_smoke.py exit=$LASTEXITCODE"; if ($LASTEXITCODE -ne 0) { $failed += 'media_smoke' }
+          if ($failed.Count) { throw ("Failed suites: " + ($failed -join ', ')) }
+# Synthetic tones, generated test patterns and in-memory provider mocks only. No API key, provider request,
+# user data or artifact upload. FFmpeg is a runner-only test prerequisite and is never packaged.

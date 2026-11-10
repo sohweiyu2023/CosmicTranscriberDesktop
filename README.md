@@ -1,8 +1,12 @@
-# Multi-format source candidate — integration pending
+# Cosmic Transcriber 1.0.28
 
-This local November9 feature adds optional safe local audio/video normalization through separately installed FFmpeg/ffprobe. The installed/main/public package has not been updated by this work. See [MEDIA-INPUT-SUPPORT.md](docs/MEDIA-INPUT-SUPPORT.md) for tested codecs, lossy conversion, first-audio-stream behavior, limits and scoped native acceptance.
+## Multi-format input: on main since 9 November 2026
 
-# Cosmic Transcriber 1.0.27
+Optional local audio/video normalization through separately installed FFmpeg/ffprobe was developed as the November 9 candidate and merged into `main` in PR #6 (9 November 2026). MP3 input still needs no external tools. Several different builds report version 1.0.27, so whether a particular installed copy or ZIP includes multi-format input depends on its build, not the version number: compare the build hash recorded at the start of its diagnostic log, or its install folder name. See [MEDIA-INPUT-SUPPORT.md](docs/MEDIA-INPUT-SUPPORT.md) for tested codecs, lossy conversion, first-audio-stream behavior, limits and native acceptance scope.
+
+## Model selector mouse fix in 1.0.28 (10 November 2026)
+
+In 1.0.27 builds the model selector did not open when clicked with the mouse (keyboard `F4`/`Alt+Down` worked). The selector's internal click target inherited the Fluent theme's left-aligned button style and collapsed to zero width, so clicks fell through to the settings page. The template now isolates that target from implicit styles, and a real-input Windows acceptance run (`tests/UiAcceptance`, `.github/workflows/ui-acceptance.yml`) clicks, selects, dismisses and reopens the selector with actual mouse and keyboard input. See the change log.
 
 This is the reviewed **source-only** Desktop repository. It is separate from CosmicTranscriberWeb and CloudScribe-Pro. No application binaries, runtime/SDK DLLs, profiles, API credentials, user recordings or transcripts are published here. Public binary redistribution remains held; see [source provenance](docs/SOURCE-PROVENANCE.md) and [withheld assets](WITHHELD-ASSETS.json).
 
@@ -12,7 +16,7 @@ Reviewed follow-ups include the keyboard-focus stability correction, live Night/
 
 Build with the existing supported .NET10 Windows Desktop SDK (`dotnet build CosmicTranscriber.sln -c Release`). Source export checks: `python scripts/verify_source_export.py` and `python scripts/static_verify.py --source-only`. The stricter default release verifier and PUBLISH gate remain intact; source-only verification does not approve a redistributable binary package. No hosted workflow or paid provider request is required for these local checks.
 
-Cosmic Transcriber is a Windows 10/11 WPF desktop application for transcribing long MP3 recordings with OpenAI speech-to-text models. It supports batch import, full-window drag-and-drop, a copied-file Paste fallback, frame-safe chunking, cancellation, resumable checkpoints, TXT/Markdown export, speaker-labelled transcription, editable cost estimates, optional current-user DPAPI key storage, persistent diagnostics, and dark/light themes.
+Cosmic Transcriber is a Windows 10/11 WPF desktop application for transcribing long recordings with OpenAI speech-to-text models: MP3 directly, and other audio/video formats through separately installed FFmpeg. It supports batch import, full-window drag-and-drop, a copied-file Paste fallback, frame-safe chunking, cancellation, resumable checkpoints, TXT/Markdown export, speaker-labelled transcription, editable cost estimates, optional current-user DPAPI key storage, persistent diagnostics, and dark/light themes.
 
 ## Isolated Core-only packaging candidate
 
@@ -41,7 +45,7 @@ Automatic paid retries are disabled, including for legacy profiles with a nonzer
 
 1. Build or launch Cosmic Transcriber normally. Do not choose **Run as administrator**.
 2. Open **API key**, enter your key, and choose **Test connection**.
-3. In this candidate, add audio/video files with **+ Files**, **Folder**, drag-and-drop anywhere in the window, or copy files/folders in File Explorer and choose **Paste**.
+3. Add audio/video files with **+ Files**, **Folder**, drag-and-drop anywhere in the window, or copy files/folders in File Explorer and choose **Paste**.
 4. Configure the output folder, model, optional languages, one-per-line keywords, prompt/context, chunk limits and export formats. The legacy automatic retry selector is disabled.
 5. Watch the **Settings autosave** card. Valid changes save after a short pause.
 6. Choose **Start transcription**. Completed chunks are checkpointed for safe resume.
