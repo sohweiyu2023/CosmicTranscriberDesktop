@@ -163,6 +163,13 @@ internal static class Program
     private static string ExpandState(AutomationElement combo) =>
         ((ExpandCollapsePattern)combo.GetCurrentPattern(ExpandCollapsePattern.Pattern)).Current.ExpandCollapseState.ToString();
 
+    /// <summary>What the app's own hit testing reports under the cursor before the click.</summary>
+    private static string HitTest(Point point)
+    {
+        try { var element = AutomationElement.FromPoint(point); return element is null ? "(none)" : $"{element.Current.AutomationId}/{element.Current.ControlType.ProgrammaticName}"; }
+        catch (ElementNotAvailableException) { return "(unavailable)"; }
+    }
+
     private static string FocusedId()
     {
         try { var focused = AutomationElement.FocusedElement; return focused is null ? "(none)" : focused.Current.AutomationId + "/" + focused.Current.ControlType.ProgrammaticName; }
@@ -269,6 +276,7 @@ internal static class Program
         var before = Selected(Combo);
         var comboBefore = Bounds(Combo);
         var point = VisiblePoint(area);
+        var hit = HitTest(point);
         Mouse.Click(point);
         Thread.Sleep(800);
         var comboAfter = Bounds(Combo);
@@ -276,7 +284,7 @@ internal static class Program
         var state = ExpandState(Combo);
         var after = Selected(Combo);
         var shot = Shot($"open-{scenario}-{area}");
-        var detail = $"click {point}; combo before {comboBefore} after {comboAfter}; popup {(popup?.ToString() ?? "none")}; " +
+        var detail = $"click {point}; hit-test {hit}; combo before {comboBefore} after {comboAfter}; popup {(popup?.ToString() ?? "none")}; " +
                      $"expand {state}; selection {before} -> {after}; focus {FocusedId()}; windows {DescribeProcessWindows()}; shot {shot}";
         Check($"{scenario}/{area}: one mouse click shows the model list", popup is not null && state == "Expanded", detail);
         Check($"{scenario}/{area}: opening click does not change the model", after == before, $"{before} -> {after}");
