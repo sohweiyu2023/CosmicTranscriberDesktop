@@ -1,4 +1,8 @@
-# Cosmic Transcriber 1.0.27 — Design Notes
+# Cosmic Transcriber 1.0.28 — Design Notes
+
+## 1.0.28 selector hit-target design
+
+A control template that hosts a content-free button must not let an application-wide implicit style reach that button. The selector toggle is isolated with `Style="{x:Null}"` and stretched explicitly; its health is measured at runtime (`UI_DROPDOWN`) and verified with real mouse input in CI.
 
 ## 1.0.27 selector rendering design
 

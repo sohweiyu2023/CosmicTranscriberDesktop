@@ -64,6 +64,7 @@ public partial class MainWindow : Window
         Closed += (_, _) => _focusRevealer.Dispose();
         SelectorDiagnostics.Attach(ModelComboBox);
         SelectorDiagnostics.Attach(RetryComboBox);
+        DropDownPlacement.Attach(ModelComboBox, SettingsViewport, WorkspaceViewport);
         _settingsAutoSaveTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
             Interval = SettingsAutoSaveDelay

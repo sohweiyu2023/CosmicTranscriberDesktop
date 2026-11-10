@@ -1,4 +1,4 @@
-# Cosmic Transcriber 1.0.27 - Troubleshooting
+# Cosmic Transcriber 1.0.28 - Troubleshooting
 
 ## “Invalid keyword hint” or legacy-model keyword warning
 
@@ -47,7 +47,7 @@ File Explorer must place a file-drop list on the clipboard. Select files/folders
 
 ## 5. The Start button text or other controls are hard to read
 
-- Confirm the header says `v1.0.27`; older builds may retain the original theme defect.
+- Confirm the header says `v1.0.27` or later; older builds may retain the original theme defect.
 - Switch between Cosmic Night and Cosmic Paper once.
 - Close and restart after changing Windows contrast/theme settings.
 - Test Windows display/text scaling at standard values.
@@ -68,7 +68,7 @@ The app fits its requested size to the Windows work area, but Windows may still 
 
 ## 7. Settings or the saved API key do not persist
 
-Confirm the header shows `v1.0.27` and watch the **Settings autosave** card after changing a value. A successful save displays a timestamp. If the card reports a storage failure, choose **Open diagnostic logs** and correct the permissions for the reported settings directory.
+Confirm the header shows `v1.0.27` or later and watch the **Settings autosave** card after changing a value. A successful save displays a timestamp. If the card reports a storage failure, choose **Open diagnostic logs** and correct the permissions for the reported settings directory.
 
 Version 1.0.25 saves valid options about 900 milliseconds after input settles. An invalid language list, keyword entry, or negative/non-numeric price does not overwrite the last valid value for that field; unrelated valid settings still save. Correct the input and pause briefly.
 

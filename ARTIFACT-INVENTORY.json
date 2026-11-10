@@ -10,6 +10,11 @@
     "bytes": 1884
   },
   {
+    "path": ".github/workflows/regression-suites.yml",
+    "sha256": "bd228e148df62f02fd00c31d7fd8f072cbde6226728007b3335ce8e8bd401d4a",
+    "bytes": 4044
+  },
+  {
     "path": ".github/workflows/ui-acceptance.yml",
     "sha256": "07cf38d295ad069fc7b1ebaf053b63a7c34c9ad256fcea6e449fcb195e32ce63",
     "bytes": 1941
@@ -26,18 +31,18 @@
   },
   {
     "path": "AUDIT-REPORT.md",
-    "sha256": "093864470caf1afcb671cd25edbf00b451db4e6409c89168a2bce8a0d665d57e",
-    "bytes": 5002
+    "sha256": "2055ef9430fddfa8b1141ab74f459a86c5d02c77dcf6765b0f2690c7e2cc2402",
+    "bytes": 5249
   },
   {
     "path": "BUILD.cmd",
-    "sha256": "9255531d152c8b0ace0190ea5ac4dee5ff5d99dbf967899687868c1639c15dc7",
-    "bytes": 1986
+    "sha256": "c4974f632404993308195d7c16914f00293009da2cbf53e048c9d623f107acf1",
+    "bytes": 1912
   },
   {
     "path": "CHANGELOG.md",
-    "sha256": "4d2c540460721e86bf3f0f772f29fcc249f6aeb3a22e67a23bd51e99a587b364",
-    "bytes": 13814
+    "sha256": "9e1cad18b6097f4078546494a32c5bfa68914a98b14eef161971b07fa9fa0490",
+    "bytes": 14428
   },
   {
     "path": "CODE-AUDIT-2026-07-29-ROUND2.md",
@@ -96,8 +101,8 @@
   },
   {
     "path": "DESIGN-NOTES.md",
-    "sha256": "7b216c4f7e7e4f8452056320e2e99a06e80fd72c6e92885fd3244c32e02225b5",
-    "bytes": 4699
+    "sha256": "e13a79cb5f44c688284c605332c750f9d44fab782730f74c37588dc67f4f448f",
+    "bytes": 5031
   },
   {
     "path": "Directory.Build.props",
@@ -121,7 +126,7 @@
   },
   {
     "path": "PUBLISH-WIN-X64.cmd",
-    "sha256": "7202609a049a98c1f051a39ff7a3c71ff6d7fdead797909bd4c7213bef954c4e",
+    "sha256": "cac5d1a94b1a4b87e0e5f70350c2bdaeba79af5f7de27841e4e9cd434d60f8ae",
     "bytes": 1944
   },
   {
@@ -131,13 +136,13 @@
   },
   {
     "path": "QA-REPORT.md",
-    "sha256": "9cab45a9cc714f7b92a3c97fa6913874be980f68e9db50b8542d9edacae82d5d",
-    "bytes": 1618
+    "sha256": "b6eff90953f4e52f26053eba3c3880aaea6b46d7019fe7f6e9ff240127d19200",
+    "bytes": 1865
   },
   {
     "path": "README.md",
-    "sha256": "183716c7018eaaad06ce86a3d7b8ecec55e0d5676f87152164a11d713ef2b987",
-    "bytes": 12274
+    "sha256": "b3e344533081e77c91b964596125d1899dad67ba0d9ce4ad3b1b4fa9e8c9c4a0",
+    "bytes": 12276
   },
   {
     "path": "RUN-DIAGNOSTIC.cmd",
@@ -186,8 +191,8 @@
   },
   {
     "path": "docs/DEVELOPER-GUIDE.md",
-    "sha256": "e74bcf8654d4731d444ea2f664aa9c67a0b4525273aa69742873ae7163ef498c",
-    "bytes": 16141
+    "sha256": "957424358dc32c94c8d4b41d4d13e628d5add3f78b95d9f3a535ceb26e38446f",
+    "bytes": 17696
   },
   {
     "path": "docs/DIAGNOSTIC-SUPPORT.md",
@@ -271,8 +276,8 @@
   },
   {
     "path": "docs/RELEASE-CHECKLIST.md",
-    "sha256": "f2e7c6142ad20e70ca08eae00c812f0a661752b662a8036f91191c998e062876",
-    "bytes": 12078
+    "sha256": "200d5e826ca02c102ce5e43d02d9bea32f902c0b8037e7df3b4a329abe2c7779",
+    "bytes": 12200
   },
   {
     "path": "docs/SDK-LICENSE-SOURCES.json",
@@ -291,8 +296,8 @@
   },
   {
     "path": "docs/TROUBLESHOOTING.md",
-    "sha256": "6f3dc6b0ad1364b779876eab835c2f7615ca6cdc5d0cf710a5f85eba5066720c",
-    "bytes": 14473
+    "sha256": "c1cef12b0dc909562caad8876991dc7485578db95d825e603a40610683272040",
+    "bytes": 14297
   },
   {
     "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",
@@ -301,7 +306,7 @@
   },
   {
     "path": "docs/USER-GUIDE.md",
-    "sha256": "ee83d1322979a79af38714832588ce7110c66785d94be003afd6d526f29f6324",
+    "sha256": "63c332f505483122ec6090a14d73d84b643131267a872337dd5f89304b81ae10",
     "bytes": 14158
   },
   {
@@ -360,6 +365,11 @@
     "bytes": 66
   },
   {
+    "path": "scripts/generate_media_fixtures.py",
+    "sha256": "2cb3c83fe6ef5c6a57f5b143e1221a0c7a7fc3673bfbae72d2205f4bda7946b0",
+    "bytes": 4682
+  },
+  {
     "path": "scripts/generate_release_manifests.py",
     "sha256": "7cddcd00724a6a9fdd3fa3ee742aacaa6dc32a6d1b1c1e204f2b53c7bff90010",
     "bytes": 4134
@@ -371,13 +381,13 @@
   },
   {
     "path": "scripts/static_verify.py",
-    "sha256": "eb3cba6ebd2089e4b6e3f088675656708395e6e3de868c28e4d7718ab79cc309",
-    "bytes": 38054
+    "sha256": "c1a5107ae9fcd152b8893e8c35136a7e407773a4be4f91d1377a1ea9b952bb27",
+    "bytes": 38421
   },
   {
     "path": "scripts/test_release_verifier.py",
-    "sha256": "81398e9f0f1f6e4588b50d805103f108ce04a08e994bb681f463942f91a567a7",
-    "bytes": 18902
+    "sha256": "bb4141bdd4303aec64a88116f8b6e9301535cf91b1318ff4a8075324c2c9e443",
+    "bytes": 19190
   },
   {
     "path": "scripts/verify_source_export.py",
@@ -416,8 +426,8 @@
   },
   {
     "path": "src/CosmicTranscriber/CosmicTranscriber.csproj",
-    "sha256": "e957eed75661f8519485260df759e5dcdbb4c0d37d4ac0fcab9353a4523aa1f2",
-    "bytes": 2305
+    "sha256": "5090e0d0b7203884ac869dfa703e2df5e4d95dfae90dfe37d45bbe09e1484535",
+    "bytes": 2270
   },
   {
     "path": "src/CosmicTranscriber/GlobalUsings.cs",
@@ -426,13 +436,13 @@
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml",
-    "sha256": "18b528ccf0816cf67fc3a2ce730ed6f33c959843791998e5d86b4ba2438b4018",
-    "bytes": 51007
+    "sha256": "47d5bb01724907335cc20a4f134409f9655f186a1af24a41404d04d4547253f8",
+    "bytes": 50376
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml.cs",
-    "sha256": "4e38513638d60064162561db919c664cf596f05f9b69185b1b558903802f18fd",
-    "bytes": 104970
+    "sha256": "3580f15d426d245c9c1132fb01e495e8decc7824c20340c79d4af934328b718d",
+    "bytes": 105056
   },
   {
     "path": "src/CosmicTranscriber/Models/AppSettings.cs",
@@ -576,8 +586,13 @@
   },
   {
     "path": "src/CosmicTranscriber/Utilities/DiagnosticVocabulary.cs",
-    "sha256": "bb8e7b9a324a1efcd07bbc62c437f41caef002926650f5fdae82a3cedf1d9fa4",
-    "bytes": 4569
+    "sha256": "fa7ed708f2a247eb1bae6bda32abe3a0010ed6b59de4123a051a864943edf359",
+    "bytes": 4593
+  },
+  {
+    "path": "src/CosmicTranscriber/Utilities/DropDownPlacement.cs",
+    "sha256": "29ac8d197a095f97af2bf22bfbcba94241b6b7a82203c592360b25e3d0a8c085",
+    "bytes": 1831
   },
   {
     "path": "src/CosmicTranscriber/Utilities/FocusViewportTrace.cs",
@@ -651,7 +666,7 @@
   },
   {
     "path": "src/CosmicTranscriber/app.manifest",
-    "sha256": "6fd497b562c7c9d151ddcbfd00f575c6ac949216f0d6210857e973bfaefb91a0",
+    "sha256": "3514a3ecac574af6cf629fb712218bb66f28c8290f64adf7c894f86d4a0f8139",
     "bytes": 1085
   },
   {
@@ -731,8 +746,8 @@
   },
   {
     "path": "tests/DiagnosticsRegression/Program.cs",
-    "sha256": "27c0b9fb704c006fa39c601cf0a739fe2501dbc46d509282fa03ee4bb9dc261e",
-    "bytes": 14637
+    "sha256": "596de2dd5900696cb15b3a8b245a94b3e0c837a093f4a200b083bf33a0c36b97",
+    "bytes": 14815
   },
   {
     "path": "tests/DiagnosticsRegression/packages.lock.json",
@@ -891,8 +906,8 @@
   },
   {
     "path": "tests/UiAcceptance/Program.cs",
-    "sha256": "6ef8a8e8e9e3412c8d96ac334be66ce332f9a0a15fad345d9deb92b3a1391968",
-    "bytes": 33664
+    "sha256": "e50800d8effd52cae6c524c4b449c8c1bc044036209e410937d24a5f210465cb",
+    "bytes": 33438
   },
   {
     "path": "tests/UiAcceptance/UiAcceptance.csproj",

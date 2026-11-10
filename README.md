@@ -1,12 +1,12 @@
-# Cosmic Transcriber 1.0.27
+# Cosmic Transcriber 1.0.28
 
 ## Multi-format input: on main since 9 November 2026
 
 Optional local audio/video normalization through separately installed FFmpeg/ffprobe was developed as the November 9 candidate and merged into `main` in PR #6 (9 November 2026). MP3 input still needs no external tools. Several different builds report version 1.0.27, so whether a particular installed copy or ZIP includes multi-format input depends on its build, not the version number: compare the build hash recorded at the start of its diagnostic log, or its install folder name. See [MEDIA-INPUT-SUPPORT.md](docs/MEDIA-INPUT-SUPPORT.md) for tested codecs, lossy conversion, first-audio-stream behavior, limits and native acceptance scope.
 
-## Model selector mouse fix (10 November 2026)
+## Model selector mouse fix in 1.0.28 (10 November 2026)
 
-In earlier 1.0.27 builds the model selector did not open when clicked with the mouse (keyboard `F4`/`Alt+Down` worked). The selector's internal click target inherited the Fluent theme's left-aligned button style and collapsed to zero width, so clicks fell through to the settings page. The template now isolates that target from implicit styles, and a real-input Windows acceptance run (`tests/UiAcceptance`, `.github/workflows/ui-acceptance.yml`) clicks, selects, dismisses and reopens the selector with actual mouse and keyboard input. See the change log.
+In 1.0.27 builds the model selector did not open when clicked with the mouse (keyboard `F4`/`Alt+Down` worked). The selector's internal click target inherited the Fluent theme's left-aligned button style and collapsed to zero width, so clicks fell through to the settings page. The template now isolates that target from implicit styles, and a real-input Windows acceptance run (`tests/UiAcceptance`, `.github/workflows/ui-acceptance.yml`) clicks, selects, dismisses and reopens the selector with actual mouse and keyboard input. See the change log.
 
 This is the reviewed **source-only** Desktop repository. It is separate from CosmicTranscriberWeb and CloudScribe-Pro. No application binaries, runtime/SDK DLLs, profiles, API credentials, user recordings or transcripts are published here. Public binary redistribution remains held; see [source provenance](docs/SOURCE-PROVENANCE.md) and [withheld assets](WITHHELD-ASSETS.json).
 

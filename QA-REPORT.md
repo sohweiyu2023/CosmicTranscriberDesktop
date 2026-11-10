@@ -1,5 +1,7 @@
 # Cosmic Transcriber 1.0.27 — QA Report
 
+> **1.0.28 note (10 November 2026):** the selector fixed here still failed to open on mouse click in field builds; see CHANGELOG 1.0.28 for the reproduced cause, fix and real-input acceptance. The findings below are the historical 1.0.27 record.
+
 **Result:** SOURCE-LEVEL PASS; NATIVE WINDOWS ACCEPTANCE PENDING
 
 ## Corrective checks

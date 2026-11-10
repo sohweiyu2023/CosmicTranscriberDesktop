@@ -16,6 +16,6 @@ internal static class DiagnosticVocabulary
     internal static string Type(string? value) => value is "TextBox" or "PasswordBox" or "Button" or "CheckBox" or "ComboBox" or "ComboBoxItem" or "ScrollViewer" or "Expander" or "Window" ? value : "other";
     internal static string ViewportStage(string? value) => value is "handler_enter" or "scheduled" or "post_render" or "stable_visible" or "stable_unresolved" or "render_detached" or "cancelled" or "complete" or "logical_scroll_skipped" or "template_missing" or "before" or "requested" or "settled" or "detached" ? value : "other";
     internal static string WindowStage(string? value) => value is "main_window_shown" or "loaded" or "activated" or "deactivated" or "state_changed" ? value : "other";
-    internal static string DropDownStage(string? value) => value is "opened" or "closed" or "hit_target_ok" or "hit_target_collapsed" or "hit_target_missing" ? value : "other";
+    internal static string DropDownStage(string? value) => value is "opened" or "closed" or "hit_target_ok" or "hit_target_collapsed" or "hit_target_missing" or "popup_repositioned" ? value : "other";
     internal static string Lifecycle(string? value) => value is "constructor_entered" or "resources_loading" or "main_window_constructing" or "window_showing" or "unhandled_non_exception" or "shift_tab_navigation" or "tab_navigation" or "concurrent_event" ? value : "other";
 }

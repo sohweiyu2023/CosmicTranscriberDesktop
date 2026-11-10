@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from zipfile import BadZipFile, ZipFile
 
-EXPECTED_VERSION = "1.0.27"
+EXPECTED_VERSION = "1.0.28"
 IGNORED_PARTS = {"bin", "obj", "publish", "__pycache__", ".git"}
 TEXT_SUFFIXES = {".cs", ".xaml", ".json", ".md", ".cmd", ".props", ".sln", ".py", ".html"}
 
@@ -154,6 +154,7 @@ require('Title="Cosmic Transcriber"' in main_xaml and f'Text="v{EXPECTED_VERSION
         and 'Title = $"Cosmic Transcriber {AppVersion.DisplayVersion}";' in main_cs,
         "Main window title/header version is stale")
 require(EXPECTED_VERSION in readme
+        and "## 1.0.28 - model selector mouse fix" in changelog
         and "## 1.0.27 - dropdown contrast, model-list clarity, and settings hardening" in changelog
         and "## 1.0.26 - independent dropdown/network re-audit and diagnostic hardening" in changelog
         and "## 1.0.25 - compile-blocker repair and release-gate hardening" in changelog
@@ -166,7 +167,7 @@ for name, content in (("AUDIT-REPORT.md", audit_report), ("QA-REPORT.md", qa_rep
     require(EXPECTED_VERSION in content, f"{name} does not identify the current release")
 require("900" in user_guide and "Settings autosave" in user_guide and "gpt-4o-transcribe-diarize" in user_guide,
         "User guide does not cover autosave and diarization")
-require("test_release_verifier.py" in developer_guide and "51" in developer_guide,
+require("test_release_verifier.py" in developer_guide and "56 isolated mutations" in developer_guide,
         "Developer guide does not identify the current release mutation gate")
 require("generate_release_manifests.py" in developer_guide
         and "generate_release_manifests.py" in release_checklist,
@@ -436,6 +437,9 @@ if len(combo_style) == 2:
             and 'VerticalAlignment="Stretch"' in toggle_attributes
             and 'MinWidth="0"' in toggle_attributes,
             "The ComboBox mouse hit target can inherit an implicit theme style and collapse (mouse clicks would not open the list)")
+    require("DropDownPlacement.Attach(ModelComboBox, SettingsViewport, WorkspaceViewport);" in main_cs
+            and "SelectorDiagnostics.Attach(ModelComboBox);" in main_cs,
+            "The open model list does not follow page scrolling, or selector diagnostics are not attached")
     require('IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"' in combo_style_body
             and 'IsOpen="{TemplateBinding IsDropDownOpen}"' not in combo_style_body,
             "The ComboBox popup is not two-way bound to IsDropDownOpen")

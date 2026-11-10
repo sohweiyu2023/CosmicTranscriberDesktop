@@ -163,13 +163,6 @@ internal static class Program
     private static string ExpandState(AutomationElement combo) =>
         ((ExpandCollapsePattern)combo.GetCurrentPattern(ExpandCollapsePattern.Pattern)).Current.ExpandCollapseState.ToString();
 
-    /// <summary>What the app's own hit testing reports under the cursor before the click.</summary>
-    private static string HitTest(Point point)
-    {
-        try { var element = AutomationElement.FromPoint(point); return element is null ? "(none)" : $"{element.Current.AutomationId}/{element.Current.ControlType.ProgrammaticName}"; }
-        catch (ElementNotAvailableException) { return "(unavailable)"; }
-    }
-
     private static string FocusedId()
     {
         try { var focused = AutomationElement.FocusedElement; return focused is null ? "(none)" : focused.Current.AutomationId + "/" + focused.Current.ControlType.ProgrammaticName; }
@@ -276,7 +269,6 @@ internal static class Program
         var before = Selected(Combo);
         var comboBefore = Bounds(Combo);
         var point = VisiblePoint(area);
-        var hit = HitTest(point);
         Mouse.Click(point);
         Thread.Sleep(800);
         var comboAfter = Bounds(Combo);
@@ -284,7 +276,7 @@ internal static class Program
         var state = ExpandState(Combo);
         var after = Selected(Combo);
         var shot = Shot($"open-{scenario}-{area}");
-        var detail = $"click {point}; hit-test {hit}; combo before {comboBefore} after {comboAfter}; popup {(popup?.ToString() ?? "none")}; " +
+        var detail = $"click {point}; combo before {comboBefore} after {comboAfter}; popup {(popup?.ToString() ?? "none")}; " +
                      $"expand {state}; selection {before} -> {after}; focus {FocusedId()}; windows {DescribeProcessWindows()}; shot {shot}";
         Check($"{scenario}/{area}: one mouse click shows the model list", popup is not null && state == "Expanded", detail);
         Check($"{scenario}/{area}: opening click does not change the model", after == before, $"{before} -> {after}");
@@ -549,14 +541,17 @@ internal static class Program
 
     private static void DumpLogs()
     {
-        var logs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CosmicTranscriber", "logs");
-        if (!Directory.Exists(logs)) { Console.WriteLine($"No app logs at {logs}"); return; }
+        // Same order as StartupDiagnostics: next to the executable, then Local AppData, then temp.
+        var candidates = new[] { Path.Combine(Path.GetDirectoryName(_exe)!, "logs"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CosmicTranscriber", "logs"),
+            Path.Combine(Path.GetTempPath(), "CosmicTranscriber", "logs") };
+        var logs = candidates.FirstOrDefault(Directory.Exists);
+        if (logs is null) { Console.WriteLine("No app logs found in " + string.Join(", ", candidates)); return; }
         foreach (var file in new DirectoryInfo(logs).GetFiles("*", SearchOption.AllDirectories).OrderBy(f => f.LastWriteTimeUtc))
         {
             File.Copy(file.FullName, Path.Combine(_evidence, "app-log-" + file.Name), overwrite: true);
             var interesting = File.ReadLines(file.FullName, Encoding.UTF8)
-                .Where(l => l.Contains("dropdown", StringComparison.OrdinalIgnoreCase) || l.Contains("ModelComboBox", StringComparison.Ordinal) ||
-                            l.Contains("SettingsViewport", StringComparison.Ordinal) || l.Contains("ERROR", StringComparison.Ordinal) || l.Contains("\"level\":\"error\"", StringComparison.OrdinalIgnoreCase))
+                .Where(l => l.Contains("UI_DROPDOWN", StringComparison.Ordinal) || l.Contains("\"STARTUP\"", StringComparison.Ordinal) || l.Contains("ERROR", StringComparison.Ordinal) || l.Contains("\"level\":\"error\"", StringComparison.OrdinalIgnoreCase))
                 .TakeLast(160).ToList();
             Console.WriteLine($"--- app log {file.Name} ({file.Length} bytes), {interesting.Count} selected lines");
             foreach (var line in interesting) Console.WriteLine("LOG " + (line.Length > 600 ? line[..600] + "…" : line));

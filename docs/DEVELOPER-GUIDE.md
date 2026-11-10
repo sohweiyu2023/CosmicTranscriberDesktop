@@ -1,4 +1,11 @@
-# Cosmic Transcriber 1.0.27 - Developer Guide
+# Cosmic Transcriber 1.0.28 - Developer Guide
+
+## 1.0.28 selector hit target, diagnostics and real-input acceptance
+
+The ComboBox template's `DropDownToggle` is the only hit-testable surface of the closed field and has an empty template. It must keep `Style="{x:Null}"`, Stretch alignment and zero minimums: otherwise the Fluent `ThemeMode` applies its implicit, left-aligned `ToggleButton` style, the toggle collapses to zero width and mouse clicks fall through (keyboard opening still works, so off-screen and keyboard tests miss it). `PART_Popup.IsOpen` is two-way bound. `DropDownPlacement` re-places the open model list when the settings or workspace viewport scrolls (the focus revealer scrolls a partly hidden field into view just after it opens; WPF popups do not follow that). `SelectorDiagnostics` writes `UI_DROPDOWN` open/close events and a measured `hit_target_ok`/`hit_target_collapsed`/`hit_target_missing` check at load and after theme changes.
+
+`tests/UiAcceptance` drives the built executable with SendInput mouse/keyboard, UI Automation and real popup-window detection. It refuses to run outside CI unless `--use-current-windows-profile` is passed, because it uses the current Windows user's settings folder. Workflows: `final-verification.yml` (static, build, offline safety suites), `ui-acceptance.yml` (real input), `regression-suites.yml` (Desktop/Media/PendingRecovery/Focus/Nested/Theme/Layout/CloseRace suites and `media_smoke.py`, using fixtures from `scripts/generate_media_fixtures.py`; FFmpeg is a runner-only prerequisite). The mutation gate has 56 isolated mutations.
+
 
 ## 1.0.27 UI/model-normalization audit additions
 
@@ -59,13 +66,13 @@ Do not add a direct `System.Security.Cryptography.ProtectedData` package for thi
 
 ## 3. Versioning contract
 
-Release 1.0.27 is represented as:
+Release 1.0.28 is represented as:
 
-- `Version`: `1.0.27`;
-- `AssemblyVersion`: `1.0.27.0`;
-- `FileVersion`: `1.0.27.0`;
-- `InformationalVersion`: `1.0.27`;
-- manifest identity: `1.0.27.0`;
+- `Version`: `1.0.28`;
+- `AssemblyVersion`: `1.0.28.0`;
+- `FileVersion`: `1.0.28.0`;
+- `InformationalVersion`: `1.0.28`;
+- manifest identity: `1.0.28.0`;
 - `IncludeSourceRevisionInInformationalVersion`: `false`.
 
 `AppVersion.DisplayVersion` is the runtime display source for header/title/About/log/User-Agent. Update every version-bearing script/document and run the verifier before release.
@@ -167,7 +174,7 @@ python scripts/generate_release_manifests.py --root .
 python scripts/static_verify.py --root .
 ```
 
-`generate_release_manifests.py` deterministically writes `ARTIFACT-INVENTORY.json` and `SHA256SUMS.txt`; `static_verify.py` independently validates both files. The 52-case current release mutation suite must pass. The suite includes dedicated cases for the gpt-transcribe default, multi-value languages[] emission, ISO-639-3/regional-Chinese validation, legacy singular-language isolation, case-insensitive price lookup, realtime/file separation, current price presets, settings migration, CS1628 out-parameter capture, ASCII-only cleanup names, retry defaults, alias containment, diagnostic durability, responsive layout, Per-Monitor-V2, Explorer-shell relaunch, completion-dialog behavior, DOCX provenance, visible verification evidence, and deterministic manifest completeness, native ComboBox popup retention, wheel-selection suppression with page-scroll forwarding, request-ID logging, proxy authentication, and model-specific language validation, elapsed request timing, post-header server request-ID preservation, nested socket diagnostics, and connection-test timeout classification. Remove `bin`, `obj`, `publish`, and `__pycache__` before packaging.
+`generate_release_manifests.py` deterministically writes `ARTIFACT-INVENTORY.json` and `SHA256SUMS.txt`; `static_verify.py` independently validates both files. The 56-case current release mutation suite must pass. The suite includes dedicated cases for the gpt-transcribe default, multi-value languages[] emission, ISO-639-3/regional-Chinese validation, legacy singular-language isolation, case-insensitive price lookup, realtime/file separation, current price presets, settings migration, CS1628 out-parameter capture, ASCII-only cleanup names, retry defaults, alias containment, diagnostic durability, responsive layout, Per-Monitor-V2, Explorer-shell relaunch, completion-dialog behavior, DOCX provenance, visible verification evidence, and deterministic manifest completeness, native ComboBox popup retention, wheel-selection suppression with page-scroll forwarding, request-ID logging, proxy authentication, and model-specific language validation, elapsed request timing, post-header server request-ID preservation, nested socket diagnostics, and connection-test timeout classification. Remove `bin`, `obj`, `publish`, and `__pycache__` before packaging.
 
 For the DOCX manual, render with the repository's document-tool workflow, inspect every page PNG, and run the accessibility audit.
 

@@ -1,13 +1,15 @@
 # Change Log
 
-## Unreleased (source, 10 November 2026) - model selector mouse fix and real-input UI acceptance
+## 1.0.28 - model selector mouse fix and real-input UI acceptance (source, 10 November 2026)
 
 - Fixed: clicking the model selector with the mouse did nothing (the list did not open and the model appeared stuck), while `F4`/`Alt+Down` worked. Cause, reproduced with real mouse input on Windows: under the app's Fluent `ThemeMode`, the template's content-free click target (`DropDownToggle`) picked up the implicit Fluent `ToggleButton` style, which left-aligns buttons, so it collapsed to zero width. Nothing in the closed field was hit-testable and clicks fell through to the settings page. The target now uses `Style="{x:Null}"`, explicit Stretch alignment and zero minimums.
+- Fixed (found by the new real-input test): opening a selector that was partly scrolled out of view showed its list detached from the field, because the page then scrolled the field into view and WPF popups do not follow scrolling. The open list is now re-placed when the settings or workspace page scrolls (`DropDownPlacement`, logged as `popup_repositioned`).
 - Hardened: the popup's `IsOpen` is now two-way bound, as in the platform templates, so a popup that closes itself (lost capture, app deactivation) also resets `IsDropDownOpen` instead of leaving the selector logically open.
 - Added `tests/UiAcceptance`: launches the built app on a disposable profile and uses SendInput mouse/keyboard with UI Automation and real popup-window checks — every model by mouse, clipped/visible positions, arrow and value areas, outside click, Escape, reopen, Tab/F4/Alt+Down/arrows/Enter, wheel suppression with page scrolling, both themes, three window sizes, persistence after restart, and the selector after a real clipboard import of synthetic Unicode-named and nested MP3s. Runs in the new `ui-acceptance.yml` workflow.
 - Logging: new `UI_DROPDOWN` diagnostics record selector open/close (control and index only, never model text) and a measured hit-target health check at load and after theme changes (`hit_target_ok`, `hit_target_collapsed`, `hit_target_missing`). Covered by the diagnostics regression suite.
 - Safety: `Esc` during a transcription run now asks before stopping, because a sent request may still be charged; `Esc` during local import still stops immediately.
-- Verifier: new static contracts and three mutations for the selector hit target and popup binding.
+- Version: 1.0.28 (assembly, file, manifest and header), so fixed builds can be told apart from the several earlier builds that all report 1.0.27.
+- Verifier: three stale mutations whose targets had moved were repaired (they could no longer apply), and new static contracts and four mutations for the selector hit target, popup binding and list placement.
 - Documentation: README and media-support status now reflect that multi-format input is on `main` (PR #6); stale MP3-only shortcut text corrected.
 
 ## 1.0.27 - dropdown contrast, model-list clarity, and settings hardening

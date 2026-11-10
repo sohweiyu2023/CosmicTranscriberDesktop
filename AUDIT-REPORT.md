@@ -1,5 +1,7 @@
 # Cosmic Transcriber 1.0.27 — UI/Dropdown Full Adversarial Audit
 
+> **1.0.28 note (10 November 2026):** the selector fixed here still failed to open on mouse click in field builds; see CHANGELOG 1.0.28 for the reproduced cause, fix and real-input acceptance. The findings below are the historical 1.0.27 record.
+
 **Audit date:** 4 August 2026  
 **Status:** SOURCE REPAIR COMPLETE; WINDOWS BUILD/RUNTIME ACCEPTANCE REQUIRED
 
