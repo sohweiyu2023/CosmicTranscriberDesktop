@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -183,11 +184,12 @@ internal static class Program
     private static List<(IntPtr Handle, Rect Rect)> ProcessWindows()
     {
         var found = new List<(IntPtr, Rect)>();
-        if (_process is null) return found;
+        if (_process is null || _process.HasExited) return found;
+        var processId = _process.Id;
         Native.EnumWindows((handle, _) =>
         {
             Native.GetWindowThreadProcessId(handle, out var pid);
-            if (pid == _process.Id && Native.IsWindowVisible(handle) && Native.GetWindowRect(handle, out var r) && r.Right > r.Left && r.Bottom > r.Top)
+            if (pid == processId && Native.IsWindowVisible(handle) && Native.GetWindowRect(handle, out var r) && r.Right > r.Left && r.Bottom > r.Top)
                 found.Add((handle, new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top)));
             return true;
         }, IntPtr.Zero);
@@ -591,7 +593,7 @@ internal static class Mouse
     public static void Key(params ushort[] keys)
     {
         foreach (var key in keys) { Native.Send(Native.Keyboard(key, 0)); Thread.Sleep(30); }
-        foreach (var key in keys.Reverse()) { Native.Send(Native.Keyboard(key, 0x0002)); Thread.Sleep(30); }
+        foreach (var key in Enumerable.Reverse(keys)) { Native.Send(Native.Keyboard(key, 0x0002)); Thread.Sleep(30); }
     }
 }
 
