@@ -62,7 +62,7 @@ Automatically saved settings include:
 - language and keyword hints;
 - prompt/recording context;
 - chunk size and duration;
-- retries, previous-context behavior, and continue-on-error;
+- previous-context behavior and continue-on-error (legacy retry values do not enable automatic paid retries);
 - merge preference and combined title;
 - theme and editable price estimate;
 - the preference to remember an API key securely.

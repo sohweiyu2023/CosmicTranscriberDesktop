@@ -141,8 +141,8 @@
   },
   {
     "path": "README.md",
-    "sha256": "aa4d373d539869908956f1252599dfaa83e7d06b39f24fde5f257783b8437e25",
-    "bytes": 13111
+    "sha256": "b59990071909d1cf3a880cf13f65339065d300dbcf9df19a74872f61db4547f4",
+    "bytes": 13160
   },
   {
     "path": "RUN-DIAGNOSTIC.cmd",
@@ -296,8 +296,8 @@
   },
   {
     "path": "docs/TROUBLESHOOTING.md",
-    "sha256": "361edd1e4629406d38ababdfc0cd28d2834bb361b0e633e450f4ed3b0f0b0f58",
-    "bytes": 14491
+    "sha256": "a8d98328b2e98193a5b4adf19d5cb2b745d4b7576b2c5ebd4e3cffa69eb5e734",
+    "bytes": 14901
   },
   {
     "path": "docs/TUTORIAL-CANDIDATE-2026-11-11.md",
@@ -311,8 +311,8 @@
   },
   {
     "path": "docs/USER-GUIDE.md",
-    "sha256": "63c332f505483122ec6090a14d73d84b643131267a872337dd5f89304b81ae10",
-    "bytes": 14158
+    "sha256": "533a2da17e7e1c05ea3d62b8dbe46cb82c2fc7428be9e5cd26f78b2375fa859e",
+    "bytes": 15017
   },
   {
     "path": "global.json",

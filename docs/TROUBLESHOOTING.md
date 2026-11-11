@@ -27,18 +27,18 @@ The most common cause is a Windows privilege mismatch: Cosmic Transcriber is ele
 4. Do not start the app from an elevated Command Prompt, PowerShell, task, launcher, installer, or elevated Visual Studio instance.
 5. After restart, the elevation warning should disappear and Explorer should show a copy cursor over the window.
 
-Reliable fallback: select MP3 files/folders in File Explorer, press `Ctrl+C`, then choose **Paste** in the app or press `Ctrl+V` away from text/key fields. The **+ Files** and **Folder** buttons use normal picker APIs and do not depend on OLE drag-and-drop.
+Reliable fallback: select supported audio/video files or folders in File Explorer, press `Ctrl+C`, then choose **Paste** in the app or press `Ctrl+V` away from text/key fields. The **+ Files** and **Folder** buttons use normal picker APIs and do not depend on OLE drag-and-drop.
 
 The application intentionally does not bypass Windows User Interface Privilege Isolation.
 
 ## 3. Drag is accepted but no files are added
 
 - Confirm the dragged data contains actual filesystem files/folders, not a browser attachment, Outlook virtual item, archive member, or cloud placeholder that has not downloaded.
-- Confirm the files are `.mp3`.
+- Confirm the files are supported media. MP3 works directly; other formats need separately installed FFmpeg and ffprobe and a supported codec. See [MEDIA-INPUT-SUPPORT.md](MEDIA-INPUT-SUPPORT.md).
 - Wait for copy/download/synchronisation to finish and add the file again.
 - Check whether the app is busy importing, testing the key, or transcribing; drops are accepted only while idle.
 - Confirm queue capacity has not reached 10,000.
-- Use Paste or the pickers to distinguish shell/OLE problems from MP3 inspection problems.
+- Use Paste or the pickers to distinguish shell/OLE problems from media inspection or conversion problems.
 - Expand Activity log and inspect the persistent log.
 
 ## 4. Paste says there is nothing to paste
@@ -107,8 +107,8 @@ The estimate is total audio minutes multiplied by the editable USD-per-minute va
 
 - Wait for the download/copy/cloud synchronisation to finish.
 - Close editors, players, taggers, backup agents, or antivirus operations that lock the file.
-- Copy the MP3 to a normal local folder and add the copy.
-- Confirm the file is not empty and contains valid MP3 frames.
+- For a local import problem, copy the recording to an ordinary local folder and add it while the app is idle. Do not change paths to bypass an unresolved paid-request warning.
+- Confirm the file is not empty. MP3 requires valid frames; other formats require successful probing and conversion with a supported audio codec.
 - Avoid unstable network shares for long runs.
 
 ## 11. Transcription fails partway through
@@ -176,7 +176,7 @@ Provide:
 - screenshot of the whole window and warning banner;
 - redacted newest diagnostic log;
 - whether Files/Folder/Paste work when drag fails;
-- a non-sensitive sample MP3 only when needed and permitted.
+- a non-sensitive sample recording only when needed and permitted.
 
 Never provide the API key. Review logs and screenshots for private paths/transcript content before sharing.
 
