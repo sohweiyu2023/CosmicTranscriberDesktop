@@ -15,7 +15,7 @@ Use one literal term per line. Remove `<`, `>`, control characters, and overlong
 7. Check Windows Security, SmartScreen, antivirus quarantine, and corporate application-control logs.
 8. Ensure the folder path is not excessively long and the user can read/execute it.
 
-Do not launch a `_wpftmp` intermediate file from `obj`; launch the final output under `bin\Release\net10.0-windows10.0.19041.0` or the publish folder.
+Do not launch a `_wpftmp` intermediate file from `obj`; launch the final output under `bin\Release\net10.0-windows` or the publish folder.
 
 ## 2. Dragging shows a forbidden/cancel cursor everywhere
 
