@@ -192,3 +192,22 @@ These gates are not a Windows compiler/runtime. Complete `docs/RELEASE-CHECKLIST
 - Add verifier coverage and a mutation for high-risk invariants.
 - Update all version-bearing docs/artifacts.
 - Build, launch, drag, paste, key-test, transcribe, cancel/resume, publish, and high-DPI-test on Windows.
+
+## Beginner tutorial candidate
+
+`QuickStartGuide` contains the immutable seven-screen content and bounded navigation. `QuickStartWindow` is modeless and owned by MainWindow. The first-run invitation uses `QuickStartInvitationDismissed`; absent settings fields remain compatible. Dismissal captures valid pending control edits before saving. F1 and Quick start reopen the single guide and restore it if minimized. Navigation never invokes Start or connection testing. The progress anchor is not the Start button. Owned-window placement preserves CenterOwner on secondary displays.
+
+Run from the repository root on Windows:
+
+```powershell
+dotnet build CosmicTranscriber.sln -c Release
+dotnet run --project tests/QuickStartRegression -c Release -- . "$env:TEMP/cosmic-quickstart-test"
+dotnet run --project tests/NormalSettingsRegression -c Release -- "$env:TEMP/cosmic-settings-test"
+dotnet run --project tests/ThemeRegression -c Release
+python scripts/generate_release_manifests.py
+python scripts/static_verify.py --source-only
+```
+
+The tutorial regression exercises real compiled XAML handlers and renders both themes at 340 and 610 pixels. It does not establish native pointer/keyboard or multi-monitor acceptance. Before release, check first invitation Start/Skip and persistence using an isolated test profile; F1 and replay; minimize/reopen; every Next/Back/Finish/Close/Escape action; owner close; 100/150/200% DPI on both monitors; narrow-window scrolling and keyboard accessibility; and show-area behavior during idle/running/cancel states without invoking paid requests. Preserve another worker's checkout and the user's settings. No tutorial test should require a key or paid provider. Diagnostic initialization can fall back to LocalAppData if executable-directory logs are unwritable; use a writable test checkout and inspect the destination.
+
+The release mutation suite requires a complete clean release export, including the withheld preview/manual assets; it is not a source-only checkout gate. Run it on that export before release, not on a built Git checkout. The workspace minimum content height is 720 DIP to preserve queue space beneath the invitation; smaller windows use the existing outer scrollbar.

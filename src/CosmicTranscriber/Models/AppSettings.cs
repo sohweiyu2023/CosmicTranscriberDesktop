@@ -20,6 +20,7 @@ public sealed class AppSettings
     public string CombinedTitle { get; set; } = "Combined Transcript";
     public string Theme { get; set; } = "Cosmic Night";
     public bool RememberKeySecurely { get; set; }
+    public bool QuickStartInvitationDismissed { get; set; }
     public double CustomPricePerMinute { get; set; } = 0.0045;
 
     public const string DefaultPrompt =

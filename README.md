@@ -146,3 +146,7 @@ The audit environment is Linux and cannot honestly claim a native Windows WPF co
 - [Release Checklist](docs/RELEASE-CHECKLIST.md)
 - Comprehensive Word manual in `docs/`
 
+
+## Beginner tutorial (development candidate)
+
+Choose **Quick start** below the header, or press **F1**, for a short guided introduction. The optional **First time here?** invitation offers **Start tutorial** and **Skip for now**. Either choice dismisses the invitation; Quick start remains available. The guide covers API setup, adding recordings, choosing a model, output, starting/cancelling and reviewing results. **Show this area in the app** reveals the relevant controls without activating them. Close the guide at any time; it sends no audio and makes no API requests. Testing a connection or starting a real transcription is a separate action that may contact the provider.

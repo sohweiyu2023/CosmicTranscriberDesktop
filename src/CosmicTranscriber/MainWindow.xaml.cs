@@ -48,6 +48,7 @@ public partial class MainWindow : Window
     private bool _closeRequestedAfterUnwind;
     private bool _allowFinalClose;
     private bool _settingsSaveFailureLogged;
+    private QuickStartWindow? _quickStartWindow;
 
     private bool IsUiIdle => !_isRunning && !_isImporting && !_isTestingKey && !_isClosing;
 
@@ -79,6 +80,7 @@ public partial class MainWindow : Window
 
         StartupDiagnostics.Write("MAINWINDOW", $"Loading settings from {_settingsService.SettingsPath}.");
         _settings = _settingsService.Load();
+        QuickStartInvitation.Visibility = _settings.QuickStartInvitationDismissed ? Visibility.Collapsed : Visibility.Visible;
 
         FitWindowToWorkArea();
 
@@ -1193,6 +1195,58 @@ public partial class MainWindow : Window
         SelectorDiagnostics.ScheduleInspection(ModelComboBox);
         _settings.Theme = nextTheme;
         ScheduleSettingsAutoSave();
+    }
+
+    private void DismissQuickStartInvitation()
+    {
+        _settings.QuickStartInvitationDismissed = true;
+        QuickStartInvitation.Visibility = Visibility.Collapsed;
+        SaveSettingsQuietly(); // Capture pending valid edits before reporting saved.
+    }
+
+    private void SkipQuickStart_Click(object sender, RoutedEventArgs e) => DismissQuickStartInvitation();
+
+    private void QuickStart_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isClosing) return;
+        if (_quickStartWindow is not null)
+        {
+            if (_quickStartWindow.WindowState == WindowState.Minimized) _quickStartWindow.WindowState = WindowState.Normal;
+            _quickStartWindow.Activate();
+            return;
+        }
+        try
+        {
+            var guide = new QuickStartWindow(ShowQuickStartArea) { Owner = this };
+            guide.Closed += (_, _) => _quickStartWindow = null;
+            _quickStartWindow = guide;
+            guide.Show(); // Modeless: the user's queue, settings and Cancel remain usable.
+            DismissQuickStartInvitation();
+        }
+        catch (Exception error)
+        {
+            _quickStartWindow = null;
+            StartupDiagnostics.WriteException("TUTORIAL", error);
+            MessageBox.Show(this, "The tutorial could not open. You can still use the app normally and retry Quick start later.",
+                "Tutorial unavailable", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    private void ShowQuickStartArea(string area)
+    {
+        if (_isClosing) return;
+        FrameworkElement target = area switch
+        {
+            "key" => ApiKeySettingsCard,
+            "model" => ModelComboBox,
+            "output" => OutputSettingsCard,
+            "progress" => OverallProgressBar,
+            _ => QueueCard
+        };
+        // Navigate only. Do not invoke buttons, read keys, change options, or send a request.
+        Activate();
+        target.BringIntoView();
+        if (target.Focusable && target.IsEnabled) target.Focus();
     }
 
     private void About_Click(object sender, RoutedEventArgs e)
@@ -2358,6 +2412,12 @@ public partial class MainWindow : Window
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.F1 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            QuickStart_Click(this, new RoutedEventArgs());
+            return;
+        }
         if (e.Key == Key.Tab)
             StartupDiagnostics.WriteLifecycle(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? "shift_tab_navigation" : "tab_navigation");
         if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.O)

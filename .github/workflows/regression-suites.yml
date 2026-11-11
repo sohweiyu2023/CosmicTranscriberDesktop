@@ -51,6 +51,7 @@ jobs:
             'PendingRecoveryRegression' = @("$t/pending-out", "$fx/mp3/synthetic-short.mp3", "$fx/mp3/synthetic-long.mp3", $junction)
             'FocusViewportRegression'   = @()
             'NestedFocusRegression'     = @('.', "$t/nested-out")
+            'QuickStartRegression'      = @('.', "$t/quick-start-out")
             'ThemeRegression'           = @()
             'LayoutRegression'          = @('.', "$t/layout-night", 'CosmicNight', '--quick', '--assert-reachable')
           }

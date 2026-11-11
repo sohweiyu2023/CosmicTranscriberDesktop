@@ -11,8 +11,8 @@
   },
   {
     "path": ".github/workflows/regression-suites.yml",
-    "sha256": "bd228e148df62f02fd00c31d7fd8f072cbde6226728007b3335ce8e8bd401d4a",
-    "bytes": 4044
+    "sha256": "1847898d290deaf7932a636040f0e07c7359c98c903d36497673b6512bc27bf3",
+    "bytes": 4115
   },
   {
     "path": ".github/workflows/ui-acceptance.yml",
@@ -41,8 +41,8 @@
   },
   {
     "path": "CHANGELOG.md",
-    "sha256": "9e1cad18b6097f4078546494a32c5bfa68914a98b14eef161971b07fa9fa0490",
-    "bytes": 14428
+    "sha256": "0c968ed389eb666af1b9297786923b46d47adba6da55ab41d7b085c1cc7a07d3",
+    "bytes": 14820
   },
   {
     "path": "CODE-AUDIT-2026-07-29-ROUND2.md",
@@ -141,8 +141,8 @@
   },
   {
     "path": "README.md",
-    "sha256": "98db588f4e73029238d4f172188ace810d6b818085df23a254b552da4f1ba011",
-    "bytes": 12424
+    "sha256": "aa4d373d539869908956f1252599dfaa83e7d06b39f24fde5f257783b8437e25",
+    "bytes": 13111
   },
   {
     "path": "RUN-DIAGNOSTIC.cmd",
@@ -191,8 +191,8 @@
   },
   {
     "path": "docs/DEVELOPER-GUIDE.md",
-    "sha256": "957424358dc32c94c8d4b41d4d13e628d5add3f78b95d9f3a535ceb26e38446f",
-    "bytes": 17696
+    "sha256": "ebbf169c150b95d870ec4942e860b727b23adbc574f4f71d3a8352b6d6692a84",
+    "bytes": 19918
   },
   {
     "path": "docs/DIAGNOSTIC-SUPPORT.md",
@@ -298,6 +298,11 @@
     "path": "docs/TROUBLESHOOTING.md",
     "sha256": "361edd1e4629406d38ababdfc0cd28d2834bb361b0e633e450f4ed3b0f0b0f58",
     "bytes": 14491
+  },
+  {
+    "path": "docs/TUTORIAL-CANDIDATE-2026-11-11.md",
+    "sha256": "888e0c94e9d9a6e470d1f0157ec5707a3e746ae667b2ae3be22e87bc0570fbb0",
+    "bytes": 2017
   },
   {
     "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",
@@ -436,23 +441,28 @@
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml",
-    "sha256": "d9228049a65e5a1e7a132b6d925b2787e325bcc10a41ffd6fc31ac7a26bb46d0",
-    "bytes": 51007
+    "sha256": "0f463c7b6edc943ccc895bc8a835556fdca952525f0c404cdd0b56f6ce618bc5",
+    "bytes": 51949
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml.cs",
-    "sha256": "d4c6305e24bc1d5bb7f7fcb2c4e655296d9c54f6df928904c5de2800a3cd4829",
-    "bytes": 107573
+    "sha256": "1743cda37c662105c5cc318be109cd879ce93787c8c5c75f3287ea286bb6437b",
+    "bytes": 110045
   },
   {
     "path": "src/CosmicTranscriber/Models/AppSettings.cs",
-    "sha256": "b69710b8c8029e7d3c5e5b7daf202266f70d45bbb52c70ebf03d860af1844420",
-    "bytes": 1439
+    "sha256": "83bdf1d62ac0d802de63d9fd49690a21a014617de917fd4b1ee2dfebcdab74ba",
+    "bytes": 1499
   },
   {
     "path": "src/CosmicTranscriber/Models/AudioJobItem.cs",
     "sha256": "5aa47cf7f0464e3aceda8699fda94c92e25381d60aabd508bb7b1d76b116ac65",
     "bytes": 1948
+  },
+  {
+    "path": "src/CosmicTranscriber/Models/QuickStartGuide.cs",
+    "sha256": "0a7ce144062f98d96df296f27fcdde6d87b0912b4c892107a2883d03a38e575e",
+    "bytes": 4307
   },
   {
     "path": "src/CosmicTranscriber/Models/TranscriptionModelCatalog.cs",
@@ -463,6 +473,16 @@
     "path": "src/CosmicTranscriber/Models/TranscriptionModels.cs",
     "sha256": "cff2ec2454ea2479d9b2badbd114b91a202b3210277d21f65bef2eab02e38df1",
     "bytes": 1660
+  },
+  {
+    "path": "src/CosmicTranscriber/QuickStartWindow.xaml",
+    "sha256": "6b41d5c57407e2339c9bcf7cc9ad1d107f48fb1af5a177e1057c1e828758771f",
+    "bytes": 2712
+  },
+  {
+    "path": "src/CosmicTranscriber/QuickStartWindow.xaml.cs",
+    "sha256": "37a0fb9530a0659b771696ddb9c31951aa38efb85d22b37901ed8ad8dbd39ef8",
+    "bytes": 2748
   },
   {
     "path": "src/CosmicTranscriber/RecoveryWindow.xaml",
@@ -586,8 +606,8 @@
   },
   {
     "path": "src/CosmicTranscriber/Utilities/DiagnosticVocabulary.cs",
-    "sha256": "fa7ed708f2a247eb1bae6bda32abe3a0010ed6b59de4123a051a864943edf359",
-    "bytes": 4593
+    "sha256": "67aa215a4ad8d595dc3ffdc254190b63cf8cc8289705f97e07d0799c6817ed32",
+    "bytes": 4627
   },
   {
     "path": "src/CosmicTranscriber/Utilities/DropDownPlacement.cs",
@@ -656,8 +676,8 @@
   },
   {
     "path": "src/CosmicTranscriber/Utilities/StartupDiagnostics.cs",
-    "sha256": "270ed5fa15d4f53459b4f5145df30f3447431348a8154fd37b5ccc92e4522653",
-    "bytes": 21942
+    "sha256": "d1aecd45b4be418973bada5a4e85b61fbe0222382566ca6d9f9fffc39cdf8a7f",
+    "bytes": 22037
   },
   {
     "path": "src/CosmicTranscriber/Utilities/WindowsSecurity.cs",
@@ -868,6 +888,21 @@
     "path": "tests/PendingRecoveryRegression/packages.lock.json",
     "sha256": "d299e7002b10708fbf7caa78585bab0062c913027a5354384870860575ae1553",
     "bytes": 665
+  },
+  {
+    "path": "tests/QuickStartRegression/Program.cs",
+    "sha256": "28953fb601680269d7b0450f67f3194dcf69a31141365aa6545926fa0d759d26",
+    "bytes": 6754
+  },
+  {
+    "path": "tests/QuickStartRegression/QuickStartRegression.csproj",
+    "sha256": "c11534c2e45c478a71271d258b7e0a6842cb8dad68923b22da8b5f7cb86329d1",
+    "bytes": 359
+  },
+  {
+    "path": "tests/QuickStartRegression/packages.lock.json",
+    "sha256": "8d694479b60304e8027d77ce9e05e134da7bd2a8250884d560988ff93cba3161",
+    "bytes": 798
   },
   {
     "path": "tests/SafetyRegression/Program.cs",

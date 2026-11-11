@@ -1,3 +1,10 @@
+## Unreleased: optional beginner tutorial
+
+- Added replayable Quick start/F1 guide with optional first-run invitation.
+- Covers setup, supported media prerequisites, models, output, costs and recovery without making requests.
+- Added isolated tutorial regression coverage and developer acceptance checklist.
+- Candidate only: version remains 1.0.28; release and installed app are unchanged.
+
 # Change Log
 
 ## 1.0.28 - model selector mouse fix and real-input UI acceptance (source, 10 November 2026)
