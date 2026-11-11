@@ -301,8 +301,8 @@
   },
   {
     "path": "docs/TUTORIAL-CANDIDATE-2026-11-11.md",
-    "sha256": "a14f59ff3b4bb70da8daf6d6408eacd0d0dba449b2cfe84e0bd31c8620cd62c1",
-    "bytes": 9198
+    "sha256": "d6c0b2dae37a1ed8483ee8cfe0dc3142ec90510d5f69e0bd44cd2f1a7f61b5a7",
+    "bytes": 9475
   },
   {
     "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",
@@ -941,8 +941,8 @@
   },
   {
     "path": "tests/UiAcceptance/Program.cs",
-    "sha256": "46cb74f077ff0dd0762aabfd2f55cb4890490b54ca39d6f028913f02c5c117d3",
-    "bytes": 35302
+    "sha256": "6f7ba3bbdd1d1a007de43c252c65dd06f5ffe0d058cae8f84fc89c9d47b11ed9",
+    "bytes": 35643
   },
   {
     "path": "tests/UiAcceptance/UiAcceptance.csproj",

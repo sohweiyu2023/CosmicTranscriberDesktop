@@ -208,6 +208,14 @@ internal static class Program
     {
         var visible = Rect.Intersect(Bounds(Find("SettingsViewport")), Bounds(Find("WorkspaceViewport")));
         visible.Intersect(Bounds(_root!));
+        // The runner taskbar may cover the bottom of an oversized app window.
+        // Its UIA rectangle is not proof that pixels are available for mouse input.
+        var monitor = Native.MonitorFromWindow(_window, 2);
+        var info = new Native.MONITORINFO { cbSize = Marshal.SizeOf<Native.MONITORINFO>() };
+        if (!Native.GetMonitorInfo(monitor, ref info))
+            throw new InvalidOperationException("Cannot determine the app monitor work area.");
+        visible.Intersect(new Rect(info.rcWork.Left, info.rcWork.Top,
+            info.rcWork.Right - info.rcWork.Left, info.rcWork.Bottom - info.rcWork.Top));
         return visible;
     }
 
@@ -627,6 +635,7 @@ internal static class Native
 
     [StructLayout(LayoutKind.Sequential)] public struct POINT { public int X, Y; }
     [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left, Top, Right, Bottom; }
+    [StructLayout(LayoutKind.Sequential)] public struct MONITORINFO { public int cbSize; public RECT rcMonitor, rcWork; public uint dwFlags; }
     [StructLayout(LayoutKind.Sequential)] public struct MOUSEINPUT { public int dx, dy; public uint mouseData, dwFlags, time; public IntPtr dwExtraInfo; }
     [StructLayout(LayoutKind.Sequential)] public struct KEYBDINPUT { public ushort wVk, wScan; public uint dwFlags, time; public IntPtr dwExtraInfo; }
     [StructLayout(LayoutKind.Explicit)] public struct InputUnion { [FieldOffset(0)] public MOUSEINPUT mi; [FieldOffset(0)] public KEYBDINPUT ki; }
@@ -652,6 +661,8 @@ internal static class Native
 
     [DllImport("user32.dll", SetLastError = true)] private static extern uint SendInput(uint count, INPUT[] inputs, int size);
     [DllImport("user32.dll")] public static extern bool GetCursorPos(out POINT point);
+    [DllImport("user32.dll")] public static extern IntPtr MonitorFromWindow(IntPtr window, uint flags);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFO info);
     [DllImport("user32.dll")] public static extern int GetSystemMetrics(int index);
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr handle);
     [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr handle, int command);
