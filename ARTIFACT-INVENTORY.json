@@ -31,18 +31,18 @@
   },
   {
     "path": "AUDIT-REPORT.md",
-    "sha256": "2055ef9430fddfa8b1141ab74f459a86c5d02c77dcf6765b0f2690c7e2cc2402",
-    "bytes": 5249
+    "sha256": "12288c68863112a461f4d41db38520d798e53d37054848b4acbe16213d1fd2d3",
+    "bytes": 5457
   },
   {
     "path": "BUILD.cmd",
-    "sha256": "506050ae072f5d7e7d90ec98f7678c5b30d1d2e080ba16e8b4f2a4b2e5487aa7",
+    "sha256": "ecb9718bd526b4785b3cbae5037b9e1d888efe2318cc0e343a005cffa73c0be6",
     "bytes": 1986
   },
   {
     "path": "CHANGELOG.md",
-    "sha256": "0c968ed389eb666af1b9297786923b46d47adba6da55ab41d7b085c1cc7a07d3",
-    "bytes": 14820
+    "sha256": "e5f098efc4807cc4152bd9485d3020da205ec9aff3b77bc310df4832f8d7d3b0",
+    "bytes": 15082
   },
   {
     "path": "CODE-AUDIT-2026-07-29-ROUND2.md",
@@ -101,8 +101,8 @@
   },
   {
     "path": "DESIGN-NOTES.md",
-    "sha256": "e13a79cb5f44c688284c605332c750f9d44fab782730f74c37588dc67f4f448f",
-    "bytes": 5031
+    "sha256": "3cb5f8651d09924d612ea3ff7618d18d49fec7cd0ad65584886bac6db2d3a389",
+    "bytes": 5239
   },
   {
     "path": "Directory.Build.props",
@@ -126,8 +126,8 @@
   },
   {
     "path": "PUBLISH-WIN-X64.cmd",
-    "sha256": "cac5d1a94b1a4b87e0e5f70350c2bdaeba79af5f7de27841e4e9cd434d60f8ae",
-    "bytes": 1944
+    "sha256": "968a9270668b03246976e8bfe44dc5872affe9ffc0d939facf6d754d99f9f316",
+    "bytes": 2011
   },
   {
     "path": "QA-REPORT-1.0.22.md",
@@ -136,12 +136,12 @@
   },
   {
     "path": "QA-REPORT.md",
-    "sha256": "b6eff90953f4e52f26053eba3c3880aaea6b46d7019fe7f6e9ff240127d19200",
-    "bytes": 1865
+    "sha256": "8fada5012c5919ed3b8138d130140f36a195c4686a76a87ec744caf8cfd8426a",
+    "bytes": 2073
   },
   {
     "path": "README.md",
-    "sha256": "b59990071909d1cf3a880cf13f65339065d300dbcf9df19a74872f61db4547f4",
+    "sha256": "afe1216a43ae5b9eb471258df9b27b53ba79f56a380686de1bc2b928eae1fc25",
     "bytes": 13160
   },
   {
@@ -191,8 +191,8 @@
   },
   {
     "path": "docs/DEVELOPER-GUIDE.md",
-    "sha256": "087fc471419113f03837897b187dc762bd8db26726b263bbff70f9e9bbed7e93",
-    "bytes": 20401
+    "sha256": "105dabcdf83be138fef4920ba6852f1cdc381fcb9cb89404ca9db0cbab5c8113",
+    "bytes": 20619
   },
   {
     "path": "docs/DIAGNOSTIC-SUPPORT.md",
@@ -276,8 +276,8 @@
   },
   {
     "path": "docs/RELEASE-CHECKLIST.md",
-    "sha256": "62c78d90baefa34f57f0d5ed6e931df5a22e24b23226e525d40b3aa70da8426d",
-    "bytes": 12268
+    "sha256": "fcff35b81300d0e3526f02238d0cd89991beb2ecb38f3c7073fb3ea796a58ff5",
+    "bytes": 12438
   },
   {
     "path": "docs/SDK-LICENSE-SOURCES.json",
@@ -296,7 +296,7 @@
   },
   {
     "path": "docs/TROUBLESHOOTING.md",
-    "sha256": "b6258dd79fde773863a15d786fadb7f5e89b9e1e317756a6e09f24224d5833b6",
+    "sha256": "6a7e8ce7bd5b9681f3fef14cef8d66896793d2ef613cf8d0973f4b9370a0eda5",
     "bytes": 15503
   },
   {
@@ -311,8 +311,8 @@
   },
   {
     "path": "docs/USER-GUIDE.md",
-    "sha256": "533a2da17e7e1c05ea3d62b8dbe46cb82c2fc7428be9e5cd26f78b2375fa859e",
-    "bytes": 15017
+    "sha256": "d12966d8ccab950694c222a0e390e0172bc2b8d9a3747ba363d63aa36657b7aa",
+    "bytes": 15231
   },
   {
     "path": "global.json",
@@ -366,8 +366,8 @@
   },
   {
     "path": "scripts/DiagnosticLauncher/packages.lock.json",
-    "sha256": "a4364d81a6de2707d66fbced18fbbc926c882ab96e1d1aebbb17e871285b9d75",
-    "bytes": 66
+    "sha256": "cd97f644c24bb2cd8c96d92c519036a65133ab22cafc294d07b527626ad20e84",
+    "bytes": 94
   },
   {
     "path": "scripts/generate_media_fixtures.py",
@@ -386,13 +386,13 @@
   },
   {
     "path": "scripts/static_verify.py",
-    "sha256": "f1df00b9dbfb8f41f5f3d0e164f6578763d99cd74351afd9e0d3a2f51d5b6225",
-    "bytes": 39063
+    "sha256": "9a6b2eb4e5a5f616f84b9ab7197b2b3dcc95c652b6820d6cd7245a8a01d62329",
+    "bytes": 39124
   },
   {
     "path": "scripts/test_release_verifier.py",
-    "sha256": "bb4141bdd4303aec64a88116f8b6e9301535cf91b1318ff4a8075324c2c9e443",
-    "bytes": 19190
+    "sha256": "807409fd4b1c126aaffef32f0c50d432dabd240cf02d21de5b5110767ddf3fb0",
+    "bytes": 19461
   },
   {
     "path": "scripts/verify_source_export.py",
@@ -431,7 +431,7 @@
   },
   {
     "path": "src/CosmicTranscriber/CosmicTranscriber.csproj",
-    "sha256": "df831b0e94a90eed9898b34a0242e1f2ef11efc29300bf2eddc3076e561a1dcf",
+    "sha256": "d3977d202daf67dd16a8d3f6b9e87222c700ba1313014fd96147127ba1f42c70",
     "bytes": 2305
   },
   {
@@ -441,7 +441,7 @@
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml",
-    "sha256": "0f463c7b6edc943ccc895bc8a835556fdca952525f0c404cdd0b56f6ce618bc5",
+    "sha256": "9377c2b4e39a2016195ec5c5cb99086eb1119e0a63134caf0cecbf519ce88f62",
     "bytes": 51949
   },
   {
@@ -686,13 +686,13 @@
   },
   {
     "path": "src/CosmicTranscriber/app.manifest",
-    "sha256": "3514a3ecac574af6cf629fb712218bb66f28c8290f64adf7c894f86d4a0f8139",
-    "bytes": 1085
+    "sha256": "7709324860d439b13452963ed4f8c0bc6ea7a2c07dcff8a77f83776db9418f5e",
+    "bytes": 1109
   },
   {
     "path": "src/CosmicTranscriber/packages.lock.json",
-    "sha256": "d299e7002b10708fbf7caa78585bab0062c913027a5354384870860575ae1553",
-    "bytes": 665
+    "sha256": "5986091d1206621738b0bf7b5b26e56626d62b061606b0de6d1886b428ee6560",
+    "bytes": 704
   },
   {
     "path": "tests/CloseRaceRegression/.gitignore",

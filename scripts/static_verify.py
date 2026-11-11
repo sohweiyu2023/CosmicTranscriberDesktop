@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from zipfile import BadZipFile, ZipFile
 
-EXPECTED_VERSION = "1.0.28"
+EXPECTED_VERSION = "1.0.29"
 IGNORED_PARTS = {"bin", "obj", "publish", "__pycache__", ".git"}
 TEXT_SUFFIXES = {".cs", ".xaml", ".json", ".md", ".cmd", ".props", ".sln", ".py", ".html"}
 
@@ -154,6 +154,7 @@ require('Title="Cosmic Transcriber"' in main_xaml and f'Text="v{EXPECTED_VERSION
         and 'Title = $"Cosmic Transcriber {AppVersion.DisplayVersion}";' in main_cs,
         "Main window title/header version is stale")
 require(EXPECTED_VERSION in readme
+        and "## 1.0.29 - Beginner quick start" in changelog
         and "## 1.0.28 - model selector mouse fix" in changelog
         and "## 1.0.27 - dropdown contrast, model-list clarity, and settings hardening" in changelog
         and "## 1.0.26 - independent dropdown/network re-audit and diagnostic hardening" in changelog

@@ -1,11 +1,13 @@
-## Unreleased: optional beginner tutorial
+# Cosmic Transcriber changelog
 
-- Added replayable Quick start/F1 guide with optional first-run invitation.
-- Covers setup, supported media prerequisites, models, output, costs and recovery without making requests.
-- Added isolated tutorial regression coverage and developer acceptance checklist.
-- Candidate only: version remains 1.0.28; release and installed app are unchanged.
+## 1.0.29 - Beginner quick start (release candidate)
 
-# Change Log
+- Optional seven-page tutorial, replayable with Quick start or F1.
+- No provider calls or spending initiated by the guide.
+- Dismissal persistence, small-window layout and secondary-monitor placement.
+- Native pointer/keyboard acceptance recorded separately from rendered regression tests.
+- Original documentation replacement; historic withheld media stays excluded.
+- Framework-dependent packaging only; self-contained publishing remains held.
 
 ## 1.0.28 - model selector mouse fix and real-input UI acceptance (source, 10 November 2026)
 

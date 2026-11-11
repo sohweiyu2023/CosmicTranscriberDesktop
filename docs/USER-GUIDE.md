@@ -1,4 +1,4 @@
-# Cosmic Transcriber 1.0.28 - User Guide
+# Cosmic Transcriber 1.0.29 - User Guide
 
 ## Speaker-labelled transcription
 
@@ -29,7 +29,7 @@ The app is free to use, but OpenAI API usage is billed to the account connected 
 You need:
 
 - Windows 10 build 19041 or later, or Windows 11;
-- a built/published Cosmic Transcriber 1.0.28 folder;
+- a built/published Cosmic Transcriber 1.0.29 folder;
 - internet access;
 - an OpenAI API key with access to the selected transcription model;
 - enough free space in the output folder for transcripts and temporary/checkpoint data.
@@ -38,7 +38,7 @@ Launch the app normally by double-clicking it or using `RUN.cmd`. Do not use **R
 
 ## 3. Confirm the version and About information
 
-The main header shows `v1.0.28`, and the title bar reads `Cosmic Transcriber 1.0.28`. Choose **About** to see:
+The main header shows `v1.0.29`, and the title bar reads `Cosmic Transcriber 1.0.29`. Choose **About** to see:
 
 - the runtime version;
 - “Created and maintained by Soh Wei Yu”;

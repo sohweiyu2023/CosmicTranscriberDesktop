@@ -1,4 +1,4 @@
-# Cosmic Transcriber 1.0.28 - Troubleshooting
+# Cosmic Transcriber 1.0.29 - Troubleshooting
 
 ## “Invalid keyword hint” or legacy-model keyword warning
 

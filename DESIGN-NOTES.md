@@ -1,3 +1,5 @@
+> **1.0.29 tutorial candidate:** See docs/TUTORIAL-CANDIDATE-2026-11-11.md for current native and automated evidence. The earlier release findings below are historical and are not claimed as new acceptance.
+
 # Cosmic Transcriber 1.0.28 — Design Notes
 
 ## 1.0.28 selector hit-target design

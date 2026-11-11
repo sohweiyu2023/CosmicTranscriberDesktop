@@ -1,6 +1,6 @@
-# Cosmic Transcriber 1.0.28 - Developer Guide
+# Cosmic Transcriber 1.0.29 - Developer Guide
 
-## 1.0.28 selector hit target, diagnostics and real-input acceptance
+## 1.0.29 selector hit target, diagnostics and real-input acceptance
 
 The ComboBox template's `DropDownToggle` is the only hit-testable surface of the closed field and has an empty template. It must keep `Style="{x:Null}"`, Stretch alignment and zero minimums: otherwise the Fluent `ThemeMode` applies its implicit, left-aligned `ToggleButton` style, the toggle collapses to zero width and mouse clicks fall through (keyboard opening still works, so off-screen and keyboard tests miss it). `PART_Popup.IsOpen` is two-way bound. `DropDownPlacement` re-places the open model list when the settings or workspace viewport scrolls (the focus revealer scrolls a partly hidden field into view just after it opens; WPF popups do not follow that). `SelectorDiagnostics` writes `UI_DROPDOWN` open/close events and a measured `hit_target_ok`/`hit_target_collapsed`/`hit_target_missing` check at load and after theme changes.
 
@@ -71,13 +71,13 @@ Do not add a direct `System.Security.Cryptography.ProtectedData` package for thi
 
 ## 3. Versioning contract
 
-Release 1.0.28 is represented as:
+Release 1.0.29 is represented as:
 
-- `Version`: `1.0.28`;
-- `AssemblyVersion`: `1.0.28.0`;
-- `FileVersion`: `1.0.28.0`;
-- `InformationalVersion`: `1.0.28`;
-- manifest identity: `1.0.28.0`;
+- `Version`: `1.0.29`;
+- `AssemblyVersion`: `1.0.29.0`;
+- `FileVersion`: `1.0.29.0`;
+- `InformationalVersion`: `1.0.29`;
+- manifest identity: `1.0.29.0`;
 - `IncludeSourceRevisionInInformationalVersion`: `false`.
 
 `AppVersion.DisplayVersion` is the runtime display source for header/title/About/log/User-Agent. Update every version-bearing script/document and run the verifier before release.

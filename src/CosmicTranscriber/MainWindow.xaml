@@ -79,7 +79,7 @@
                                        FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" />
                             <Border Background="{DynamicResource AccentSoftBrush}" CornerRadius="9"
                                     Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
-                                <TextBlock x:Name="HeaderVersionText" Text="v1.0.28"
+                                <TextBlock x:Name="HeaderVersionText" Text="v1.0.29"
                                            Foreground="{DynamicResource AccentTextBrush}"
                                            FontWeight="SemiBold" FontSize="11.5"
                                            AutomationProperties.Name="Application version" />

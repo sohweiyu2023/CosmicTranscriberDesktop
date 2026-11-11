@@ -4,7 +4,7 @@ cd /d "%~dp0"
 if errorlevel 1 goto :root_error
 
 echo ================================================================
-echo  Cosmic Transcriber 1.0.28 - .NET 10 build
+echo  Cosmic Transcriber 1.0.29 - .NET 10 build
 echo ================================================================
 
 where dotnet >nul 2>&1

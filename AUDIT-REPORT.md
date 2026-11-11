@@ -1,3 +1,5 @@
+> **1.0.29 tutorial candidate:** See docs/TUTORIAL-CANDIDATE-2026-11-11.md for current native and automated evidence. The earlier release findings below are historical and are not claimed as new acceptance.
+
 # Cosmic Transcriber 1.0.27 — UI/Dropdown Full Adversarial Audit
 
 > **1.0.28 note (10 November 2026):** the selector fixed here still failed to open on mouse click in field builds; see CHANGELOG 1.0.28 for the reproduced cause, fix and real-input acceptance. The findings below are the historical 1.0.27 record.
