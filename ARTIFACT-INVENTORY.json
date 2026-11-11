@@ -301,8 +301,8 @@
   },
   {
     "path": "docs/TUTORIAL-CANDIDATE-2026-11-11.md",
-    "sha256": "51d40cc312911097fcac2f30a62a680497f04b01439258bcd15aa0e55e53cf47",
-    "bytes": 4266
+    "sha256": "d75415d3f986c4ec7c0b39b8412c8cb7cd763e58a6cf722dbd14404bea561c3b",
+    "bytes": 4596
   },
   {
     "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",
@@ -801,8 +801,8 @@
   },
   {
     "path": "tests/LayoutRegression/Program.cs",
-    "sha256": "414a071f1837832ed59391663173815c4ccfb5054ec2dd7d74c443a2d115ea0f",
-    "bytes": 21348
+    "sha256": "e9b2038af11256067f881a8aa1e8d53b6b8a810d2c61f20bfac6f0cf4b915e5b",
+    "bytes": 21422
   },
   {
     "path": "tests/LayoutRegression/README.md",

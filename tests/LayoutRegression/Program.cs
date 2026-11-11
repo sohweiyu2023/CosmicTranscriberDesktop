@@ -66,11 +66,12 @@ internal static class Program
             var window = (Window)XamlReader.Parse(document.ToString());
             var content = (FrameworkElement)window.Content;
             ((ComboBox)window.FindName("ModelComboBox")).SelectedIndex = expanded ? 1 : 0;
+            ((TextBlock)window.FindName("QueueSummaryText")).Text = "1 audio file selected";
             ((TextBox)window.FindName("OutputPathTextBox")).Text = "C:\\Synthetic QA\\Example output folder with a descriptive name\\Transcripts";
             if (expanded)
             {
-                ((TextBlock)window.FindName("CurrentActionText")).Text = "Retrying chunk 2 of 3 after a temporary network error; saved chunks are retained.";
-                ((TextBox)window.FindName("LogTextBox")).Text = "Synthetic QA only.\nChunk 1 checkpoint saved.\nRetrying chunk 2 of 3 after a temporary network error.";
+                ((TextBlock)window.FindName("CurrentActionText")).Text = "Request outcome unresolved for chunk 2 of 3; saved chunks are retained.";
+                ((TextBox)window.FindName("LogTextBox")).Text = "Synthetic QA only.\nChunk 1 checkpoint saved.\nRequest outcome unresolved for chunk 2 of 3.";
             }
             window.Content = null;
             TextElement.SetFontFamily(content, window.FontFamily);

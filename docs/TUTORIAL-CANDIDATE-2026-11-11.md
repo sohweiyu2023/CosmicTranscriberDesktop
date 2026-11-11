@@ -36,3 +36,5 @@ The interactive host now refuses nonempty unmarked profile directories and any s
 ## Expanded rendered layout acceptance
 
 Full LayoutRegression completed:72/72 scenarios passed, zero reachability or button-foreground failures. Matrix: both themes;1060x700,1044x660,960x620,944x600,780x500,640x420;96/144/192DPI; default/expanded controls. This remains offscreen rendering, not native pointer, keyboard, OS scaling or monitor-transition acceptance. Evidence: layout-full-night/summary.json and layout-full-paper/summary.json in the external evidence directory. The hardened interactive host also correctly refused a nonempty unmarked test directory before opening any window;123 tutorial assertions still passed.
+
+The illustrative layout fixture was corrected to show one selected file for its sample queue and unresolved-request language instead of stale automatic-retry wording. Four focused layout cases passed again after this test-data-only change. The full72-case matrix preceded this label correction; no production UI change was made.
