@@ -23,7 +23,7 @@ public partial class MainWindow : Window
     private const int MaximumMergedFiles = 1_000;
     private const long MaximumMergedTranscriptCharacters = TranscriptionCoordinator.MaximumTranscriptCharactersPerFile;
     private static readonly TimeSpan SettingsAutoSaveDelay = TimeSpan.FromMilliseconds(900);
-    private readonly AppSettingsService _settingsService = new();
+    private readonly AppSettingsService _settingsService;
     private readonly FocusedViewportRevealer _focusRevealer;
     private readonly ApiKeyStore _apiKeyStore;
     private readonly OpenAiTranscriptionClient _openAiClient = new();
@@ -52,8 +52,12 @@ public partial class MainWindow : Window
 
     private bool IsUiIdle => !_isRunning && !_isImporting && !_isTestingKey && !_isClosing;
 
-    public MainWindow()
+    public MainWindow() : this(new AppSettingsService()) { }
+
+    // Test harness supplies a disposable profile; normal startup still uses the standard profile.
+    internal MainWindow(AppSettingsService settingsService)
     {
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         StartupDiagnostics.Write("MAINWINDOW", "Constructor entered; creating application services.");
         _apiKeyStore = new ApiKeyStore(_settingsService.SettingsDirectory);
         _coordinator = new TranscriptionCoordinator(new Mp3Chunker(), _openAiClient);

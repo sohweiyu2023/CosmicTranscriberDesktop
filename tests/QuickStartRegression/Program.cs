@@ -15,6 +15,24 @@ internal static class Program
     [STAThread]
     private static void Main(string[] args)
     {
+        if (args.Length == 2 && args[0] == "--interactive")
+        {
+            // Interactive fixture: real MainWindow, disposable settings, no inherited provider key.
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", null);
+            var profile = Path.GetFullPath(args[1]);
+            Directory.CreateDirectory(profile);
+            var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            var settingsService = Activator.CreateInstance(typeof(CosmicTranscriber.Services.AppSettingsService), flags, null, new object[] { profile }, null)!;
+            var realApp = new App { ShutdownMode = ShutdownMode.OnMainWindowClose };
+            var palette = new ResourceDictionary { Source = new Uri("pack://application:,,,/CosmicTranscriber;component/Themes/CosmicNight.xaml") };
+            realApp.Resources.MergedDictionaries.Add(palette);
+            realApp.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/CosmicTranscriber;component/Themes/SharedStyles.xaml") });
+            typeof(App).GetField("_paletteDictionary", flags)!.SetValue(realApp, palette);
+            var mainWindow = (MainWindow)Activator.CreateInstance(typeof(MainWindow), flags, null, new[] { settingsService }, null)!;
+            mainWindow.Title = "Cosmic tutorial QA - disposable profile";
+            realApp.Run(mainWindow);
+            return;
+        }
         var root = Path.GetFullPath(args[0]);
         var output = Path.GetFullPath(args[1]); Directory.CreateDirectory(output);
         var guide = new QuickStartGuide();
