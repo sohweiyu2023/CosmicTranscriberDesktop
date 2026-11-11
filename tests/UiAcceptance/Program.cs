@@ -202,11 +202,20 @@ internal static class Program
     // ---------------- scroll arrangement ----------------
 
     /// <summary>Puts the model selector fully visible, or clipped at the viewport's bottom/top edge.</summary>
+    // UIA rectangles can extend below a resized/clipped ancestor. Use the visible intersection,
+    // otherwise the harness can click the desktop rather than the selector it claims to test.
+    private static Rect VisibleSettingsViewport()
+    {
+        var visible = Rect.Intersect(Bounds(Find("SettingsViewport")), Bounds(Find("WorkspaceViewport")));
+        visible.Intersect(Bounds(_root!));
+        return visible;
+    }
+
     private static bool Arrange(string mode)
     {
         var viewport = Find("SettingsViewport");
         var scroll = (ScrollPattern)viewport.GetCurrentPattern(ScrollPattern.Pattern);
-        var view = Bounds(viewport);
+        var view = VisibleSettingsViewport();
         if (!scroll.Current.VerticallyScrollable)
         {
             Check($"arrange {mode}: settings page is scrollable at this size", mode == "visible", $"viewport {view}");
@@ -244,7 +253,7 @@ internal static class Program
     private static Point VisiblePoint(string area)
     {
         var combo = Bounds(Combo);
-        var view = Bounds(Find("SettingsViewport"));
+        var view = VisibleSettingsViewport();
         var top = Math.Max(combo.Top, view.Top);
         var bottom = Math.Min(combo.Bottom, view.Bottom);
         var y = (top + bottom) / 2;
@@ -256,7 +265,16 @@ internal static class Program
     private static void ClickNeutral()
     {
         var header = Bounds(Find("HeaderStatusText"));
-        Mouse.Click(new Point(Math.Round(header.Left + 10), Math.Round(header.Top + header.Height / 2)));
+        if (!Bounds(Find("WorkspaceViewport")).Contains(header))
+        {
+            var workspace = (ScrollPattern)Find("WorkspaceViewport").GetCurrentPattern(ScrollPattern.Pattern);
+            if (workspace.Current.VerticallyScrollable) workspace.SetScrollPercent(ScrollPattern.NoScroll, 0);
+            Thread.Sleep(250);
+            header = Bounds(Find("HeaderStatusText"));
+        }
+        var point = new Point(Math.Round(header.Left + 10), Math.Round(header.Top + header.Height / 2));
+        if (!Bounds(_root!).Contains(point)) throw new InvalidOperationException("Neutral click would be outside the app window.");
+        Mouse.Click(point);
         Thread.Sleep(350);
     }
 
@@ -269,6 +287,8 @@ internal static class Program
         var before = Selected(Combo);
         var comboBefore = Bounds(Combo);
         var point = VisiblePoint(area);
+        if (!VisibleSettingsViewport().Contains(point) || !Bounds(_root!).Contains(point))
+            throw new InvalidOperationException($"Selector click {point} would be outside the visible app viewport.");
         Mouse.Click(point);
         Thread.Sleep(800);
         var comboAfter = Bounds(Combo);

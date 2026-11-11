@@ -301,8 +301,8 @@
   },
   {
     "path": "docs/TUTORIAL-CANDIDATE-2026-11-11.md",
-    "sha256": "9006a99fedccbfffef883df22bf8a9b1c859ba03da68b97807fba5b7f2abdbc5",
-    "bytes": 8616
+    "sha256": "a14f59ff3b4bb70da8daf6d6408eacd0d0dba449b2cfe84e0bd31c8620cd62c1",
+    "bytes": 9198
   },
   {
     "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",
@@ -941,8 +941,8 @@
   },
   {
     "path": "tests/UiAcceptance/Program.cs",
-    "sha256": "e50800d8effd52cae6c524c4b449c8c1bc044036209e410937d24a5f210465cb",
-    "bytes": 33438
+    "sha256": "46cb74f077ff0dd0762aabfd2f55cb4890490b54ca39d6f028913f02c5c117d3",
+    "bytes": 35302
   },
   {
     "path": "tests/UiAcceptance/UiAcceptance.csproj",
@@ -953,6 +953,11 @@
     "path": "tests/UiAcceptance/app.manifest",
     "sha256": "28cdf0d34d2262176da7a94fab323c7853c5f314145cf58b271e2f08ed32c7b0",
     "bytes": 639
+  },
+  {
+    "path": "tests/UiAcceptance/packages.lock.json",
+    "sha256": "531d4cf71e5420c1c03da4c06778ba2a212c7058a3882e7a3a873ae2f811511e",
+    "bytes": 77
   },
   {
     "path": "tests/test_source_export.py",
