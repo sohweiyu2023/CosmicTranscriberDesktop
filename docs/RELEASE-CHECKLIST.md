@@ -15,13 +15,13 @@ Use this checklist on Windows 10/11 with the .NET 10 SDK. Record failures and un
 - [ ] Source root is the intended 1.0.28 tree.
 - [ ] Project versions are `1.0.28` / `1.0.28.0`; manifest identity is `1.0.28.0`.
 - [ ] Manifest execution level is `asInvoker` with `uiAccess=false`.
-- [ ] Only NAudio is an explicit PackageReference; no redundant ProtectedData package is present.
+- [ ] Explicit packages match the project: NAudio.Core and System.Numerics.Tensors; no redundant ProtectedData package is present.
 - [ ] No API key, bearer token, private audio, or transcript is in the tree.
 - [ ] Remove `bin`, `obj`, `publish`, and `__pycache__`.
 - [ ] Run `python scripts/generate_release_manifests.py --root .` and then `python scripts/generate_release_manifests.py --root . --check`.
 - [ ] Run `python scripts/static_verify.py --root .`.
-- [ ] Run `python scripts/test_release_verifier.py --root .` and confirm all 52 current release mutations pass.
-- [ ] Confirm the DOCX core metadata and embedded-image accessibility title identify v1.0.27.
+- [ ] Run `python scripts/test_release_verifier.py --root .` and confirm all 56 current release mutations pass.
+- [ ] Confirm the DOCX core metadata and embedded-image accessibility title identify the current release.
 - [ ] Run/review `python scripts/media_smoke.py` where ffmpeg/ffprobe are available.
 - [ ] Search source for `Directory.Delete(..., recursive: true)`; none is allowed.
 - [ ] Confirm `SafeFileSystem.cs` is present and covered by static and mutation tests.
@@ -32,7 +32,7 @@ Use this checklist on Windows 10/11 with the .NET 10 SDK. Record failures and un
 - [ ] Run `BUILD.cmd` as the mandatory compiler gate; a passing Python verifier is not a C# build.
 - [ ] Restore and Release build complete with zero warnings/errors.
 - [ ] No `NU1510`, missing ProtectedData type, WPF temporary-project, or source-generator error appears.
-- [ ] Launch target is `bin\Release\net10.0-windows10.0.19041.0\CosmicTranscriber.exe`, not an `obj`/`_wpftmp` file.
+- [ ] Launch target is `src\CosmicTranscriber\bin\Release\net10.0-windows\CosmicTranscriber.exe`, not an `obj`/`_wpftmp` file.
 
 ## C. Startup, identity, and layout
 
@@ -151,7 +151,7 @@ Use this checklist on Windows 10/11 with the .NET 10 SDK. Record failures and un
 
 ## K. Documentation and handoff
 
-- [ ] Comprehensive DOCX is version 1.0.27, rendered, every page visually inspected, and accessibility-audited.
+- [ ] Comprehensive DOCX is the current release version, rendered, every page visually inspected, and accessibility-audited.
 - [ ] README, guides, audit, QA, design, changelog, and preview contain no stale version/count/behavior claims.
 - [ ] Run final `python scripts/generate_release_manifests.py --root .`, then `python scripts/generate_release_manifests.py --root . --check`.
 - [ ] Run final `python scripts/static_verify.py --root .` for independent manifest and package validation.

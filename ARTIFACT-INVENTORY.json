@@ -276,8 +276,8 @@
   },
   {
     "path": "docs/RELEASE-CHECKLIST.md",
-    "sha256": "200d5e826ca02c102ce5e43d02d9bea32f902c0b8037e7df3b4a329abe2c7779",
-    "bytes": 12200
+    "sha256": "62c78d90baefa34f57f0d5ed6e931df5a22e24b23226e525d40b3aa70da8426d",
+    "bytes": 12268
   },
   {
     "path": "docs/SDK-LICENSE-SOURCES.json",
@@ -301,8 +301,8 @@
   },
   {
     "path": "docs/TUTORIAL-CANDIDATE-2026-11-11.md",
-    "sha256": "251d13f5f56e6a77cafde388aeba5ce0aec9d9601317d8f6ec419d564cbb9c66",
-    "bytes": 6013
+    "sha256": "17a36b4f4b8b90bf274c4b5cad2965ebb7fdb76b3f7ce715cdec75b449b0cdc7",
+    "bytes": 7785
   },
   {
     "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",
@@ -891,8 +891,8 @@
   },
   {
     "path": "tests/QuickStartRegression/Program.cs",
-    "sha256": "ce8891a494f1b7180eddf5256b446db3a1ba95fa43886ce59325313ddc935670",
-    "bytes": 8789
+    "sha256": "b16866e34d3f2b082a64a04ed426e14a7b0dac640de8734cc302c887f8116306",
+    "bytes": 9778
   },
   {
     "path": "tests/QuickStartRegression/QuickStartRegression.csproj",

@@ -15,6 +15,18 @@ internal static class Program
     [STAThread]
     private static void Main(string[] args)
     {
+        if (args.Length == 1 && args[0] == "--interactive-guide")
+        {
+            // Real tutorial controls and handlers; independent window for supported native
+            // keyboard targeting. Ownership/lifecycle must still be checked in --interactive.
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", null);
+            var nativeApp = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
+            nativeApp.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/CosmicTranscriber;component/Themes/CosmicNight.xaml") });
+            nativeApp.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/CosmicTranscriber;component/Themes/SharedStyles.xaml") });
+            var nativeGuide = new QuickStartWindow { ShowInTaskbar = true, Title = "Cosmic tutorial keyboard QA - standalone" };
+            nativeApp.Run(nativeGuide);
+            return;
+        }
         if (args.Length == 2 && args[0] == "--interactive")
         {
             // Interactive fixture: real MainWindow, disposable settings, no inherited provider key.
