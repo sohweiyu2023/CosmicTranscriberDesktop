@@ -67,6 +67,10 @@ jobs:
           }
           dotnet run --project tests/LayoutRegression/LayoutRegression.csproj -c Release -- . "$t/layout-paper" CosmicPaper --quick --assert-reachable
           Write-Host "SUITE LayoutRegression(Paper) exit=$LASTEXITCODE"; if ($LASTEXITCODE -ne 0) { $failed += 'LayoutRegression(Paper)' }
+          foreach ($theme in @('CosmicNight', 'CosmicPaper')) {
+            dotnet run --project tests/LayoutRegression/LayoutRegression.csproj -c Release -- . "$t/layout-warning-$theme" $theme --quick --drag-warning --assert-reachable
+            Write-Host "SUITE LayoutRegression(warning,$theme) exit=$LASTEXITCODE"; if ($LASTEXITCODE -ne 0) { $failed += "LayoutRegression(warning,$theme)" }
+          }
           & ./tests/CloseRaceRegression/Run.ps1
           Write-Host "SUITE CloseRaceRegression exit=$LASTEXITCODE"; if ($LASTEXITCODE -ne 0) { $failed += 'CloseRaceRegression' }
           python scripts/media_smoke.py --output "$t/media-smoke.json" | Out-Null

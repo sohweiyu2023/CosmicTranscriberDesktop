@@ -11,8 +11,8 @@
   },
   {
     "path": ".github/workflows/regression-suites.yml",
-    "sha256": "1847898d290deaf7932a636040f0e07c7359c98c903d36497673b6512bc27bf3",
-    "bytes": 4115
+    "sha256": "37235c80896991119f5a6bdb0b9525a9886dc78d43e1b6081dc42d8dfa98a468",
+    "bytes": 4602
   },
   {
     "path": ".github/workflows/ui-acceptance.yml",
@@ -301,8 +301,8 @@
   },
   {
     "path": "docs/TUTORIAL-CANDIDATE-2026-11-11.md",
-    "sha256": "17a36b4f4b8b90bf274c4b5cad2965ebb7fdb76b3f7ce715cdec75b449b0cdc7",
-    "bytes": 7785
+    "sha256": "9006a99fedccbfffef883df22bf8a9b1c859ba03da68b97807fba5b7f2abdbc5",
+    "bytes": 8616
   },
   {
     "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",
@@ -441,8 +441,8 @@
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml",
-    "sha256": "9377c2b4e39a2016195ec5c5cb99086eb1119e0a63134caf0cecbf519ce88f62",
-    "bytes": 51949
+    "sha256": "e07bc8bdb55fd10ecb8fce4aab1bd114b1f19da95545ac4e4955bfebeb8aeae9",
+    "bytes": 52545
   },
   {
     "path": "src/CosmicTranscriber/MainWindow.xaml.cs",
@@ -801,8 +801,8 @@
   },
   {
     "path": "tests/LayoutRegression/Program.cs",
-    "sha256": "e9b2038af11256067f881a8aa1e8d53b6b8a810d2c61f20bfac6f0cf4b915e5b",
-    "bytes": 21422
+    "sha256": "d685685ce6b61809d668d3238f2f33441260bc587885093492003af4960099d5",
+    "bytes": 22567
   },
   {
     "path": "tests/LayoutRegression/README.md",

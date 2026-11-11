@@ -46,9 +46,20 @@
         <ScrollViewer x:Name="WorkspaceViewport" HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto" CanContentScroll="False"
                       AutomationProperties.Name="Workspace; scroll to reach controls in a small window">
-        <Grid x:Name="WorkspaceCanvas" MinWidth="960" MinHeight="720"
+        <Grid x:Name="WorkspaceCanvas" MinWidth="960"
               Width="{Binding ViewportWidth, ElementName=WorkspaceViewport}"
               Height="{Binding ViewportHeight, ElementName=WorkspaceViewport}">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="MinHeight" Value="720" />
+                    <Style.Triggers>
+                        <!-- Preserve queue rows when the privilege warning and tutorial invitation coexist. -->
+                        <DataTrigger Binding="{Binding Visibility, ElementName=DragDropWarningBanner}" Value="Visible">
+                            <Setter Property="MinHeight" Value="940" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
         <Grid Margin="24,18,24,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
