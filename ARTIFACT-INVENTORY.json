@@ -366,8 +366,8 @@
   },
   {
     "path": "scripts/DiagnosticLauncher/packages.lock.json",
-    "sha256": "cd97f644c24bb2cd8c96d92c519036a65133ab22cafc294d07b527626ad20e84",
-    "bytes": 94
+    "sha256": "a4364d81a6de2707d66fbced18fbbc926c882ab96e1d1aebbb17e871285b9d75",
+    "bytes": 66
   },
   {
     "path": "scripts/generate_media_fixtures.py",
@@ -691,8 +691,8 @@
   },
   {
     "path": "src/CosmicTranscriber/packages.lock.json",
-    "sha256": "5986091d1206621738b0bf7b5b26e56626d62b061606b0de6d1886b428ee6560",
-    "bytes": 704
+    "sha256": "d299e7002b10708fbf7caa78585bab0062c913027a5354384870860575ae1553",
+    "bytes": 665
   },
   {
     "path": "tests/CloseRaceRegression/.gitignore",
