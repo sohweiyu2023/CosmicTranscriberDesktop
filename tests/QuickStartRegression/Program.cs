@@ -20,7 +20,14 @@ internal static class Program
             // Interactive fixture: real MainWindow, disposable settings, no inherited provider key.
             Environment.SetEnvironmentVariable("OPENAI_API_KEY", null);
             var profile = Path.GetFullPath(args[1]);
+            var marker = Path.Combine(profile, "tutorial-qa-profile.marker");
+            if (Directory.Exists(profile) && Directory.EnumerateFileSystemEntries(profile).Any()
+                && (!File.Exists(marker) || File.ReadAllText(marker) != "Cosmic tutorial QA disposable profile"))
+                throw new InvalidOperationException("Use an empty directory or a previously marked tutorial QA profile.");
+            if (File.Exists(Path.Combine(profile, "openai-key.protected")))
+                throw new InvalidOperationException("The QA profile must not contain a saved API key.");
             Directory.CreateDirectory(profile);
+            File.WriteAllText(marker, "Cosmic tutorial QA disposable profile");
             var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
             var settingsService = Activator.CreateInstance(typeof(CosmicTranscriber.Services.AppSettingsService), flags, null, new object[] { profile }, null)!;
             var realApp = new App { ShutdownMode = ShutdownMode.OnMainWindowClose };
