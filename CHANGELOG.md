@@ -1,4 +1,13 @@
-# Change Log
+# Cosmic Transcriber changelog
+
+## 1.0.29 - Beginner quick start (release candidate)
+
+- Optional seven-page tutorial, replayable with Quick start or F1.
+- No provider calls or spending initiated by the guide.
+- Dismissal persistence, small-window layout and secondary-monitor placement.
+- Native pointer/keyboard acceptance recorded separately from rendered regression tests.
+- Original documentation replacement; historic withheld media stays excluded.
+- Framework-dependent packaging only; self-contained publishing remains held.
 
 ## 1.0.28 - model selector mouse fix and real-input UI acceptance (source, 10 November 2026)
 

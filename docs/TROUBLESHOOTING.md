@@ -1,4 +1,4 @@
-# Cosmic Transcriber 1.0.28 - Troubleshooting
+# Cosmic Transcriber 1.0.29 - Troubleshooting
 
 ## “Invalid keyword hint” or legacy-model keyword warning
 
@@ -15,7 +15,7 @@ Use one literal term per line. Remove `<`, `>`, control characters, and overlong
 7. Check Windows Security, SmartScreen, antivirus quarantine, and corporate application-control logs.
 8. Ensure the folder path is not excessively long and the user can read/execute it.
 
-Do not launch a `_wpftmp` intermediate file from `obj`; launch the final output under `bin\Release\net10.0-windows10.0.19041.0` or the publish folder.
+Do not launch a `_wpftmp` intermediate file from `obj`; launch the final output under `bin\Release\net10.0-windows` or the publish folder.
 
 ## 2. Dragging shows a forbidden/cancel cursor everywhere
 
@@ -27,18 +27,18 @@ The most common cause is a Windows privilege mismatch: Cosmic Transcriber is ele
 4. Do not start the app from an elevated Command Prompt, PowerShell, task, launcher, installer, or elevated Visual Studio instance.
 5. After restart, the elevation warning should disappear and Explorer should show a copy cursor over the window.
 
-Reliable fallback: select MP3 files/folders in File Explorer, press `Ctrl+C`, then choose **Paste** in the app or press `Ctrl+V` away from text/key fields. The **+ Files** and **Folder** buttons use normal picker APIs and do not depend on OLE drag-and-drop.
+Reliable fallback: select supported audio/video files or folders in File Explorer, press `Ctrl+C`, then choose **Paste** in the app or press `Ctrl+V` away from text/key fields. The **+ Files** and **Folder** buttons use normal picker APIs and do not depend on OLE drag-and-drop.
 
 The application intentionally does not bypass Windows User Interface Privilege Isolation.
 
 ## 3. Drag is accepted but no files are added
 
 - Confirm the dragged data contains actual filesystem files/folders, not a browser attachment, Outlook virtual item, archive member, or cloud placeholder that has not downloaded.
-- Confirm the files are `.mp3`.
+- Confirm the files are supported media. MP3 works directly; other formats need separately installed FFmpeg and ffprobe and a supported codec. See [MEDIA-INPUT-SUPPORT.md](MEDIA-INPUT-SUPPORT.md).
 - Wait for copy/download/synchronisation to finish and add the file again.
 - Check whether the app is busy importing, testing the key, or transcribing; drops are accepted only while idle.
 - Confirm queue capacity has not reached 10,000.
-- Use Paste or the pickers to distinguish shell/OLE problems from MP3 inspection problems.
+- Use Paste or the pickers to distinguish shell/OLE problems from media inspection or conversion problems.
 - Expand Activity log and inspect the persistent log.
 
 ## 4. Paste says there is nothing to paste
@@ -56,12 +56,12 @@ File Explorer must place a file-drop list on the clipboard. Select files/folders
 
 ## 6. The window is clipped on a small screen or remote desktop
 
-Version 1.0.25 removes the outer horizontal scroll surface that could retain a nonzero offset after resize/maximize and make the whole interface appear shifted or cut off. It also declares Per-Monitor-V2 DPI awareness and uses a smaller default footprint.
+The current app uses an outer scrollable workspace to keep its two-column dashboard reachable in small windows. It declares Per-Monitor-V2 DPI awareness. The tutorial candidate reserves enough content height for the queue and invitation; scroll rather than expecting every control to fit at once.
 
 1. Maximise the window.
 2. Use the outer horizontal scrollbar when the two-column dashboard cannot fit.
 3. Scroll the right settings panel vertically.
-4. Reduce Windows display scaling temporarily if the remote session is extremely small.
+4. Keep your preferred Windows scaling; enlarge the remote desktop viewport if available, or use scrolling and keyboard focus.
 5. About is resizable and contains its own vertical scrolling.
 
 The app fits its requested size to the Windows work area, but Windows may still enforce system minimum tracking dimensions in exceptionally tiny sessions.
@@ -107,35 +107,35 @@ The estimate is total audio minutes multiplied by the editable USD-per-minute va
 
 - Wait for the download/copy/cloud synchronisation to finish.
 - Close editors, players, taggers, backup agents, or antivirus operations that lock the file.
-- Copy the MP3 to a normal local folder and add the copy.
-- Confirm the file is not empty and contains valid MP3 frames.
+- For a local import problem, copy the recording to an ordinary local folder and add it while the app is idle. Do not change paths to bypass an unresolved paid-request warning.
+- Confirm the file is not empty. MP3 requires valid frames; other formats require successful probing and conversion with a supported audio codec.
 - Avoid unstable network shares for long runs.
 
 ## 11. Transcription fails partway through
 
 - Check whether the error is file-specific or systemic.
 - Authentication, rate/billing, output/storage, and systemic protocol failures intentionally stop later files.
-- Lower chunk size/duration for marginal connections.
-- Automatic paid retries are disabled regardless of saved retry count. A lost/timeout response may represent billable completed work. Review the existing attempt and possible charges before any later manually initiated request; the proposed same-context pending-intent guard blocks unresolved work across restart but cannot prove provider exactly-once billing. Preserve unresolved evidence; do not clear the cache as a workaround.
+- For a new run only, smaller chunks may help marginal connections. First reconcile any uncertain existing request; do not change chunk settings or output folders to escape its safety guard.
+- Automatic paid retries are disabled regardless of saved retry count. A lost/timeout response may represent billable completed work. Review the existing attempt and possible charges before any later manually initiated request; the same-context pending-intent guard blocks unresolved work across restart but cannot prove provider exactly-once billing. Preserve unresolved evidence; do not clear the cache as a workaround.
 - Confirm enough disk space remains for temporary chunks, checkpoints, and output.
 - Keep the source and output paths available for the whole run.
 - Resume with identical settings to reuse valid checkpoints.
 
 ## 12. Resume does not reuse a checkpoint
 
-Checkpoint identity changes when source content or relevant settings change. Reuse may also fail after a corrupt/truncated checkpoint, transcript-digest mismatch, context dependency gap, or cache clear. Restore the exact original settings/source or allow the chunk to regenerate.
+Checkpoint identity changes when source content or relevant settings change. Reuse may also fail after a corrupt/truncated checkpoint, transcript-digest mismatch, context dependency gap, or cache clear. Restore the exact original settings/source and use local review. Do not regenerate a chunk while an earlier request may have been billed; preserve unknown outcomes and reconcile them first.
 
 
 ## 13. Clearing checkpoints is blocked or reports an unexpected cache item
 
 Cosmic Transcriber clears only application-recognized work folders under `.cosmic-transcriber-cache`. It deliberately stops before deleting anything when it finds an unknown file/folder or any symbolic link, junction, mount point, or other reparse point.
 
-- Close all Cosmic Transcriber instances and retry.
+- If the failure is a local lock, close other Cosmic Transcriber instances and retry the local inventory/check. This does not authorize a new paid request or deletion of unresolved evidence.
 - Move any source audio out of `.cosmic-transcriber-cache`.
 - Do not put personal files in the hidden cache folder.
 - Inspect the on-screen storage error for the refused path; structured logs omit exception messages and personal paths.
 - If the path is a junction/symlink or contains unfamiliar data, preserve it and investigate rather than forcing deletion.
-- After confirming the data is disposable, remove the unexpected item manually with normal Windows tools and retry **Clear checkpoints**.
+- Preserve unknown items until their purpose is understood. Never delete pending markers or accepted response evidence to bypass the guard. Only unrelated data independently confirmed disposable should be removed; then recheck the local inventory before clearing known completed checkpoints.
 
 The app intentionally refuses a broad “delete everything recursively” fallback because it could traverse filesystem links into unrelated storage.
 
@@ -176,7 +176,7 @@ Provide:
 - screenshot of the whole window and warning banner;
 - redacted newest diagnostic log;
 - whether Files/Folder/Paste work when drag fails;
-- a non-sensitive sample MP3 only when needed and permitted.
+- a non-sensitive sample recording only when needed and permitted.
 
 Never provide the API key. Review logs and screenshots for private paths/transcript content before sharing.
 

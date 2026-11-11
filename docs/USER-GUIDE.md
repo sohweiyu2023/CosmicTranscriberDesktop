@@ -1,4 +1,4 @@
-# Cosmic Transcriber 1.0.28 - User Guide
+# Cosmic Transcriber 1.0.29 - User Guide
 
 ## Speaker-labelled transcription
 
@@ -20,7 +20,7 @@ With `gpt-transcribe`, place literal terms such as `prapañca`, `Bāhiya`, `Huan
 
 ## 1. What the app does
 
-Cosmic Transcriber turns one or more MP3 files into TXT and/or Markdown transcripts through the OpenAI transcription API. Long recordings are divided at MP3 frame boundaries into bounded uploads. Completed chunks are checkpointed so an interrupted identical job can resume.
+Cosmic Transcriber turns recordings into TXT and/or Markdown transcripts through the OpenAI transcription API. MP3 works directly; supported other audio/video formats use separately installed FFmpeg and ffprobe. Codec support and conversion limits are described in [MEDIA-INPUT-SUPPORT.md](MEDIA-INPUT-SUPPORT.md). Long recordings are divided at MP3 frame boundaries into bounded uploads. Completed chunks are checkpointed so an interrupted identical job can resume.
 
 The app is free to use, but OpenAI API usage is billed to the account connected to your API key.
 
@@ -29,7 +29,7 @@ The app is free to use, but OpenAI API usage is billed to the account connected 
 You need:
 
 - Windows 10 build 19041 or later, or Windows 11;
-- a built/published Cosmic Transcriber 1.0.28 folder;
+- a built/published Cosmic Transcriber 1.0.29 folder;
 - internet access;
 - an OpenAI API key with access to the selected transcription model;
 - enough free space in the output folder for transcripts and temporary/checkpoint data.
@@ -38,7 +38,7 @@ Launch the app normally by double-clicking it or using `RUN.cmd`. Do not use **R
 
 ## 3. Confirm the version and About information
 
-The main header shows `v1.0.28`, and the title bar reads `Cosmic Transcriber 1.0.28`. Choose **About** to see:
+The main header shows `v1.0.29`, and the title bar reads `Cosmic Transcriber 1.0.29`. Choose **About** to see:
 
 - the runtime version;
 - “Created and maintained by Soh Wei Yu”;
@@ -48,9 +48,9 @@ The main header shows `v1.0.28`, and the title bar reads `Cosmic Transcriber 1.0
 
 ## 4. Settings autosave
 
-Version 1.0.25 saves valid configuration changes automatically about 900 milliseconds after you stop typing or changing a control. The **Settings autosave** card shows whether changes are pending, saved, partially saved, or blocked by a storage error.
+Cosmic Transcriber saves valid configuration changes automatically about 900 milliseconds after you stop typing or changing a control. The **Settings autosave** card shows whether changes are pending, saved, partially saved, or blocked by a storage error.
 
-Automatically saved options include the output path, export formats, model, language hints, keyword hints, recording context, chunk limits, retry count, context continuation, continue-on-error, merge settings, combined title, theme, secure-key preference, and editable price estimate.
+Automatically saved options include the output path, export formats, model, language hints, keyword hints, recording context, chunk limits, context continuation, continue-on-error, merge settings, combined title, theme, secure-key preference, editable price estimate, and tutorial invitation dismissal. Legacy retry-count data does not enable automatic paid retries.
 
 Persistence boundaries are deliberate:
 
@@ -62,13 +62,13 @@ Persistence boundaries are deliberate:
 
 If a language list, keyword list, or price value is currently invalid, Cosmic Transcriber saves the other valid options and retains the last valid on-disk value for only the invalid field. Correct the field and pause briefly to complete autosave.
 
-## 5. Add MP3 files
+## 5. Add audio and video files
 
 Four equivalent routes feed the same import pipeline:
 
-1. **+ Files** - select one or more MP3 files.
-2. **Folder** - recursively scan one folder for MP3 files.
-3. **Drag-and-drop** - release MP3 files or folders anywhere inside the idle app window.
+1. **+ Files** - select supported audio/video files.
+2. **Folder** - recursively scan one folder for supported audio/video files.
+3. **Drag-and-drop** - release supported recordings or folders anywhere inside the idle app window.
 4. **Paste** - in File Explorer, select files/folders and press `Ctrl+C`; return to the app and choose **Paste** or press `Ctrl+V` while a text/key field is not focused.
 
 During a valid drag, the drop area changes to **Release anywhere in this window to add audio** and Windows should show a copy cursor.
@@ -148,10 +148,10 @@ Use this for free-form recording context and transcription instructions, such as
 
 A chunk must satisfy both limits and the internal 24,000,000-byte safety ceiling. Lower values create more requests but can help with fragile files or service limits.
 
-### Context, retries, and continuation
+### Context and safe continuation
 
 - **Carry previous chunk context** helps terminology/continuity. Resume then requires an uninterrupted valid checkpoint prefix.
-- **Automatic retries (cost risk)** can be 0-5 and default to **0**. A timeout or lost response can be ambiguous: OpenAI may already have completed billable work even though the app did not receive the response. Increasing retries can therefore repeat a paid chunk. Use retries only after weighing that risk.
+- **Automatic paid retries are disabled**, including for legacy saved retry counts. A timeout or lost response can still involve completed billable work. Preserve the current output folder and cache, and use **Review unresolved attempts** rather than repeatedly restarting or changing output folders. See [UNCERTAIN-OUTCOME-REVIEW.md](UNCERTAIN-OUTCOME-REVIEW.md).
 - **Continue after a failed file** applies only to failures classified as file-specific. Authentication, storage, export, or other systemic failures stop the run.
 
 ## 9. Understand the cost estimate
@@ -180,7 +180,7 @@ Restart with the same source content and relevant settings. Valid completed chun
 
 Choose **Clear checkpoints** only when you intentionally want a fresh run. The app obtains an exclusive cache lease and validates the cache before deleting anything. It refuses unexpected files/folders and refuses symbolic links, junctions, mount points, or other reparse points.
 
-Never place source MP3 files inside `.cosmic-transcriber-cache`. The app blocks both transcription and checkpoint clearing when queued source audio is inside the selected output folder's private cache. Store source audio in an ordinary folder separate from the output cache.
+Never place source recordings inside `.cosmic-transcriber-cache`. The app blocks both transcription and checkpoint clearing when queued source audio is inside the selected output folder's private cache. Store source audio in an ordinary folder separate from the output cache.
 
 ## 12. Logs and diagnostics
 
@@ -208,3 +208,7 @@ The Python release verifier checks high-risk source, API, XAML, documentation, a
 ## 14. Getting help
 
 Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md). For build/runtime acceptance, follow [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md). The About window contains the project website and optional support information.
+
+## Optional beginner tutorial
+
+Choose **Quick start** below the header or press **F1**. The optional first invitation has **Start tutorial** and **Skip for now**; both dismiss the invitation while replay stays available. The seven guide screens explain setup, files, models, output, costs, cancellation and review. **Show this area in the app** reveals controls without activating them. Close or finish the modeless guide at any time; it sends no audio and makes no API requests.

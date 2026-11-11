@@ -99,6 +99,7 @@ public static class StartupDiagnostics
     {
         // Only exact source-controlled messages get a durable meaning. Unknown activity stays omitted.
         var stage = message switch {
+            "Guide closed." => "tutorial_closed", "Guide step displayed." => "tutorial_step",
             "Constructor entered." => "constructor_entered", "Constructor completed." => "constructor_completed",
             "Settings loaded successfully." => "settings_loaded", "Settings saved successfully." => "settings_saved",
             "No settings file exists; using defaults." => "defaults_missing_file",

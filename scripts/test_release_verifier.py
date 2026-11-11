@@ -94,7 +94,7 @@ MUTATIONS = [
              'SafeFileSystem.WriteAllBytesDurableAtomic(SettingsPath, payload, "The settings file");',
              'File.WriteAllBytes(SettingsPath, payload);'),
     Mutation("stale version", "src/CosmicTranscriber/CosmicTranscriber.csproj",
-             '<Version>1.0.28</Version>', '<Version>1.0.27</Version>'),
+             '<Version>1.0.29</Version>', '<Version>1.0.27</Version>'),
     Mutation("remove Start_Click diarization local", "src/CosmicTranscriber/MainWindow.xaml.cs",
              '        var usesSpeakerDiarization =\n            TranscriptionModelCatalog.SupportsSpeakerDiarization(selectedModel);\n',
              ''),

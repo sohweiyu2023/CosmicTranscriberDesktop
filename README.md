@@ -1,10 +1,10 @@
-# Cosmic Transcriber 1.0.28
+# Cosmic Transcriber 1.0.29
 
 ## Multi-format input: on main since 9 November 2026
 
 Optional local audio/video normalization through separately installed FFmpeg/ffprobe was developed as the November 9 candidate and merged into `main` in PR #6 (9 November 2026). MP3 input still needs no external tools. Several different builds report version 1.0.27, so whether a particular installed copy or ZIP includes multi-format input depends on its build, not the version number: compare the build hash recorded at the start of its diagnostic log, or its install folder name. See [MEDIA-INPUT-SUPPORT.md](docs/MEDIA-INPUT-SUPPORT.md) for tested codecs, lossy conversion, first-audio-stream behavior, limits and native acceptance scope.
 
-## Model selector mouse fix in 1.0.28 (10 November 2026)
+## Model selector mouse fix in 1.0.29 (10 November 2026)
 
 In 1.0.27 builds the model selector did not open when clicked with the mouse (keyboard `F4`/`Alt+Down` worked). The selector's internal click target inherited the Fluent theme's left-aligned button style and collapsed to zero width, so clicks fell through to the settings page. The template now isolates that target from implicit styles, and a real-input Windows acceptance run (`tests/UiAcceptance`, `.github/workflows/ui-acceptance.yml`) clicks, selects, dismisses and reopens the selector with actual mouse and keyboard input. See the change log.
 
@@ -62,7 +62,7 @@ Automatically saved settings include:
 - language and keyword hints;
 - prompt/recording context;
 - chunk size and duration;
-- retries, previous-context behavior, and continue-on-error;
+- previous-context behavior and continue-on-error (legacy retry values do not enable automatic paid retries);
 - merge preference and combined title;
 - theme and editable price estimate;
 - the preference to remember an API key securely.
@@ -146,3 +146,7 @@ The audit environment is Linux and cannot honestly claim a native Windows WPF co
 - [Release Checklist](docs/RELEASE-CHECKLIST.md)
 - Comprehensive Word manual in `docs/`
 
+
+## Beginner tutorial (development candidate)
+
+Choose **Quick start** below the header, or press **F1**, for a short guided introduction. The optional **First time here?** invitation offers **Start tutorial** and **Skip for now**. Either choice dismisses the invitation; Quick start remains available. The guide covers API setup, adding recordings, choosing a model, output, starting/cancelling and reviewing results. **Show this area in the app** reveals the relevant controls without activating them. Close the guide at any time; it sends no audio and makes no API requests. Testing a connection or starting a real transcription is a separate action that may contact the provider.

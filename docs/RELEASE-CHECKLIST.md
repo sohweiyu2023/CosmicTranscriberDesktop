@@ -1,4 +1,4 @@
-# Cosmic Transcriber 1.0.28 - Release Checklist
+# Cosmic Transcriber 1.0.29 - Release Checklist
 
 ## Structured keyword acceptance
 
@@ -12,16 +12,16 @@ Use this checklist on Windows 10/11 with the .NET 10 SDK. Record failures and un
 
 ## A. Clean source and identity
 
-- [ ] Source root is the intended 1.0.28 tree.
-- [ ] Project versions are `1.0.28` / `1.0.28.0`; manifest identity is `1.0.28.0`.
+- [ ] Source root is the intended 1.0.29 tree.
+- [ ] Project versions are `1.0.29` / `1.0.29.0`; manifest identity is `1.0.29.0`.
 - [ ] Manifest execution level is `asInvoker` with `uiAccess=false`.
-- [ ] Only NAudio is an explicit PackageReference; no redundant ProtectedData package is present.
+- [ ] Explicit packages match the project: NAudio.Core and System.Numerics.Tensors; no redundant ProtectedData package is present.
 - [ ] No API key, bearer token, private audio, or transcript is in the tree.
 - [ ] Remove `bin`, `obj`, `publish`, and `__pycache__`.
 - [ ] Run `python scripts/generate_release_manifests.py --root .` and then `python scripts/generate_release_manifests.py --root . --check`.
 - [ ] Run `python scripts/static_verify.py --root .`.
-- [ ] Run `python scripts/test_release_verifier.py --root .` and confirm all 52 current release mutations pass.
-- [ ] Confirm the DOCX core metadata and embedded-image accessibility title identify v1.0.27.
+- [ ] Run `python scripts/test_release_verifier.py --root .` and confirm all 56 current release mutations pass.
+- [ ] Confirm the DOCX core metadata and embedded-image accessibility title identify the current release.
 - [ ] Run/review `python scripts/media_smoke.py` where ffmpeg/ffprobe are available.
 - [ ] Search source for `Directory.Delete(..., recursive: true)`; none is allowed.
 - [ ] Confirm `SafeFileSystem.cs` is present and covered by static and mutation tests.
@@ -32,17 +32,17 @@ Use this checklist on Windows 10/11 with the .NET 10 SDK. Record failures and un
 - [ ] Run `BUILD.cmd` as the mandatory compiler gate; a passing Python verifier is not a C# build.
 - [ ] Restore and Release build complete with zero warnings/errors.
 - [ ] No `NU1510`, missing ProtectedData type, WPF temporary-project, or source-generator error appears.
-- [ ] Launch target is `bin\Release\net10.0-windows10.0.19041.0\CosmicTranscriber.exe`, not an `obj`/`_wpftmp` file.
+- [ ] Launch target is `src\CosmicTranscriber\bin\Release\net10.0-windows\CosmicTranscriber.exe`, not an `obj`/`_wpftmp` file.
 
 ## C. Startup, identity, and layout
 
 - [ ] Run `RUN.cmd`; the window appears, activates, and is not hidden/off-screen.
-- [ ] Header says `v1.0.28`; title bar says `Cosmic Transcriber 1.0.28`.
+- [ ] Header says `v1.0.29`; title bar says `Cosmic Transcriber 1.0.29`.
 - [ ] `ui-acceptance.yml` passed on the release commit; model selector opens and selects every model by real mouse click.
 - [ ] Resize, maximize, restore, and move the app between monitors at 100%, 125%, 150%, and 200% scaling; no horizontal offset or clipped left edge appears.
 - [ ] Launch once from an elevated shell; **Restart normally** reopens unelevated and drag-and-drop from normal Explorer works.
 - [ ] Finish a short transcription; the themed completion window appears and **Open output folder** opens the selected folder.
-- [ ] About shows 1.0.28, Soh Wei Yu, site, PayPal email, optional wording, and disclaimer.
+- [ ] About shows 1.0.29, Soh Wei Yu, site, PayPal email, optional wording, and disclaimer.
 - [ ] Website opens and PayPal copy works; failures are contained.
 - [ ] Cosmic Night/Paper render correctly.
 - [ ] Start text is dark/readable when enabled and readable when disabled in both themes.
@@ -151,11 +151,11 @@ Use this checklist on Windows 10/11 with the .NET 10 SDK. Record failures and un
 
 ## K. Documentation and handoff
 
-- [ ] Comprehensive DOCX is version 1.0.27, rendered, every page visually inspected, and accessibility-audited.
+- [ ] Comprehensive DOCX is the current release version, rendered, every page visually inspected, and accessibility-audited.
 - [ ] README, guides, audit, QA, design, changelog, and preview contain no stale version/count/behavior claims.
 - [ ] Run final `python scripts/generate_release_manifests.py --root .`, then `python scripts/generate_release_manifests.py --root . --check`.
 - [ ] Run final `python scripts/static_verify.py --root .` for independent manifest and package validation.
-- [ ] ZIP root folder is `CosmicTranscriber-1.0.28` and extracts cleanly.
+- [ ] ZIP root folder is `CosmicTranscriber-1.0.29` and extracts cleanly.
 - [ ] Compare extracted tree against `ARTIFACT-INVENTORY.json` and `SHA256SUMS.txt`.
 - [ ] Record all Windows tests actually performed and all remaining limitations.
 

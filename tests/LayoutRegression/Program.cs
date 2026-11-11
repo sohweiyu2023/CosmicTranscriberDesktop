@@ -26,6 +26,7 @@ internal static class Program
         var theme = args.Length > 2 && !args[2].StartsWith("--", StringComparison.Ordinal) ? args[2] : "CosmicNight";
         var assertReachable = args.Contains("--assert-reachable");
         var quick = args.Contains("--quick");
+        var dragWarning = args.Contains("--drag-warning");
         var journeyCase = args.Contains("--journey-case");
         var diagnosticCase = args.Contains("--diagnostic-case");
         var singleReveal = args.Contains("--single-reveal");
@@ -65,13 +66,22 @@ internal static class Program
         {
             var window = (Window)XamlReader.Parse(document.ToString());
             var content = (FrameworkElement)window.Content;
+            if (dragWarning)
+            {
+                ((Border)window.FindName("DragDropWarningBanner")).Visibility = Visibility.Visible;
+                ((TextBlock)window.FindName("DragDropWarningTitleText")).Text = "Cosmic Transcriber is running as administrator";
+                ((TextBlock)window.FindName("DragDropWarningDetailText")).Text = "Windows blocks files dragged from normal File Explorer into an elevated app. Choose Restart normally to reopen at the correct privilege level. Paste remains available.";
+            }
             ((ComboBox)window.FindName("ModelComboBox")).SelectedIndex = expanded ? 1 : 0;
+            ((TextBlock)window.FindName("QueueSummaryText")).Text = "1 audio file selected";
             ((TextBox)window.FindName("OutputPathTextBox")).Text = "C:\\Synthetic QA\\Example output folder with a descriptive name\\Transcripts";
             if (expanded)
             {
-                ((TextBlock)window.FindName("CurrentActionText")).Text = "Retrying chunk 2 of 3 after a temporary network error; saved chunks are retained.";
-                ((TextBox)window.FindName("LogTextBox")).Text = "Synthetic QA only.\nChunk 1 checkpoint saved.\nRetrying chunk 2 of 3 after a temporary network error.";
+                ((TextBlock)window.FindName("CurrentActionText")).Text = "Request outcome unresolved for chunk 2 of 3; saved chunks are retained.";
+                ((TextBox)window.FindName("LogTextBox")).Text = "Synthetic QA only.\nChunk 1 checkpoint saved.\nRequest outcome unresolved for chunk 2 of 3.";
             }
+            // Preserve the Window namescope when rendering its content detached; ElementName triggers need it.
+            NameScope.SetNameScope(content, NameScope.GetNameScope(window));
             window.Content = null;
             TextElement.SetFontFamily(content, window.FontFamily);
             TextElement.SetForeground(content, window.Foreground);
@@ -166,7 +176,10 @@ internal static class Program
             var foregroundFailures = new List<string>();
             CheckForegrounds(buttonForegrounds, "#FF1B1425", "enabled", foregroundFailures);
             CheckForegrounds(disabledButtonForegrounds, app.Resources["TextMutedBrush"].ToString()!, "disabled", foregroundFailures);
-            totalFailures += failures.Count + foregroundFailures.Count;
+            var queueHeight = ((ListView)window.FindName("FilesListView")).ActualHeight;
+            var queueFailures = dragWarning && queueHeight < 120 ? 1 : 0;
+            if (queueFailures != 0) Console.WriteLine($"FAIL queue row viewport collapsed with warning: {queueHeight} DIPs");
+            totalFailures += failures.Count + foregroundFailures.Count + queueFailures;
             var result = new
             {
                 widthDips = width, heightDips = height, rasterDpi = dpi,
@@ -177,7 +190,7 @@ internal static class Program
                 useLayoutRounding = surface.UseLayoutRounding, snapsToDevicePixels = surface.SnapsToDevicePixels,
                 controls = rectangles.Select(m => new { m.Id, m.Type, m.Label, bounds = Box(m.Bounds), visible = Box(m.Visible), m.VisibleFraction, m.ScrollAncestors }),
                 reachabilityTolerance = "At least 98% of bounds visible, or no edge clipped by more than 1 DIP (WPF rounding tolerance). Missing/zero-size always fails.",
-                seedDiagnosticScroll, initialViewportOverlaps = overlaps, revealMeasurements, reachability, failures, buttonForegrounds, disabledButtonForegrounds, foregroundFailures
+                seedDiagnosticScroll, dragWarning, queueHeight, queueFailures, initialViewportOverlaps = overlaps, revealMeasurements, reachability, failures, buttonForegrounds, disabledButtonForegrounds, foregroundFailures
             };
             File.WriteAllText(Path.Combine(output, prefix + ".json"), JsonSerializer.Serialize(result, JsonOptions));
             results.Add(new { prefix, controls = rectangles.Count, initialClipped = rectangles.Count(m => !IsReachable(m)), initialViewportOverlaps = overlaps.Count, expectedElements = expected.Count, unreachable = failures.Count, foregroundFailures = foregroundFailures.Count, canvas = Traverse(content).OfType<FrameworkElement>().Where(e => e.Name == "WorkspaceCanvas").Select(e => new { e.ActualWidth, e.ActualHeight }), viewport = Traverse(content).OfType<ScrollViewer>().Where(e => e.Name == "WorkspaceViewport").Select(e => new { e.ViewportWidth, e.ViewportHeight, e.ExtentWidth, e.ExtentHeight }) });

@@ -1,6 +1,6 @@
-# Cosmic Transcriber 1.0.28 - Developer Guide
+# Cosmic Transcriber 1.0.29 - Developer Guide
 
-## 1.0.28 selector hit target, diagnostics and real-input acceptance
+## 1.0.29 selector hit target, diagnostics and real-input acceptance
 
 The ComboBox template's `DropDownToggle` is the only hit-testable surface of the closed field and has an empty template. It must keep `Style="{x:Null}"`, Stretch alignment and zero minimums: otherwise the Fluent `ThemeMode` applies its implicit, left-aligned `ToggleButton` style, the toggle collapses to zero width and mouse clicks fall through (keyboard opening still works, so off-screen and keyboard tests miss it). `PART_Popup.IsOpen` is two-way bound. `DropDownPlacement` re-places the open model list when the settings or workspace viewport scrolls (the focus revealer scrolls a partly hidden field into view just after it opens; WPF popups do not follow that). `SelectorDiagnostics` writes `UI_DROPDOWN` open/close events and a measured `hit_target_ok`/`hit_target_collapsed`/`hit_target_missing` check at load and after theme changes.
 
@@ -39,6 +39,8 @@ The API key remains outside `AppSettings`: `ApiKeyStore` uses Windows DPAPI only
 
 The main window no longer wraps its entire layout in a horizontal `ScrollViewer`; this prevents retained horizontal offsets after maximize/resize. The manifest declares `PerMonitorV2,PerMonitor` DPI awareness. Elevated launches expose a one-click normal restart path through `WindowsSecurity`, and end-of-run reporting is implemented by `CompletionWindow.xaml`.
 
+Current layout note: the later focus/reachability design uses an outer WorkspaceViewport again, with a scrollable two-column canvas. The tutorial candidate has a 720-DIP minimum content height to preserve queue space. The preceding 1.0.25 paragraph records historical behavior, not the current layout contract.
+
 ## GPT Transcribe keyword contract
 
 `InputValidation.NormalizeKeywords` is the single normalization boundary. `MainWindow` preflights and persists the list, `OpenAiTranscriptionClient` repeats `keywords[]`, and `TranscriptionCoordinator` includes the normalized list in fingerprint and manifest data. Any new caller must preserve all three layers.
@@ -56,23 +58,26 @@ The main window no longer wraps its entire layout in a horizontal `ScrollViewer`
 
 ## 2. Build contract
 
-The project targets `net10.0-windows10.0.19041.0`, enables WPF and Windows targeting, uses nullable analysis, disables implicit usings, treats warnings as errors, and requests deterministic output. `global.json` requests .NET SDK `10.0.302` with `latestFeature` roll-forward inside .NET 10.
+The project targets `net10.0-windows`, enables WPF and Windows targeting, uses nullable analysis, disables implicit usings, treats warnings as errors, and requests deterministic output. `global.json` requests .NET SDK `10.0.402` with `latestPatch` roll-forward and prerelease disabled.
 
 Explicit package references:
 
-- NAudio 2.3.0.
+- NAudio.Core 3.3.0.
+- System.Numerics.Tensors 10.0.13.
+
+The explicit SupportedOSPlatform attribute retains Windows 10 build 19041 support independently of the versionless Windows API target.
 
 Do not add a direct `System.Security.Cryptography.ProtectedData` package for this target. DPAPI is supplied by the .NET 10 Windows framework, and a redundant framework-provided package can be pruned/reported as `NU1510`; warnings-as-errors would fail the build.
 
 ## 3. Versioning contract
 
-Release 1.0.28 is represented as:
+Release 1.0.29 is represented as:
 
-- `Version`: `1.0.28`;
-- `AssemblyVersion`: `1.0.28.0`;
-- `FileVersion`: `1.0.28.0`;
-- `InformationalVersion`: `1.0.28`;
-- manifest identity: `1.0.28.0`;
+- `Version`: `1.0.29`;
+- `AssemblyVersion`: `1.0.29.0`;
+- `FileVersion`: `1.0.29.0`;
+- `InformationalVersion`: `1.0.29`;
+- manifest identity: `1.0.29.0`;
 - `IncludeSourceRevisionInInformationalVersion`: `false`.
 
 `AppVersion.DisplayVersion` is the runtime display source for header/title/About/log/User-Agent. Update every version-bearing script/document and run the verifier before release.
@@ -192,3 +197,22 @@ These gates are not a Windows compiler/runtime. Complete `docs/RELEASE-CHECKLIST
 - Add verifier coverage and a mutation for high-risk invariants.
 - Update all version-bearing docs/artifacts.
 - Build, launch, drag, paste, key-test, transcribe, cancel/resume, publish, and high-DPI-test on Windows.
+
+## Beginner tutorial candidate
+
+`QuickStartGuide` contains the immutable seven-screen content and bounded navigation. `QuickStartWindow` is modeless and owned by MainWindow. The first-run invitation uses `QuickStartInvitationDismissed`; absent settings fields remain compatible. Dismissal captures valid pending control edits before saving. F1 and Quick start reopen the single guide and restore it if minimized. Navigation never invokes Start or connection testing. The progress anchor is not the Start button. Owned-window placement preserves CenterOwner on secondary displays.
+
+Run from the repository root on Windows:
+
+```powershell
+dotnet build CosmicTranscriber.sln -c Release
+dotnet run --project tests/QuickStartRegression -c Release -- . "$env:TEMP/cosmic-quickstart-test"
+dotnet run --project tests/NormalSettingsRegression -c Release -- "$env:TEMP/cosmic-settings-test"
+dotnet run --project tests/ThemeRegression -c Release
+python scripts/generate_release_manifests.py
+python scripts/static_verify.py --source-only
+```
+
+The tutorial regression exercises real compiled XAML handlers and renders both themes at 340 and 610 pixels. It does not establish native pointer/keyboard or multi-monitor acceptance. Before release, check first invitation Start/Skip and persistence using an isolated test profile; F1 and replay; minimize/reopen; every Next/Back/Finish/Close/Escape action; owner close; 100/150/200% DPI on both monitors; narrow-window scrolling and keyboard accessibility; and show-area behavior during idle/running/cancel states without invoking paid requests. Preserve another worker's checkout and the user's settings. No tutorial test should require a key or paid provider. Diagnostic initialization can fall back to LocalAppData if executable-directory logs are unwritable; use a writable test checkout and inspect the destination.
+
+The release mutation suite requires a complete clean release export, including the withheld preview/manual assets; it is not a source-only checkout gate. Run it on that export before release, not on a built Git checkout. The workspace minimum content height is 720 DIP to preserve queue space beneath the invitation; smaller windows use the existing outer scrollbar.
