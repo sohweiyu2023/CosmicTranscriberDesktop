@@ -32,3 +32,7 @@ The fixture launched successfully with title `Cosmic tutorial QA - disposable pr
 The five withheld original assets were found inside Downloads/CosmicTranscriber-1.0.27-ui-dropdown-full-audit-reviewed.zip. Each byte count and SHA-256 matches WITHHELD-ASSETS.json. They were read for identity only, not imported or published. Their declared rights/provenance restrictions remain unresolved; locating them does not clear a release gate.
 
 The interactive host now refuses nonempty unmarked profile directories and any saved-key file. A fixed marker permits repeat tests in its own disposable profile. This tests the real MainWindow constructor/handlers but not normal App startup/exit wiring. Production diagnostics can still fall back to LocalAppData if executable-directory logging fails. The idle test process was stopped after approval timed out; installed Cosmic was not touched.
+
+## Expanded rendered layout acceptance
+
+Full LayoutRegression completed:72/72 scenarios passed, zero reachability or button-foreground failures. Matrix: both themes;1060x700,1044x660,960x620,944x600,780x500,640x420;96/144/192DPI; default/expanded controls. This remains offscreen rendering, not native pointer, keyboard, OS scaling or monitor-transition acceptance. Evidence: layout-full-night/summary.json and layout-full-paper/summary.json in the external evidence directory. The hardened interactive host also correctly refused a nonempty unmarked test directory before opening any window;123 tutorial assertions still passed.
