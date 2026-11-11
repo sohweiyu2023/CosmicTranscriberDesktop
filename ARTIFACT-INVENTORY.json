@@ -191,8 +191,8 @@
   },
   {
     "path": "docs/DEVELOPER-GUIDE.md",
-    "sha256": "4581a825b13b1da1554ae5dc3ec84f27741cded796ede8c55e685014b7a9715f",
-    "bytes": 20089
+    "sha256": "087fc471419113f03837897b187dc762bd8db26726b263bbff70f9e9bbed7e93",
+    "bytes": 20401
   },
   {
     "path": "docs/DIAGNOSTIC-SUPPORT.md",
@@ -301,8 +301,8 @@
   },
   {
     "path": "docs/TUTORIAL-CANDIDATE-2026-11-11.md",
-    "sha256": "d75415d3f986c4ec7c0b39b8412c8cb7cd763e58a6cf722dbd14404bea561c3b",
-    "bytes": 4596
+    "sha256": "251d13f5f56e6a77cafde388aeba5ce0aec9d9601317d8f6ec419d564cbb9c66",
+    "bytes": 6013
   },
   {
     "path": "docs/UNCERTAIN-OUTCOME-REVIEW.md",

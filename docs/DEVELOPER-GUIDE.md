@@ -39,6 +39,8 @@ The API key remains outside `AppSettings`: `ApiKeyStore` uses Windows DPAPI only
 
 The main window no longer wraps its entire layout in a horizontal `ScrollViewer`; this prevents retained horizontal offsets after maximize/resize. The manifest declares `PerMonitorV2,PerMonitor` DPI awareness. Elevated launches expose a one-click normal restart path through `WindowsSecurity`, and end-of-run reporting is implemented by `CompletionWindow.xaml`.
 
+Current layout note: the later focus/reachability design uses an outer WorkspaceViewport again, with a scrollable two-column canvas. The tutorial candidate has a 720-DIP minimum content height to preserve queue space. The preceding 1.0.25 paragraph records historical behavior, not the current layout contract.
+
 ## GPT Transcribe keyword contract
 
 `InputValidation.NormalizeKeywords` is the single normalization boundary. `MainWindow` preflights and persists the list, `OpenAiTranscriptionClient` repeats `keywords[]`, and `TranscriptionCoordinator` includes the normalized list in fingerprint and manifest data. Any new caller must preserve all three layers.
