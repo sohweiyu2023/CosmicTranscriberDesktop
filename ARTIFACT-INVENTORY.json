@@ -191,8 +191,8 @@
   },
   {
     "path": "docs/DEVELOPER-GUIDE.md",
-    "sha256": "ebbf169c150b95d870ec4942e860b727b23adbc574f4f71d3a8352b6d6692a84",
-    "bytes": 19918
+    "sha256": "4581a825b13b1da1554ae5dc3ec84f27741cded796ede8c55e685014b7a9715f",
+    "bytes": 20089
   },
   {
     "path": "docs/DIAGNOSTIC-SUPPORT.md",
@@ -266,8 +266,8 @@
   },
   {
     "path": "docs/PENDING-REQUEST-RECOVERY.md",
-    "sha256": "add04d74b58360b8cb420d10d7cf19e426507aec9a0f66e1e08ca5560065b818",
-    "bytes": 4479
+    "sha256": "925836516707e8d6d2471ce770d22148893978bb893f1024e833d25b132e0cb9",
+    "bytes": 4561
   },
   {
     "path": "docs/PROVIDER-FAILURE-EVIDENCE.md",
@@ -296,8 +296,8 @@
   },
   {
     "path": "docs/TROUBLESHOOTING.md",
-    "sha256": "a8d98328b2e98193a5b4adf19d5cb2b745d4b7576b2c5ebd4e3cffa69eb5e734",
-    "bytes": 14901
+    "sha256": "a6697b89a66faba8af9e4427be6fb9e6e4d8690531976e4959db6e895d336c99",
+    "bytes": 15515
   },
   {
     "path": "docs/TUTORIAL-CANDIDATE-2026-11-11.md",

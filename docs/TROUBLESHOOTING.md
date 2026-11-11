@@ -56,12 +56,12 @@ File Explorer must place a file-drop list on the clipboard. Select files/folders
 
 ## 6. The window is clipped on a small screen or remote desktop
 
-Version 1.0.25 removes the outer horizontal scroll surface that could retain a nonzero offset after resize/maximize and make the whole interface appear shifted or cut off. It also declares Per-Monitor-V2 DPI awareness and uses a smaller default footprint.
+The current app uses an outer scrollable workspace to keep its two-column dashboard reachable in small windows. It declares Per-Monitor-V2 DPI awareness. The tutorial candidate reserves enough content height for the queue and invitation; scroll rather than expecting every control to fit at once.
 
 1. Maximise the window.
 2. Use the outer horizontal scrollbar when the two-column dashboard cannot fit.
 3. Scroll the right settings panel vertically.
-4. Reduce Windows display scaling temporarily if the remote session is extremely small.
+4. Keep your preferred Windows scaling; enlarge the remote desktop viewport if available, or use scrolling and keyboard focus.
 5. About is resizable and contains its own vertical scrolling.
 
 The app fits its requested size to the Windows work area, but Windows may still enforce system minimum tracking dimensions in exceptionally tiny sessions.
@@ -115,27 +115,27 @@ The estimate is total audio minutes multiplied by the editable USD-per-minute va
 
 - Check whether the error is file-specific or systemic.
 - Authentication, rate/billing, output/storage, and systemic protocol failures intentionally stop later files.
-- Lower chunk size/duration for marginal connections.
-- Automatic paid retries are disabled regardless of saved retry count. A lost/timeout response may represent billable completed work. Review the existing attempt and possible charges before any later manually initiated request; the proposed same-context pending-intent guard blocks unresolved work across restart but cannot prove provider exactly-once billing. Preserve unresolved evidence; do not clear the cache as a workaround.
+- For a new run only, smaller chunks may help marginal connections. First reconcile any uncertain existing request; do not change chunk settings or output folders to escape its safety guard.
+- Automatic paid retries are disabled regardless of saved retry count. A lost/timeout response may represent billable completed work. Review the existing attempt and possible charges before any later manually initiated request; the same-context pending-intent guard blocks unresolved work across restart but cannot prove provider exactly-once billing. Preserve unresolved evidence; do not clear the cache as a workaround.
 - Confirm enough disk space remains for temporary chunks, checkpoints, and output.
 - Keep the source and output paths available for the whole run.
 - Resume with identical settings to reuse valid checkpoints.
 
 ## 12. Resume does not reuse a checkpoint
 
-Checkpoint identity changes when source content or relevant settings change. Reuse may also fail after a corrupt/truncated checkpoint, transcript-digest mismatch, context dependency gap, or cache clear. Restore the exact original settings/source or allow the chunk to regenerate.
+Checkpoint identity changes when source content or relevant settings change. Reuse may also fail after a corrupt/truncated checkpoint, transcript-digest mismatch, context dependency gap, or cache clear. Restore the exact original settings/source and use local review. Do not regenerate a chunk while an earlier request may have been billed; preserve unknown outcomes and reconcile them first.
 
 
 ## 13. Clearing checkpoints is blocked or reports an unexpected cache item
 
 Cosmic Transcriber clears only application-recognized work folders under `.cosmic-transcriber-cache`. It deliberately stops before deleting anything when it finds an unknown file/folder or any symbolic link, junction, mount point, or other reparse point.
 
-- Close all Cosmic Transcriber instances and retry.
+- If the failure is a local lock, close other Cosmic Transcriber instances and retry the local inventory/check. This does not authorize a new paid request or deletion of unresolved evidence.
 - Move any source audio out of `.cosmic-transcriber-cache`.
 - Do not put personal files in the hidden cache folder.
 - Inspect the on-screen storage error for the refused path; structured logs omit exception messages and personal paths.
 - If the path is a junction/symlink or contains unfamiliar data, preserve it and investigate rather than forcing deletion.
-- After confirming the data is disposable, remove the unexpected item manually with normal Windows tools and retry **Clear checkpoints**.
+- Preserve unknown items until their purpose is understood. Never delete pending markers or accepted response evidence to bypass the guard. Only unrelated data independently confirmed disposable should be removed; then recheck the local inventory before clearing known completed checkpoints.
 
 The app intentionally refuses a broad “delete everything recursively” fallback because it could traverse filesystem links into unrelated storage.
 

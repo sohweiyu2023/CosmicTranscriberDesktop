@@ -56,11 +56,14 @@ The main window no longer wraps its entire layout in a horizontal `ScrollViewer`
 
 ## 2. Build contract
 
-The project targets `net10.0-windows10.0.19041.0`, enables WPF and Windows targeting, uses nullable analysis, disables implicit usings, treats warnings as errors, and requests deterministic output. `global.json` requests .NET SDK `10.0.302` with `latestFeature` roll-forward inside .NET 10.
+The project targets `net10.0-windows`, enables WPF and Windows targeting, uses nullable analysis, disables implicit usings, treats warnings as errors, and requests deterministic output. `global.json` requests .NET SDK `10.0.402` with `latestPatch` roll-forward and prerelease disabled.
 
 Explicit package references:
 
-- NAudio 2.3.0.
+- NAudio.Core 3.3.0.
+- System.Numerics.Tensors 10.0.13.
+
+The explicit SupportedOSPlatform attribute retains Windows 10 build 19041 support independently of the versionless Windows API target.
 
 Do not add a direct `System.Security.Cryptography.ProtectedData` package for this target. DPAPI is supplied by the .NET 10 Windows framework, and a redundant framework-provided package can be pruned/reported as `NU1510`; warnings-as-errors would fail the build.
 
